@@ -256,7 +256,7 @@ function watch_constructor() {
         })
       ).json();
       console.log(json);
-      if (json[0].is_in_list) {
+      if (json[0]?.is_in_list) {
         setList(json[0].is_in_list);
       } else {
         setList(0);
