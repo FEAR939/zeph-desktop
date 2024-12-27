@@ -49,17 +49,23 @@ async function get_details(url: String) {
 
 async function get_episodes(season: any, imdb: String) {
   try {
-    const [text, imdb_text] = await Promise.all([
-      await (await fetch(`https://aniworld.to${season.redirect}`)).text(),
-      await (await fetch(`${imdb}/episodes/?season=${season.label}`)).text(),
-    ]);
+    const fetchURLs = [`https://aniworld.to${season.redirect}`];
+
+    if (imdb) {
+      fetchURLs.push(`${imdb}/episodes/?season=${season.label}`);
+    }
+
+    const [text, imdb_text = ""] = await Promise.all(
+      fetchURLs.map(async (url: string) => {
+        return await (await fetch(url)).text();
+      }),
+    );
 
     const html = new DOMParser().parseFromString(text, "text/html");
     const episodes_nodes = html.querySelectorAll("tbody tr");
 
     let episode_watched = <any>[];
     if (localStorage.getItem("token")) {
-      console.log(localStorage.getItem("token"));
       episode_watched = await (
         await fetch("http://animenetwork.org/get-seen", {
           method: "POST",
@@ -78,9 +84,13 @@ async function get_episodes(season: any, imdb: String) {
 
     const imdb_html = new DOMParser().parseFromString(imdb_text, "text/html");
 
-    const imdb_season_images = imdb_html.querySelectorAll(
-      "article > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > img:nth-child(1)",
-    );
+    let imdb_season_images = <any>[];
+
+    if (imdb_html) {
+      imdb_season_images = imdb_html.querySelectorAll(
+        "article > div:nth-child(1) > div:nth-child(1) > div:nth-child(2) > div:nth-child(1) > img:nth-child(1)",
+      );
+    }
 
     const episodes = <any>[];
 
@@ -422,7 +432,7 @@ function watch_constructor() {
         const watched = async (duration: number, playtime: number) => {
           if (!localStorage.getItem("token")) return;
 
-          const res = await await fetch("http://animenetwork.org/handle-seen", {
+          const res = await fetch("http://animenetwork.org/handle-seen", {
             method: "POST",
             headers: {
               "Content-Type": "application/json",
@@ -455,10 +465,17 @@ function watch_constructor() {
     }
 
     if (!cache.get("trailer")) {
-      const html = new DOMParser().parseFromString(
-        await (await fetch(details.imdb)).text(),
-        "text/html",
-      );
+      let html;
+      try {
+        html = new DOMParser().parseFromString(
+          await (await fetch(details.imdb)).text(),
+          "text/html",
+        );
+      } catch (e) {
+        console.log(e);
+      }
+
+      if (!html) return;
 
       const script = html.querySelector('script[type="application/json"]');
       if (!script) return;
