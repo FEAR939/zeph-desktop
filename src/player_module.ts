@@ -34,6 +34,7 @@ async function player_constructor(url: String, callback: any) {
   const video_player = document.createElement("video");
   video_player.className = "video_player video-js h-full w-full";
   video_player.controls = true;
+  video_player.autoplay = true;
   player_wrapper.appendChild(video_player);
 
   let player = videojs(video_player);
