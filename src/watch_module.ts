@@ -378,10 +378,9 @@ function watch_constructor() {
           playtime: 0,
         });
 
-        if (localStorage.getItem("token") && episode.duration) {
+        if (localStorage.getItem("token")) {
           const episode_progress = document.createElement("div");
-          episode_progress.className =
-            "absolute bottom-0 left-0 right-0 h-1 bg-neutral-800";
+          episode_progress.className = "absolute bottom-0 left-0 right-0 h-1";
 
           episode_image.appendChild(episode_progress);
 
@@ -390,13 +389,16 @@ function watch_constructor() {
             "h-full bg-red-600 transition-all duration-300";
 
           subscribeProgress((newProgress) => {
+            console.log("newState");
             episode.duration = newProgress.duration;
             episode.playtime = newProgress.playtime;
 
             cache.set(`episodes-${cache.get("selectedSeason")}`, episodes);
 
             episode_progress_inner.style.width =
-              (newProgress.playtime / newProgress.duration) * 100 + "%";
+              episode.duration == 0
+                ? "0%"
+                : (newProgress.playtime / newProgress.duration) * 100 + "%";
           });
 
           episode_progress.appendChild(episode_progress_inner);
@@ -430,6 +432,7 @@ function watch_constructor() {
         episode_info.appendChild(episode_description);
 
         const watched = async (duration: number, playtime: number) => {
+          console.log("callback");
           if (!localStorage.getItem("token")) return;
 
           const res = await fetch("http://animenetwork.org/handle-seen", {
@@ -444,6 +447,8 @@ function watch_constructor() {
               id: episode.id,
             }),
           });
+
+          console.log(res);
 
           if (res.status == 200) {
             setProgress({ duration: duration, playtime: playtime });
