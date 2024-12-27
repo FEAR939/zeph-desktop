@@ -1,7 +1,7 @@
 // @ts-ignore
 import videojs from "video.js";
 
-async function player_constructor(url: String, callback: any) {
+async function player_constructor(url: String, callback: any, playtime: any) {
   const player_wrapper = document.createElement("div");
   player_wrapper.className = "absolute inset-0 z-40 bg-neutral-900";
 
@@ -35,6 +35,7 @@ async function player_constructor(url: String, callback: any) {
   video_player.className = "video_player video-js h-full w-full";
   video_player.controls = true;
   video_player.autoplay = true;
+  video_player.currentTime = playtime * 60;
   player_wrapper.appendChild(video_player);
 
   let player = videojs(video_player);
