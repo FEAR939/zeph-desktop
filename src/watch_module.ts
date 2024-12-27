@@ -465,6 +465,7 @@ function watch_constructor() {
     }
 
     if (!cache.get("trailer")) {
+      if (!details.imdb) return;
       let html;
       try {
         html = new DOMParser().parseFromString(
