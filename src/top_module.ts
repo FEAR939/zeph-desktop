@@ -36,22 +36,71 @@ async function top_constructor(
   search_input.addEventListener("keyup", async (event) => {
     if (event.key !== "Enter" || search_input.value.trim().length == 0) return;
 
-    const formData = new FormData();
-    formData.append("keyword", search_input.value);
+    let searchString = search_input.value.trim();
 
-    const json = await (
-      await fetch("https://aniworld.to/ajax/search", {
-        method: "POST",
-        body: new URLSearchParams(
-          formData as unknown as Record<string, string>,
-        ),
-      })
-    ).json();
+    const tags = [];
+    for (let i = 0; i < searchString.length; i++) {
+      if (search_input.value[i] == "#") {
+        const tagEnd = searchString.indexOf(" ", i);
+        tags.push(
+          searchString.substring(
+            i,
+            tagEnd == -1 ? searchString.length : tagEnd,
+          ),
+        );
+        searchString = searchString.substring(tagEnd, searchString.length);
+      }
+    }
+
+    let results = [];
+
+    if (tags.includes("#mylist")) {
+      let storage = null;
+      let current = null;
+      if (localStorage.getItem("mylist")) {
+        storage = JSON.parse(localStorage.getItem("mylist") || "");
+        current = storage.mylist.items;
+      }
+
+      let index = [];
+
+      for (let i = 0; i < current.length; i++) {
+        let pos = -1;
+        try {
+          pos = current[i].title
+            .toLowerCase()
+            .search(searchString.toLowerCase().trim());
+        } catch {}
+        if (pos !== -1) {
+          index.push(i);
+        }
+      }
+      if (index.length) {
+        index.forEach((i) => {
+          results.push({
+            link: current[i].redirect,
+            title: current[i].title,
+          });
+        });
+      }
+    } else {
+      const formData = new FormData();
+      formData.append("keyword", searchString.trim());
+
+      results = await (
+        await fetch("https://aniworld.to/ajax/search", {
+          method: "POST",
+          body: new URLSearchParams(
+            formData as unknown as Record<string, string>,
+          ),
+        })
+      ).json();
+    }
 
     search_results.innerHTML = "";
     search_results.classList.add("border-t", "border-neutral-700");
 
-    json.forEach((item: any) => {
+    results.forEach((item: any) => {
       if (!item.link.includes("/anime/stream/")) return;
 
       const search_result = document.createElement("div");
