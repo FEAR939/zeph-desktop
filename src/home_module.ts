@@ -144,10 +144,19 @@ function home_constructor() {
     let categories =
       JSON.parse(localStorage.getItem("categories") || "").categories || [];
     if (localStorage.getItem("token")) {
-      categories = [
-        JSON.parse(localStorage.getItem("mylist") || "").mylist,
-        ...categories,
-      ];
+      const mylist = JSON.parse(localStorage.getItem("mylist") || "").mylist;
+
+      mylist.items.sort(function (a: any, b: any) {
+        if (a.title < b.title) {
+          return -1;
+        }
+        if (a.title > b.title) {
+          return 1;
+        }
+        return 0;
+      });
+
+      categories = [mylist, ...categories];
     }
 
     categories.forEach((categorie: any) => {
