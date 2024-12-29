@@ -368,7 +368,7 @@ function watch_constructor() {
 
         const episode_number = document.createElement("div");
         episode_number.className =
-          "flex-shrink-0 w-20 flex items-center justify-center text-3xl font-bold text-gray-500 group-hover:text-white transition-colors";
+          "flex-shrink-0 w-20 flex items-center justify-center text-3xl font-bold text-neutral-500 group-hover:text-white transition-colors";
         episode_number.textContent = (i + 1).toString();
 
         episode_node.appendChild(episode_number);
@@ -432,7 +432,7 @@ function watch_constructor() {
 
         const episode_description = document.createElement("p");
         episode_description.className =
-          "mt-1 text-sm text-gray-400 line-clamp-2";
+          "mt-1 text-sm text-neutral-400 line-clamp-2";
         episode_description.textContent = episode.title;
 
         episode_info.appendChild(episode_description);
