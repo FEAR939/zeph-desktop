@@ -456,7 +456,7 @@ function watch_constructor() {
         };
 
         episode_node.addEventListener("click", () =>
-          player_constructor(episode.redirect, watched),
+          player_constructor(episode.redirect, watched, episode.playtime),
         );
 
         const asyncImage = new Image();
