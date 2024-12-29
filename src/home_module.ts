@@ -1,3 +1,5 @@
+import createState from "./createstate";
+
 interface anime_data {
   redirect: String;
   image: String;
@@ -119,28 +121,39 @@ function home_constructor(content: HTMLElement, watch_callback: any) {
     const categories = cache.get("categories");
 
     categories.forEach((categorie: any) => {
+      const [getSliderIndex, setSliderIndex, subscribeSliderIndex] =
+        createState(0);
+
+      const maxSliderIndex = Math.ceil(categorie.items.length / 7 - 1);
+
       const scroll = (container: HTMLElement, direction: any) => {
-        const scrollAmount =
-          direction === "left"
-            ? -(container.offsetWidth - 15)
-            : container.offsetWidth - 15;
-        container.scrollBy({ left: scrollAmount, behavior: "smooth" });
+        if (
+          (direction == "left" && getSliderIndex() == 0) ||
+          (direction == "right" && getSliderIndex() == maxSliderIndex)
+        )
+          return;
+
+        direction == "left"
+          ? setSliderIndex(getSliderIndex() - 1)
+          : setSliderIndex(getSliderIndex() + 1);
+
+        container.style.transform = `translateX(calc(${getSliderIndex()} * -100%))`;
       };
 
       const categorie_node = document.createElement("div");
-      categorie_node.className = "relative mt-4";
+      categorie_node.className = "relative mt-4 overflow-x-hidden";
 
       content.appendChild(categorie_node);
 
       const categorie_label = document.createElement("h2");
-      categorie_label.className = "text-xl font-bold px-4 mb-4";
+      categorie_label.className = "h-8 text-xl font-bold px-10 mb-4";
       categorie_label.textContent = categorie.label;
 
       categorie_node.appendChild(categorie_label);
 
       const carousel_previous = document.createElement("button");
       carousel_previous.className =
-        "absolute left-0 top-1/2 z-10 p-2 bg-black bg-opacity-50 rounded-full transform -translate-y-1/2 hover:bg-opacity-75 transition-all ml-2";
+        "absolute left-0 top-12 bottom-0 w-6 flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-r-lg hover:bg-opacity-75 transition-all";
       carousel_previous.innerHTML =
         "<img src='../assets/chevron_left_24dp.png' class='h-4 w-4' />";
 
@@ -148,15 +161,14 @@ function home_constructor(content: HTMLElement, watch_callback: any) {
 
       const carousel_next = document.createElement("button");
       carousel_next.className =
-        "absolute right-0 top-1/2 z-10 p-2 bg-black bg-opacity-50 rounded-full transform -translate-y-1/2 hover:bg-opacity-75 transition-all mr-2";
+        "absolute right-0 top-12 bottom-0 w-6 flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-l-lg hover:bg-opacity-75 transition-all";
       carousel_next.innerHTML =
         "<img src='../assets/chevron_right_24dp.png' class='h-4 w-4' />";
 
       categorie_node.appendChild(carousel_next);
 
       const categorie_carousel = document.createElement("div");
-      categorie_carousel.className =
-        "flex space-x-4 overflow-x-hidden px-4 scroll-smooth";
+      categorie_carousel.className = "flex mx-8 scroll-smooth";
 
       categorie_node.appendChild(categorie_carousel);
 
@@ -169,14 +181,14 @@ function home_constructor(content: HTMLElement, watch_callback: any) {
 
       categorie.items.forEach((item: any) => {
         const item_node = document.createElement("div");
-        item_node.className = "flex-shrink-0";
-        item_node.style.width = "calc((100% - (6 * 1rem)) / 7)";
+        item_node.className = "flex-shrink-0 px-2";
+        item_node.style.width = "calc(100% / 7)";
+
+        categorie_carousel.appendChild(item_node);
 
         item_node.addEventListener("click", () =>
           watch_callback(item.redirect),
         );
-
-        categorie_carousel.appendChild(item_node);
 
         const item_image = document.createElement("div");
         item_image.className = "aspect-[1/1.3]";
