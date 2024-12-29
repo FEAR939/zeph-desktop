@@ -18,7 +18,7 @@ async function get_token(username: String, password: String) {
   }
 }
 
-function login_constructor(content: HTMLElement, routes: any) {
+function login_constructor(content: HTMLElement, home_callback: any) {
   const build = (callback: any) => {
     content.innerHTML = "";
 
@@ -79,7 +79,7 @@ function login_constructor(content: HTMLElement, routes: any) {
         localStorage.setItem("token", token);
         callback();
       } else {
-        routes[0].fn();
+        home_callback();
       }
     });
   };
