@@ -141,7 +141,7 @@ function home_constructor(content: HTMLElement, watch_callback: any) {
       };
 
       const categorie_node = document.createElement("div");
-      categorie_node.className = "relative mt-4 overflow-x-hidden";
+      categorie_node.className = "relative mt-4";
 
       content.appendChild(categorie_node);
 
@@ -153,7 +153,7 @@ function home_constructor(content: HTMLElement, watch_callback: any) {
 
       const carousel_previous = document.createElement("button");
       carousel_previous.className =
-        "absolute left-0 top-12 bottom-0 w-6 flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-r-lg hover:bg-opacity-75 transition-all";
+        "absolute left-0 top-12 bottom-0 w-7 flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-r-lg hover:bg-opacity-75 transition-all";
       carousel_previous.innerHTML =
         "<img src='../assets/chevron_left_24dp.png' class='h-4 w-4' />";
 
@@ -161,14 +161,15 @@ function home_constructor(content: HTMLElement, watch_callback: any) {
 
       const carousel_next = document.createElement("button");
       carousel_next.className =
-        "absolute right-0 top-12 bottom-0 w-6 flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-l-lg hover:bg-opacity-75 transition-all";
+        "absolute right-0 top-12 bottom-0 w-7 flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-l-lg hover:bg-opacity-75 transition-all";
       carousel_next.innerHTML =
         "<img src='../assets/chevron_right_24dp.png' class='h-4 w-4' />";
 
       categorie_node.appendChild(carousel_next);
 
       const categorie_carousel = document.createElement("div");
-      categorie_carousel.className = "flex mx-8 scroll-smooth";
+      categorie_carousel.className =
+        "flex mx-8 scroll-smooth transition-all ease-in-out duration-500";
 
       categorie_node.appendChild(categorie_carousel);
 
@@ -179,32 +180,45 @@ function home_constructor(content: HTMLElement, watch_callback: any) {
         scroll(categorie_carousel, "right"),
       );
 
-      categorie.items.forEach((item: any) => {
+      categorie.items.forEach((item: any, i: number) => {
         const item_node = document.createElement("div");
-        item_node.className = "flex-shrink-0 px-2";
-        item_node.style.width = "calc(100% / 7)";
+        item_node.className =
+          "flex items-center justify-center flex-shrink-0 relative";
+        item_node.style.width = "calc((100vw - 4rem) / 7)";
+        item_node.style.height = "calc(((100vw - 4rem) / 7) * 1.3/1)";
 
         categorie_carousel.appendChild(item_node);
 
-        item_node.addEventListener("click", () =>
+        const item_hover = document.createElement("div");
+        item_hover.className =
+          "absolute w-[calc(100%-.5rem)] h-full bg-neutral-800 rounded-lg overflow-hidden hover:z-10 hover:w-[110%] hover:h-[calc(110%+4rem)] transition-all ease-in-out duration-500";
+
+        if ((i + 1) % 7 == 1) {
+          item_hover.classList.add("left-[.25rem]");
+        } else if ((i + 1) % 7 == 0) {
+          item_hover.classList.add("right-[.25rem]");
+        }
+        item_node.appendChild(item_hover);
+
+        item_hover.addEventListener("click", () =>
           watch_callback(item.redirect),
         );
 
         const item_image = document.createElement("div");
-        item_image.className = "aspect-[1/1.3]";
+        item_image.className = "w-full aspect-[1/1.36]";
 
-        item_node.appendChild(item_image);
+        item_hover.appendChild(item_image);
 
         const item_title = document.createElement("h3");
         item_title.className =
-          "font-medium text-sm mt-2 text-nowrap w-full truncate";
+          "h-8 font-medium text-sm p-2 text-nowrap w-full truncate";
         item_title.textContent = item.title;
 
-        item_node.appendChild(item_title);
+        item_hover.appendChild(item_title);
 
         const asyncImage = new Image();
         asyncImage.src = `https://aniworld.to${item.image}`;
-        asyncImage.className = "w-full h-full object-cover rounded-lg";
+        asyncImage.className = "w-full h-full object-cover";
 
         asyncImage.addEventListener("load", () => {
           item_image.appendChild(asyncImage);
