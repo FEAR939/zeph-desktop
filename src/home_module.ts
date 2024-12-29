@@ -95,8 +95,10 @@ function get_mylist() {
   });
 }
 
-function home_constructor(content: HTMLElement, watch_callback: any) {
+function home_constructor() {
   let loading = false;
+  let content: any = null;
+  let watch_callback: any = null;
 
   const build = async () => {
     if (loading) return;
@@ -139,11 +141,12 @@ function home_constructor(content: HTMLElement, watch_callback: any) {
 
   const render = () => {
     content.innerHTML = "";
-    let categories = JSON.parse(localStorage.getItem("categories") || "") || [];
+    let categories =
+      JSON.parse(localStorage.getItem("categories") || "").categories || [];
     if (localStorage.getItem("token")) {
       categories = [
         JSON.parse(localStorage.getItem("mylist") || "").mylist,
-        ...categories.categories,
+        ...categories,
       ];
     }
 
@@ -254,7 +257,46 @@ function home_constructor(content: HTMLElement, watch_callback: any) {
     });
   };
 
-  return build;
+  const mylist_handler = async (method: String, data?: anime_data) => {
+    let storage = null;
+    let current = null;
+    if (localStorage.getItem("mylist")) {
+      storage = JSON.parse(localStorage.getItem("mylist") || "");
+      current = storage.mylist.items;
+    }
+
+    if (method == "add") {
+      current.push(data);
+    } else if (method == "rm") {
+      const index = current.findIndex((a: any) => a.redirect == data?.redirect);
+      if (!index) return;
+
+      current.splice(index, 1);
+    } else if (method == "update") {
+      const mylist = await get_mylist();
+      localStorage.setItem(
+        "mylist",
+        JSON.stringify({ mylist: mylist, timestamp: Date.now() }),
+      );
+    }
+
+    if (method !== "update") {
+      localStorage.setItem("mylist", JSON.stringify(storage));
+    }
+
+    render();
+  };
+
+  const setParams = (area: HTMLElement, callback: any) => {
+    content = area;
+    watch_callback = callback;
+  };
+
+  return {
+    build: build,
+    setParams: setParams,
+    mylist_handler: mylist_handler,
+  };
 }
 
 export default home_constructor;

@@ -11,10 +11,14 @@ const content_area = document.createElement("div");
 content_area.className = "flex-1 overflow-y-auto";
 document.body.appendChild(content_area);
 
+const home_page = home_constructor();
 const watch_page = watch_constructor();
-const home_page = home_constructor(content_area, watch_page);
-const login_page = login_constructor(content_area, home_page);
+const login_page = login_constructor();
 
-top_constructor(top_area, login_page, watch_page);
+home_page.setParams(content_area, watch_page.build);
+watch_page.setParams(home_page.mylist_handler);
+login_page.setParams(content_area, home_page.mylist_handler);
 
-home_page();
+top_constructor(top_area, login_page.build, watch_page.build);
+
+home_page.build();

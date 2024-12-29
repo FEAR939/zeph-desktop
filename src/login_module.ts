@@ -18,7 +18,10 @@ async function get_token(username: String, password: String) {
   }
 }
 
-function login_constructor(content: HTMLElement, home_callback: any) {
+function login_constructor() {
+  let content: any = null;
+  let home_callback: any = null;
+
   const build = (callback: any) => {
     content.innerHTML = "";
 
@@ -79,12 +82,20 @@ function login_constructor(content: HTMLElement, home_callback: any) {
         localStorage.setItem("token", token);
         callback();
       } else {
-        home_callback();
+        home_callback("update");
       }
     });
   };
 
-  return build;
+  const setParams = (area: HTMLElement, callback: any) => {
+    content = area;
+    home_callback = callback;
+  };
+
+  return {
+    build: build,
+    setParams: setParams,
+  };
 }
 
 export default login_constructor;

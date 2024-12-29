@@ -134,6 +134,7 @@ function watch_constructor() {
   let cache = new Map<String, any>();
   let loading = false;
   let current_url: String = "";
+  let mylist_callback: any = null;
 
   const build = async (url: String) => {
     if (loading) return;
@@ -281,6 +282,11 @@ function watch_constructor() {
           body: current_url.toString(),
         });
         if (!res.ok) return;
+        mylist_callback(getList() == 0 ? "add" : "rm", {
+          redirect: current_url,
+          image: details.image,
+          title: details.title,
+        });
         setList(getList() == 0 ? 1 : 0);
       });
     }
@@ -506,7 +512,14 @@ function watch_constructor() {
     }
   };
 
-  return build;
+  const setParams = (callback: any) => {
+    mylist_callback = callback;
+  };
+
+  return {
+    build: build,
+    setParams: setParams,
+  };
 }
 
 export default watch_constructor;
