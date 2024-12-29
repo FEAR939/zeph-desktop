@@ -34,52 +34,6 @@ function get_categories() {
         });
       });
 
-      if (localStorage.getItem("token")) {
-        const list = await (
-          await fetch("http://animenetwork.org/get-list", {
-            headers: {
-              Authorization: localStorage.getItem("token") || "",
-            },
-          })
-        ).json();
-
-        if (!list.length) {
-          resolve(categories);
-          return;
-        }
-
-        const watched_list: Array<anime_data> = [];
-
-        // Use Promise.all to wait for all async operations
-        await Promise.all(
-          list.map(async (anime: any) => {
-            const html = new DOMParser().parseFromString(
-              await (
-                await fetch(`https://aniworld.to${anime.series_id}`)
-              ).text(),
-              "text/html",
-            );
-
-            const redirect = anime.series_id;
-            const image = html
-              .querySelector(".seriesCoverBox img")
-              ?.getAttribute("data-src");
-            const title = html.querySelector(".series-title h1")?.textContent;
-
-            watched_list.push({
-              redirect: redirect || "",
-              image: image || "",
-              title: title || "",
-            });
-          }),
-        );
-
-        categories.push({
-          label: "My List",
-          items: watched_list,
-        });
-      }
-
       categories.push({
         label: "Trending Now",
         items: trending,
@@ -93,32 +47,105 @@ function get_categories() {
   });
 }
 
+function get_mylist() {
+  return new Promise(async (resolve, reject) => {
+    const list = await (
+      await fetch("http://animenetwork.org/get-list", {
+        headers: {
+          Authorization: localStorage.getItem("token") || "",
+        },
+      })
+    ).json();
+
+    if (!list.length) {
+      resolve({});
+      return;
+    }
+
+    const watched_list: Array<anime_data> = [];
+
+    // Use Promise.all to wait for all async operations
+    await Promise.all(
+      list.map(async (anime: any) => {
+        const html = new DOMParser().parseFromString(
+          await (await fetch(`https://aniworld.to${anime.series_id}`)).text(),
+          "text/html",
+        );
+
+        const redirect = anime.series_id;
+        const image = html
+          .querySelector(".seriesCoverBox img")
+          ?.getAttribute("data-src");
+        const title = html.querySelector(".series-title h1")?.textContent;
+
+        watched_list.push({
+          redirect: redirect || "",
+          image: image || "",
+          title: title || "",
+        });
+      }),
+    );
+
+    const mylist = {
+      label: "My List",
+      items: watched_list,
+    };
+
+    resolve(mylist);
+  });
+}
+
 function home_constructor(content: HTMLElement, watch_callback: any) {
-  let cache = new Map<String, any>();
   let loading = false;
 
   const build = async () => {
     if (loading) return;
 
-    if (cache.size == 0) {
+    async function caching() {
       loading = true;
       console.log("INFO: building cache");
+
       const categories = await get_categories();
-      cache.set("categories", categories);
+      localStorage.setItem(
+        "categories",
+        JSON.stringify({ categories: categories, timestamp: Date.now() }),
+      );
+      if (localStorage.getItem("token")) {
+        const mylist = await get_mylist();
+        localStorage.setItem(
+          "mylist",
+          JSON.stringify({ mylist: mylist, timestamp: Date.now() }),
+        );
+      }
       loading = false;
-    } else {
-      console.log("INFO: reusing cache");
+    }
+
+    if (!localStorage.getItem("categories")) {
+      await caching();
+    } else if (
+      (Date.now() -
+        JSON.parse(localStorage.getItem("categories") || "").timestamp) /
+        1000 >
+      3600
+    ) {
+      console.log("INFO: cache older than an hour, refreshing");
+      await caching();
     }
 
     console.log("INFO: cache loaded");
-    console.log(cache);
 
     render();
   };
 
   const render = () => {
     content.innerHTML = "";
-    const categories = cache.get("categories");
+    let categories = JSON.parse(localStorage.getItem("categories") || "") || [];
+    if (localStorage.getItem("token")) {
+      categories = [
+        JSON.parse(localStorage.getItem("mylist") || "").mylist,
+        ...categories.categories,
+      ];
+    }
 
     categories.forEach((categorie: any) => {
       const [getSliderIndex, setSliderIndex, subscribeSliderIndex] =
