@@ -1,4 +1,6 @@
-async function get_token(username: String, password: String) {
+import { fetch } from "@tauri-apps/plugin-http";
+
+async function get_token(username: string, password: string) {
   try {
     const formData = new FormData();
     formData.append("username", username.toString());
@@ -19,10 +21,11 @@ async function get_token(username: String, password: String) {
 }
 
 function login_constructor() {
-  let content: any = null;
-  let home_callback: any = null;
+  let content: HTMLElement | null = null;
+  let home_callback: ((method: string) => void) | null = null;
 
-  const build = (callback: any) => {
+  const build = (callback: () => void) => {
+    if (content == null) return;
     content.innerHTML = "";
 
     const login_node = document.createElement("div");
@@ -82,12 +85,16 @@ function login_constructor() {
         localStorage.setItem("token", token);
         callback();
       } else {
+        if (home_callback == null) return;
         home_callback("update");
       }
     });
   };
 
-  const setParams = (area: HTMLElement, callback: any) => {
+  const setParams = (
+    area: HTMLElement,
+    callback: (method: string) => Promise<void>,
+  ) => {
     content = area;
     home_callback = callback;
   };

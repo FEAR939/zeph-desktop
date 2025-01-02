@@ -1,7 +1,14 @@
+import { fetch } from "@tauri-apps/plugin-http";
+
+type search_result = {
+  title: string;
+  link: string;
+};
+
 async function top_constructor(
   top: HTMLElement,
-  login_callback: any,
-  watch_callback: any,
+  login_callback: (fn: () => void) => void,
+  watch_callback: (redirect: string) => void,
 ) {
   const top_node = document.createElement("div");
   top_node.className =
@@ -18,7 +25,7 @@ async function top_constructor(
   const search_wrapper = document.createElement("div");
   search_wrapper.className = "h-8 w-full flex items-center space-x-4 px-4";
   search_wrapper.innerHTML =
-    "<img src='../assets/search_24dp.png' class='h-4 w-4' />";
+    "<img src='./icons/search_24dp.png' class='h-4 w-4' />";
 
   search_node.appendChild(search_wrapper);
 
@@ -62,15 +69,15 @@ async function top_constructor(
         current = storage.mylist.items;
       }
 
-      let index = [];
+      const index = [];
 
       for (let i = 0; i < current.length; i++) {
         let pos = -1;
-        try {
-          pos = current[i].title
-            .toLowerCase()
-            .search(searchString.toLowerCase().trim());
-        } catch {}
+
+        pos = current[i].title
+          .toLowerCase()
+          .search(searchString.toLowerCase().trim());
+
         if (pos !== -1) {
           index.push(i);
         }
@@ -100,7 +107,7 @@ async function top_constructor(
     search_results.innerHTML = "";
     search_results.classList.add("border-t", "border-neutral-700");
 
-    results.forEach((item: any) => {
+    results.forEach((item: search_result) => {
       if (!item.link.includes("/anime/stream/")) return;
 
       const search_result = document.createElement("div");
@@ -143,7 +150,7 @@ async function top_constructor(
       const login_node = document.createElement("div");
       login_node.className = "h-full w-full flex items-center justify-center";
       login_node.innerHTML =
-        "<img src='../assets/person_24dp.png' class='h-4 w-4' />";
+        "<img src='./icons/person_24dp.png' class='h-4 w-4' />";
 
       account_node.appendChild(login_node);
 

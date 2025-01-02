@@ -1,53 +1,87 @@
+import { fetch } from "@tauri-apps/plugin-http";
 import createState from "./createstate.js";
 import player_constructor from "./player_module.js";
 
-async function get_details(url: String) {
-  try {
-    let response = (await fetch(`https://aniworld.to${url}`)).text();
+type season = {
+  label: string;
+  redirect: string;
+};
 
-    const html = new DOMParser().parseFromString(await response, "text/html");
+// type anime_details = {
+//   title: string;
+//   desc: string;
+//   image: string;
+//   rating: string;
+//   imdb: string;
+//   seasons: season[];
+// };
 
-    const title = html.querySelector(".series-title h1")?.textContent;
-    const desc = html
-      .querySelector(".seri_des")
-      ?.getAttribute("data-full-description");
-    const image = html
-      .querySelector(".seriesCoverBox img")
-      ?.getAttribute("data-src");
-    const rating = html
-      .querySelector(".starRatingResult strong")
-      ?.textContent?.trim();
-    const imdb_link = html.querySelector(".imdb-link")?.getAttribute("href");
-    const season_nodes = html
+type anime_data = {
+  redirect: string;
+  image: string;
+  title: string;
+};
+
+type api_episode = {
+  episode_id: string;
+  watch_duration: number;
+  watch_playtime: number;
+};
+
+type episode = {
+  redirect: string;
+  title: string;
+  image: string;
+  duration: number;
+  playtime: number;
+  id: string;
+};
+
+async function get_details(url: string) {
+  const response = (await fetch(`https://aniworld.to${url}`)).text();
+
+  if (!response) throw new Error();
+
+  const html = new DOMParser().parseFromString(await response, "text/html");
+
+  const title = html.querySelector(".series-title h1")?.textContent || "";
+  const desc =
+    html.querySelector(".seri_des")?.getAttribute("data-full-description") ||
+    "";
+  const image =
+    html.querySelector(".seriesCoverBox img")?.getAttribute("data-src") || "";
+  const rating =
+    html.querySelector(".starRatingResult strong")?.textContent?.trim() || "";
+  const imdb_link =
+    html.querySelector(".imdb-link")?.getAttribute("href") || "";
+  const season_nodes =
+    html
       .querySelectorAll(".hosterSiteDirectNav ul")[0]
-      ?.querySelectorAll("a");
+      ?.querySelectorAll("a") || [];
 
-    const seasons = <any>[];
+  const seasons: season[] = [];
 
-    season_nodes.forEach((season_node) => {
-      const season_label = season_node.textContent;
-      const season_redirect = season_node.getAttribute("href");
+  season_nodes.forEach((season_node) => {
+    const season_label = season_node.textContent;
+    const season_redirect = season_node.getAttribute("href");
 
-      seasons.push({
-        label: season_label,
-        redirect: season_redirect,
-      });
+    seasons.push({
+      label: season_label || "",
+      redirect: season_redirect || "",
     });
+  });
 
-    return {
-      title: title,
-      desc: desc,
-      image: image,
-      rating: rating,
-      imdb: imdb_link,
-      seasons: seasons,
-    };
-  } catch (e) {
-    console.error(e);
-  }
+  return {
+    title: title,
+    desc: desc,
+    image: image,
+    rating: rating,
+    imdb: imdb_link,
+    seasons: seasons,
+  };
 }
 
-async function get_episodes(season: any, imdb: String) {
+async function get_episodes(season: season, imdb: string) {
   try {
     const fetchURLs = [`https://aniworld.to${season.redirect}`];
 
@@ -64,7 +98,7 @@ async function get_episodes(season: any, imdb: String) {
     const html = new DOMParser().parseFromString(text, "text/html");
     const episodes_nodes = html.querySelectorAll("tbody tr");
 
-    let episode_watched = <any>[];
+    let episode_watched: api_episode[] = [];
     if (localStorage.getItem("token")) {
       episode_watched = await (
         await fetch("http://animenetwork.org/get-seen", {
@@ -84,7 +118,7 @@ async function get_episodes(season: any, imdb: String) {
 
     const imdb_html = new DOMParser().parseFromString(imdb_text, "text/html");
 
-    let imdb_season_images = <any>[];
+    let imdb_season_images: NodeListOf<Element> | null = null;
 
     if (imdb_html) {
       imdb_season_images = imdb_html.querySelectorAll(
@@ -92,35 +126,35 @@ async function get_episodes(season: any, imdb: String) {
       );
     }
 
-    const episodes = <any>[];
+    const episodes: episode[] = [];
 
     episodes_nodes.forEach(async (item, i) => {
       // get episode redirect
       const anchor = item.querySelector(".seasonEpisodeTitle a");
 
       const index = episode_watched.findIndex(
-        (a: any) =>
+        (a: api_episode) =>
           a.episode_id == episodes_nodes[i].getAttribute("data-episode-id"),
       );
 
-      let redirect = anchor?.getAttribute("href");
-      let title = anchor?.textContent;
+      const redirect = anchor?.getAttribute("href");
+      const title = anchor?.textContent;
       let image = "";
-      let duration = episode_watched[index]?.watch_duration || 0;
-      let playtime = episode_watched[index]?.watch_playtime || 0;
-      let id = episodes_nodes[i].getAttribute("data-episode-id");
+      const duration = episode_watched[index]?.watch_duration || 0;
+      const playtime = episode_watched[index]?.watch_playtime || 0;
+      const id = episodes_nodes[i].getAttribute("data-episode-id");
 
-      if (i < imdb_season_images.length) {
+      if (imdb_season_images !== null && i < imdb_season_images.length) {
         image = imdb_season_images[i].getAttribute("src") || "";
       }
 
       episodes.push({
-        redirect: redirect,
-        title: title,
+        redirect: redirect || "",
+        title: title || "",
         image: image,
         duration: duration,
         playtime: playtime,
-        id: id,
+        id: id || "",
       });
     });
 
@@ -131,12 +165,13 @@ async function get_episodes(season: any, imdb: String) {
 }
 
 function watch_constructor() {
-  let cache = new Map<String, any>();
+  const cache = new Map<string, any>();
   let loading = false;
-  let current_url: String = "";
-  let mylist_callback: any = null;
+  let current_url: string = "";
+  let mylist_callback: ((method: string, data: anime_data) => void) | null =
+    null;
 
-  const build = async (url: String) => {
+  const build = async (url: string) => {
     if (loading) return;
 
     if (cache.size == 0 || url != current_url) {
@@ -188,7 +223,7 @@ function watch_constructor() {
     detail_exit.className =
       "absolute z-20 top-0 right-0 m-4 h-4 w-4 p-4 flex items-center justify-center rounded-full bg-neutral-900";
     detail_exit.innerHTML =
-      "<img src='../assets/close_24dp.png' class='min-h-4 min-w-4' />";
+      "<img src='./icons/close_24dp.png' class='min-h-4 min-w-4' />";
 
     detail_top.appendChild(detail_exit);
 
@@ -250,10 +285,10 @@ function watch_constructor() {
         console.log(newList);
         if (newList == 1) {
           on_list.innerHTML =
-            "<img src='../assets/remove_24dp.png' class='h-4 w-4' /><span>My List</span>";
+            "<img src='./icons/remove_24dp.png' class='h-4 w-4' /><span>My List</span>";
         } else {
           on_list.innerHTML =
-            "<img src='../assets/add_24dp.png' class='h-4 w-4' /><span>My List</span>";
+            "<img src='./icons/add_24dp.png' class='h-4 w-4' /><span>My List</span>";
         }
       });
 
@@ -281,7 +316,7 @@ function watch_constructor() {
           },
           body: current_url.toString(),
         });
-        if (!res.ok) return;
+        if (!res.ok || mylist_callback == null) return;
         mylist_callback(getList() == 0 ? "add" : "rm", {
           redirect: current_url,
           image: details.image,
@@ -311,7 +346,7 @@ function watch_constructor() {
     detail_option.textContent = "Choose season";
     detail_selection.appendChild(detail_option);
 
-    details.seasons.forEach((season: any, i: number) => {
+    details.seasons.forEach((season: season, i: number) => {
       const detail_option = document.createElement("option");
       detail_option.value = i.toString();
       detail_option.textContent = season.label;
@@ -356,10 +391,10 @@ function watch_constructor() {
       setSeason(cache.get("selectedSeason"));
     }
 
-    function render_episodes(episodes: any) {
+    function render_episodes(episodes: episode[]) {
       episode_wrapper.innerHTML = "";
 
-      episodes.forEach((episode: any, i: number) => {
+      episodes.forEach((episode: episode, i: number) => {
         const episode_node = document.createElement("div");
         episode_node.className =
           "group relative flex items-center h-32 cursor-pointer rounded-lg overflow-hidden hover:bg-neutral-800 transition-colors";
@@ -462,7 +497,7 @@ function watch_constructor() {
         };
 
         episode_node.addEventListener("click", () =>
-          player_constructor(episode.redirect, watched, episode.playtime),
+          player_constructor(episode, watched),
         );
 
         const asyncImage = new Image();
@@ -512,7 +547,9 @@ function watch_constructor() {
     }
   };
 
-  const setParams = (callback: any) => {
+  const setParams = (
+    callback: (method: string, data: anime_data) => Promise<void>,
+  ) => {
     mylist_callback = callback;
   };
 

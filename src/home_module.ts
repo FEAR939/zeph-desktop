@@ -1,104 +1,109 @@
+import { fetch } from "@tauri-apps/plugin-http";
 import createState from "./createstate";
 
-interface anime_data {
-  redirect: String;
-  image: String;
-  title: String;
-}
+type anime_data = {
+  redirect: string;
+  image: string;
+  title: string;
+};
 
-function get_categories() {
-  return new Promise(async (resolve, reject) => {
-    try {
-      let response = (await fetch("https://aniworld.to")).text();
-      const html = new DOMParser().parseFromString(await response, "text/html");
-      const container_nodes = html
-        .querySelector(".carousel")
-        ?.querySelectorAll(".coverListItem a");
+type categorie = {
+  label: string;
+  items: anime_data[];
+};
 
-      if (!container_nodes) {
-        throw new Error("Error, no container nodes found in Document");
-      }
+type anime = {
+  series_id: string;
+};
 
-      const categories = <any>[];
-      const trending: Array<anime_data> = [];
+async function get_categories() {
+  try {
+    const response = (await fetch("https://aniworld.to")).text();
+    const html = new DOMParser().parseFromString(await response, "text/html");
+    const container_nodes = html
+      .querySelector(".carousel")
+      ?.querySelectorAll(".coverListItem a");
 
-      container_nodes.forEach((node) => {
-        const redirect = node.getAttribute("href");
-        const image = node.querySelector("img")?.getAttribute("data-src");
-        const title = node.querySelector("h3")?.textContent?.trim();
-
-        trending.push({
-          redirect: redirect || "",
-          image: image || "",
-          title: title || "",
-        });
-      });
-
-      categories.push({
-        label: "Trending Now",
-        items: trending,
-      });
-
-      resolve(categories);
-    } catch (e) {
-      console.error(e);
-      reject(e); // Pass the error to reject
-    }
-  });
-}
-
-function get_mylist() {
-  return new Promise(async (resolve, reject) => {
-    const list = await (
-      await fetch("http://animenetwork.org/get-list", {
-        headers: {
-          Authorization: localStorage.getItem("token") || "",
-        },
-      })
-    ).json();
-
-    if (!list.length) {
-      resolve({});
-      return;
+    if (!container_nodes) {
+      throw new Error("Error, no container nodes found in Document");
     }
 
-    const watched_list: Array<anime_data> = [];
+    const categories: categorie[] = [];
+    const trending: Array<anime_data> = [];
 
-    // Use Promise.all to wait for all async operations
-    await Promise.all(
-      list.map(async (anime: any) => {
-        const html = new DOMParser().parseFromString(
-          await (await fetch(`https://aniworld.to${anime.series_id}`)).text(),
-          "text/html",
-        );
+    container_nodes.forEach((node) => {
+      const redirect = node.getAttribute("href");
+      const image = node.querySelector("img")?.getAttribute("data-src");
+      const title = node.querySelector("h3")?.textContent?.trim();
 
-        const redirect = anime.series_id;
-        const image = html
-          .querySelector(".seriesCoverBox img")
-          ?.getAttribute("data-src");
-        const title = html.querySelector(".series-title h1")?.textContent;
+      trending.push({
+        redirect: redirect || "",
+        image: image || "",
+        title: title || "",
+      });
+    });
 
-        watched_list.push({
-          redirect: redirect || "",
-          image: image || "",
-          title: title || "",
-        });
-      }),
-    );
+    categories.push({
+      label: "Trending Now",
+      items: trending,
+    });
 
-    const mylist = {
-      label: "My List",
-      items: watched_list,
-    };
+    return categories;
+  } catch (e) {
+    console.error(e);
+    return [];
+  }
+}
 
-    resolve(mylist);
-  });
+async function get_mylist() {
+  const list = await (
+    await fetch("http://animenetwork.org/get-list", {
+      headers: {
+        Authorization: localStorage.getItem("token") || "",
+      },
+    })
+  ).json();
+
+  if (!list.length) {
+    return {};
+  }
+
+  const watched_list: anime_data[] = [];
+
+  // Use Promise.all to wait for all async operations
+  await Promise.all(
+    list.map(async (anime: anime) => {
+      const html = new DOMParser().parseFromString(
+        await (await fetch(`https://aniworld.to${anime.series_id}`)).text(),
+        "text/html",
+      );
+
+      const redirect = anime.series_id;
+      const image = html
+        .querySelector(".seriesCoverBox img")
+        ?.getAttribute("data-src");
+      const title = html.querySelector(".series-title h1")?.textContent;
+
+      watched_list.push({
+        redirect: redirect || "",
+        image: image || "",
+        title: title || "",
+      });
+    }),
+  );
+
+  const mylist = {
+    label: "My List",
+    items: watched_list,
+  };
+
+  return mylist;
 }
 
 function home_constructor() {
-  let loading = false;
-  let content: any = null;
-  let watch_callback: any = null;
+  let loading: boolean = false;
+  let content: HTMLElement | null = null;
+  let watch_callback: ((redirect: string) => void) | null = null;
 
   const build = async () => {
     if (loading) return;
@@ -140,13 +145,14 @@ function home_constructor() {
   };
 
   const render = () => {
+    if (content == null) return;
     content.innerHTML = "";
     let categories =
       JSON.parse(localStorage.getItem("categories") || "").categories || [];
     if (localStorage.getItem("token")) {
       const mylist = JSON.parse(localStorage.getItem("mylist") || "").mylist;
 
-      mylist.items.sort(function (a: any, b: any) {
+      mylist.items.sort(function (a: anime_data, b: anime_data) {
         if (a.title < b.title) {
           return -1;
         }
@@ -159,22 +165,40 @@ function home_constructor() {
       categories = [mylist, ...categories];
     }
 
-    categories.forEach((categorie: any) => {
+    categories.forEach((categorie: categorie) => {
+      if (content == null) return;
+      const [getCardCount, setCardCount, subscribeCardCount] = createState(
+        Math.floor(window.innerWidth / 150),
+      );
+
+      window.addEventListener("resize", () =>
+        setCardCount(Math.floor(window.innerWidth / 150)),
+      );
+
       const [getSliderIndex, setSliderIndex, subscribeSliderIndex] =
         createState(0);
 
-      const maxSliderIndex = Math.ceil(categorie.items.length / 7 - 1);
+      let maxSliderIndex = Math.ceil(
+        categorie.items.length / getCardCount() - 1,
+      );
 
-      const scroll = (container: HTMLElement, direction: any) => {
+      subscribeCardCount(
+        (newCount) =>
+          (maxSliderIndex = Math.ceil(categorie.items.length / newCount - 1)),
+      );
+
+      const scroll = (container: HTMLElement, direction: string) => {
         if (
           (direction == "left" && getSliderIndex() == 0) ||
           (direction == "right" && getSliderIndex() == maxSliderIndex)
         )
           return;
 
-        direction == "left"
-          ? setSliderIndex(getSliderIndex() - 1)
-          : setSliderIndex(getSliderIndex() + 1);
+        if (direction == "left") {
+          setSliderIndex(getSliderIndex() - 1);
+        } else {
+          setSliderIndex(getSliderIndex() + 1);
+        }
 
         container.style.transform = `translate3D(calc(${getSliderIndex()} * -100%), 0, 0)`;
       };
@@ -192,19 +216,47 @@ function home_constructor() {
 
       const carousel_previous = document.createElement("button");
       carousel_previous.className =
-        "absolute left-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-r-lg hover:bg-opacity-75 transition-all";
+        "absolute left-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-r-lg hover:bg-opacity-75 transition-all ease-in-out duration-300";
       carousel_previous.innerHTML =
-        "<img src='../assets/chevron_left_24dp.png' class='h-4 w-4' />";
+        "<img src='./icons/chevron_left_24dp.png' class='h-4 w-4' />";
+      carousel_previous.style.opacity = "0";
 
       categorie_node.appendChild(carousel_previous);
 
       const carousel_next = document.createElement("button");
       carousel_next.className =
-        "absolute right-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-l-lg hover:bg-opacity-75 transition-all";
+        "absolute right-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-l-lg hover:bg-opacity-75 transition-all ease-in-out duration-300";
       carousel_next.innerHTML =
-        "<img src='../assets/chevron_right_24dp.png' class='h-4 w-4' />";
+        "<img src='./icons/chevron_right_24dp.png' class='h-4 w-4' />";
+      carousel_next.style.opacity = "0";
 
       categorie_node.appendChild(carousel_next);
+
+      const handle_visible = (index: number) => {
+        let prevVisible = "0";
+        let nextVisible = "0";
+        if (index == 0 && index !== maxSliderIndex) {
+          nextVisible = "1";
+        } else if (index !== 0 && index !== maxSliderIndex) {
+          prevVisible = "1";
+          nextVisible = "1";
+        } else if (index !== 0 && index == maxSliderIndex) {
+          prevVisible = "1";
+        }
+
+        carousel_previous.style.opacity = prevVisible;
+        carousel_next.style.opacity = nextVisible;
+      };
+
+      handle_visible(getSliderIndex());
+
+      subscribeSliderIndex((newIndex) => {
+        handle_visible(newIndex);
+      });
+
+      subscribeCardCount(() => {
+        handle_visible(getSliderIndex());
+      });
 
       const categorie_carousel = document.createElement("div");
       categorie_carousel.className =
@@ -219,12 +271,17 @@ function home_constructor() {
         scroll(categorie_carousel, "right"),
       );
 
-      categorie.items.forEach((item: any, i: number) => {
+      categorie.items.forEach((item: anime_data, i: number) => {
         const item_node = document.createElement("div");
         item_node.className =
           "flex items-center justify-center flex-shrink-0 mx-[.25rem] overflow-hidden rounded-lg";
-        item_node.style.width = "calc(((100vw - 4rem) / 7) - .5rem)";
-        item_node.style.height = "calc(((100vw - 4rem) / 7) - .5rem) * 1.3/1)";
+        item_node.style.width = `calc(((100vw - 4rem) / ${getCardCount()}) - .5rem)`;
+        item_node.style.height = `calc(((100vw - 4rem) / ${getCardCount()}) - .5rem) * 1.3/1)`;
+
+        subscribeCardCount((newCount) => {
+          item_node.style.width = `calc(((100vw - 4rem) / ${newCount}) - .5rem)`;
+          item_node.style.height = `calc(((100vw - 4rem) / ${newCount}) - .5rem) * 1.3/1)`;
+        });
 
         categorie_carousel.appendChild(item_node);
 
@@ -272,7 +329,8 @@ function home_constructor() {
           const hover_image = item_image.cloneNode(true);
           item_hover.appendChild(hover_image);
 
-          item_hover.addEventListener("click", (e: Event) => {
+          item_hover.addEventListener("click", () => {
+            if (watch_callback == null) return;
             watch_callback(item.redirect);
           });
 
@@ -295,13 +353,12 @@ function home_constructor() {
             item_hover.appendChild(on_list);
 
             subscribeList((newList) => {
-              console.log(newList);
               if (newList == 1) {
                 on_list.innerHTML =
-                  "<img src='../assets/remove_24dp.png' class='h-2 w-2' /><span class='text-xs'>My List</span>";
+                  "<img src='./icons/remove_24dp.png' class='h-2 w-2' /><span class='text-xs'>My List</span>";
               } else {
                 on_list.innerHTML =
-                  "<img src='../assets/add_24dp.png' class='h-2 w-2' /><span class='text-xs'>My List</span>";
+                  "<img src='./icons/add_24dp.png' class='h-2 w-2' /><span class='text-xs'>My List</span>";
               }
             });
 
@@ -309,10 +366,8 @@ function home_constructor() {
               .mylist.items;
 
             const index = mylist.findIndex(
-              (a: any) => a.redirect == item.redirect,
+              (a: anime_data) => a.redirect == item.redirect,
             );
-
-            console.log(index);
 
             if (index !== -1) {
               setList(1);
@@ -359,7 +414,7 @@ function home_constructor() {
     });
   };
 
-  async function mylist_handler(method: String, data?: anime_data) {
+  async function mylist_handler(method: string, data?: anime_data) {
     let storage = null;
     let current = null;
     if (localStorage.getItem("mylist")) {
@@ -370,7 +425,9 @@ function home_constructor() {
     if (method == "add") {
       current.push(data);
     } else if (method == "rm") {
-      const index = current.findIndex((a: any) => a.redirect == data?.redirect);
+      const index = current.findIndex(
+        (a: anime_data) => a.redirect == data?.redirect,
+      );
       if (!index) return;
 
       current.splice(index, 1);
@@ -389,7 +446,10 @@ function home_constructor() {
     render();
   }
 
-  const setParams = (area: HTMLElement, callback: any) => {
+  const setParams = (
+    area: HTMLElement,
+    callback: (url: string) => Promise<void>,
+  ) => {
     content = area;
     watch_callback = callback;
   };
