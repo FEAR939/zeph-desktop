@@ -271,7 +271,7 @@ async function player_constructor(episodes: episode[], index: number) {
     const duration = Math.floor(video_player.duration / 60);
 
     if (episodes[getIndex()].watched !== null) {
-      episodes[getIndex()].watched(duration, playtime);
+      episodes[getIndex()]?.watched?.(duration, playtime);
     }
     setIndex(getIndex() + 1);
   });
@@ -318,7 +318,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
   middleWrapper.appendChild(episode_title);
 
-  const [getHoster, setHoster, subscribeHoster] = createState("");
+  const [, setHoster, subscribeHoster] = createState("");
 
   const hoster_selection = document.createElement("select");
   hoster_selection.className =
@@ -414,7 +414,7 @@ async function player_constructor(episodes: episode[], index: number) {
       episode_image.appendChild(asyncImage);
     });
 
-    const [getProgress, setProgress, subscribeProgress] = createState({
+    const [, setProgress, subscribeProgress] = createState({
       duration: 0,
       playtime: 0,
     });
@@ -571,7 +571,7 @@ async function player_constructor(episodes: episode[], index: number) {
     const playtime = Math.floor(video_player.currentTime / 60);
     const duration = Math.floor(video_player.duration / 60);
     if (episodes[getIndex()].watched !== null) {
-      episodes[getIndex()].watched(duration, playtime);
+      episodes[getIndex()]?.watched?.(duration, playtime);
     }
 
     player_wrapper.remove();
