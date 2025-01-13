@@ -24,3 +24,7 @@ log = "0.4"
 tauri = { version = "2.1.0", features = ["devtools"] }
 tauri-plugin-log = "2.0.0-rc"
 tauri-plugin-http = "2"
+tauri-plugin-shell = "2"
+
+[package.metadata.android]
+usesCleartextTraffic = true

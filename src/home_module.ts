@@ -33,7 +33,10 @@ async function get_categories() {
 
     container_nodes.forEach((node) => {
       const redirect = node.getAttribute("href");
-      const image = node.querySelector("img")?.getAttribute("data-src");
+      const image = node
+        .querySelector("img")
+        ?.getAttribute("data-src")
+        ?.replace("150x225", "220x330");
       const title = node.querySelector("h3")?.textContent?.trim();
 
       trending.push({
@@ -151,29 +154,30 @@ function home_constructor() {
       JSON.parse(localStorage.getItem("categories") || "").categories || [];
     if (localStorage.getItem("token")) {
       const mylist = JSON.parse(localStorage.getItem("mylist") || "").mylist;
+      if (mylist.items && mylist.items.length !== 0) {
+        mylist.items.sort(function (a: anime_data, b: anime_data) {
+          if (a.title < b.title) {
+            return -1;
+          }
+          if (a.title > b.title) {
+            return 1;
+          }
+          return 0;
+        });
 
-      mylist.items.sort(function (a: anime_data, b: anime_data) {
-        if (a.title < b.title) {
-          return -1;
-        }
-        if (a.title > b.title) {
-          return 1;
-        }
-        return 0;
-      });
-
-      categories = [mylist, ...categories];
+        categories = [mylist, ...categories];
+      }
     }
 
     categories.forEach((categorie: categorie) => {
       if (content == null) return;
       const [getCardCount, setCardCount, subscribeCardCount] = createState(
-        Math.floor(window.innerWidth / 150),
+        Math.floor(window.innerWidth / 250),
       );
 
-      window.addEventListener("resize", () =>
-        setCardCount(Math.floor(window.innerWidth / 150)),
-      );
+      window.addEventListener("resize", () => {
+        setCardCount(Math.floor(window.innerWidth / 250));
+      });
 
       const [getSliderIndex, setSliderIndex, subscribeSliderIndex] =
         createState(0);
@@ -182,10 +186,10 @@ function home_constructor() {
         categorie.items.length / getCardCount() - 1,
       );
 
-      subscribeCardCount(
-        (newCount) =>
-          (maxSliderIndex = Math.ceil(categorie.items.length / newCount - 1)),
-      );
+      subscribeCardCount((newCount) => {
+        maxSliderIndex = Math.ceil(categorie.items.length / newCount - 1);
+        if (getSliderIndex() > maxSliderIndex) setSliderIndex(maxSliderIndex);
+      });
 
       const scroll = (container: HTMLElement, direction: string) => {
         if (
@@ -199,12 +203,10 @@ function home_constructor() {
         } else {
           setSliderIndex(getSliderIndex() + 1);
         }
-
-        container.style.transform = `translate3D(calc(${getSliderIndex()} * -100%), 0, 0)`;
       };
 
       const categorie_node = document.createElement("div");
-      categorie_node.className = "relative mt-4";
+      categorie_node.className = "relative mt-4 mb-12";
 
       content.appendChild(categorie_node);
 
@@ -218,7 +220,7 @@ function home_constructor() {
       carousel_previous.className =
         "absolute left-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-r-lg hover:bg-opacity-75 transition-all ease-in-out duration-300";
       carousel_previous.innerHTML =
-        "<img src='./icons/chevron_left_24dp.png' class='h-4 w-4' />";
+        "<img src='./icons/chevron_left_24dp.png' class='h-8 w-8' />";
       carousel_previous.style.opacity = "0";
 
       categorie_node.appendChild(carousel_previous);
@@ -227,7 +229,7 @@ function home_constructor() {
       carousel_next.className =
         "absolute right-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-l-lg hover:bg-opacity-75 transition-all ease-in-out duration-300";
       carousel_next.innerHTML =
-        "<img src='./icons/chevron_right_24dp.png' class='h-4 w-4' />";
+        "<img src='./icons/chevron_right_24dp.png' class='h-8 w-8' />";
       carousel_next.style.opacity = "0";
 
       categorie_node.appendChild(carousel_next);
@@ -264,6 +266,11 @@ function home_constructor() {
 
       categorie_node.appendChild(categorie_carousel);
 
+      subscribeSliderIndex(
+        (newIndex) =>
+          (categorie_carousel.style.transform = `translate3D(calc(${newIndex} * -100%), 0, 0)`),
+      );
+
       carousel_previous.addEventListener("click", () =>
         scroll(categorie_carousel, "left"),
       );
@@ -271,10 +278,10 @@ function home_constructor() {
         scroll(categorie_carousel, "right"),
       );
 
-      categorie.items.forEach((item: anime_data, i: number) => {
+      categorie.items.forEach((item: anime_data) => {
         const item_node = document.createElement("div");
         item_node.className =
-          "flex items-center justify-center flex-shrink-0 mx-[.25rem] overflow-hidden rounded-lg";
+          "relative group/item flex items-center justify-center flex-shrink-0 mx-[.25rem] overflow-hidden rounded-lg cursor-pointer";
         item_node.style.width = `calc(((100vw - 4rem) / ${getCardCount()}) - .5rem)`;
         item_node.style.height = `calc(((100vw - 4rem) / ${getCardCount()}) - .5rem) * 1.3/1)`;
 
@@ -283,133 +290,78 @@ function home_constructor() {
           item_node.style.height = `calc(((100vw - 4rem) / ${newCount}) - .5rem) * 1.3/1)`;
         });
 
+        item_node.addEventListener("click", () => {
+          if (watch_callback == null) return;
+          watch_callback(item.redirect);
+        });
+
         categorie_carousel.appendChild(item_node);
 
         const item_image = document.createElement("div");
-        item_image.className = "w-full aspect-[1/1.3]";
+        item_image.className = "w-full aspect-[1/1.3] ";
 
         item_node.appendChild(item_image);
 
         const asyncImage = new Image();
         asyncImage.src = `https://aniworld.to${item.image}`;
-        asyncImage.className = "w-full h-full object-cover";
+        asyncImage.className = "w-full h-full object-cover object-top";
 
         asyncImage.addEventListener("load", () => {
           item_image.appendChild(asyncImage);
         });
 
-        item_node.addEventListener("mouseenter", async () => {
-          const item_hover = document.createElement("div");
-          item_hover.className =
-            "absolute bg-neutral-900 rounded-lg overflow-hidden hover:z-20 transition-all ease-in-out duration-500 cursor-pointer";
+        if (localStorage.getItem("token")) {
+          const [getList, setList, subscribeList] = createState(0);
 
-          const updateSize = () => {
-            const itemRect = item_node.getBoundingClientRect();
-            item_hover.style.height = `${itemRect.height}px`;
-            item_hover.style.width = `${itemRect.width}px`;
-            item_hover.style.top = `${itemRect.top}px`;
-            item_hover.style.left = `${itemRect.left}px`;
-          };
-          updateSize();
+          const on_list = document.createElement("div");
+          on_list.className =
+            "absolute group-hover/item:visible invisible left-0 bottom-2 w-fit flex items-center space-x-1 bg-neutral-600/75 backdrop-blur hover:bg-neutral-400 px-2 py-1 mx-2 rounded-full cursor-pointer transition ease-in duration-300";
+          on_list.textContent = "...";
+          on_list.id = "on_list";
 
-          window.addEventListener("resize", updateSize);
+          item_node.appendChild(on_list);
 
-          let expanded = false;
-
-          item_hover.addEventListener("mouseleave", () => {
-            updateSize();
-            if (expanded) {
-              return setTimeout(() => item_hover.remove(), 500);
-            }
-            item_hover.remove();
-          });
-
-          document.body.appendChild(item_hover);
-
-          const hover_image = item_image.cloneNode(true);
-          item_hover.appendChild(hover_image);
-
-          item_hover.addEventListener("click", () => {
-            if (watch_callback == null) return;
-            watch_callback(item.redirect);
-          });
-
-          const item_title = document.createElement("h3");
-          item_title.className =
-            "h-8 font-medium text-sm p-2 text-nowrap w-full truncate";
-          item_title.textContent = item.title;
-
-          item_hover.appendChild(item_title);
-
-          if (localStorage.getItem("token")) {
-            const [getList, setList, subscribeList] = createState(0);
-
-            const on_list = document.createElement("div");
-            on_list.className =
-              "w-fit flex items-center space-x-1 bg-neutral-800 hover:bg-neutral-700 px-1 py-0.5 mx-2 rounded";
-            on_list.textContent = "...";
-            on_list.id = "on_list";
-
-            item_hover.appendChild(on_list);
-
-            subscribeList((newList) => {
-              if (newList == 1) {
-                on_list.innerHTML =
-                  "<img src='./icons/remove_24dp.png' class='h-2 w-2' /><span class='text-xs'>My List</span>";
-              } else {
-                on_list.innerHTML =
-                  "<img src='./icons/add_24dp.png' class='h-2 w-2' /><span class='text-xs'>My List</span>";
-              }
-            });
-
-            const mylist = JSON.parse(localStorage.getItem("mylist") || "")
-              .mylist.items;
-
-            const index = mylist.findIndex(
-              (a: anime_data) => a.redirect == item.redirect,
-            );
-
-            if (index !== -1) {
-              setList(1);
+          subscribeList((newList) => {
+            if (newList == 1) {
+              on_list.innerHTML =
+                "<img src='./icons/remove_24dp.png' class='h-4 w-4' /><span class='text-sm'>My List</span>";
             } else {
-              setList(0);
+              on_list.innerHTML =
+                "<img src='./icons/add_24dp.png' class='h-4 w-4' /><span class='text-sm'>My List</span>";
             }
+          });
 
-            on_list.addEventListener("click", async (e) => {
-              e.stopPropagation();
-              const res = await fetch("http://animenetwork.org/handle-marked", {
-                method: "POST",
-                headers: {
-                  Authorization: localStorage.getItem("token") || "",
-                },
-                body: item.redirect.toString(),
-              });
-              if (!res.ok) return;
-              mylist_handler(getList() == 0 ? "add" : "rm", {
-                redirect: item.redirect,
-                image: item.image,
-                title: item.title,
-              });
-              setList(getList() == 0 ? 1 : 0);
-            });
+          const mylist =
+            JSON.parse(localStorage.getItem("mylist") || "").mylist.items || [];
+
+          const index = mylist.findIndex(
+            (a: anime_data) => a.redirect == item.redirect,
+          );
+
+          if (index !== -1) {
+            setList(1);
+          } else {
+            setList(0);
           }
 
-          setTimeout(() => {
-            expanded = true;
-            const itemRect = item_node.getBoundingClientRect();
-            item_hover.style.height = `${itemRect.height * 1.1 + 64}px`;
-            item_hover.style.width = `${itemRect.width * 1.1}px`;
-            if ((i + 1) % 7 == 1) {
-              item_hover.style.left = `${itemRect.left}px`;
-            } else if ((i + 1) % 7 == 0) {
-              item_hover.style.left = `${itemRect.left - itemRect.width * 0.1}px`;
-            } else {
-              item_hover.style.left = `${itemRect.left - itemRect.width * 0.05}px`;
-            }
-            item_hover.style.top = `${itemRect.top - itemRect.height * 0.05 - 32}px`;
-            item_hover.style.boxShadow = "0 4px 12px 0 rgba(0, 0, 0, 0.75)";
-          }, 500);
-        });
+          on_list.addEventListener("click", async (e) => {
+            e.stopPropagation();
+            const res = await fetch("http://animenetwork.org/handle-marked", {
+              method: "POST",
+              headers: {
+                Authorization: localStorage.getItem("token") || "",
+              },
+              body: item.redirect.toString(),
+            });
+            if (!res.ok) return;
+            mylist_handler(getList() == 0 ? "add" : "rm", {
+              redirect: item.redirect,
+              image: item.image,
+              title: item.title,
+            });
+            setList(getList() == 0 ? 1 : 0);
+          });
+        }
       });
     });
   };
@@ -448,10 +400,10 @@ function home_constructor() {
 
   const setParams = (
     area: HTMLElement,
-    callback: (url: string) => Promise<void>,
+    w_callback: (url: string) => Promise<void>,
   ) => {
     content = area;
-    watch_callback = callback;
+    watch_callback = w_callback;
   };
 
   return {

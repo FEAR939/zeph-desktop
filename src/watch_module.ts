@@ -35,6 +35,7 @@ type episode = {
   duration: number;
   playtime: number;
   id: string;
+  watched: ((duration: number, playtime: number) => Promise<void>) | null;
 };
 
 async function get_details(url: string) {
@@ -155,6 +156,7 @@ async function get_episodes(season: season, imdb: string) {
         duration: duration,
         playtime: playtime,
         id: id || "",
+        watched: null,
       });
     });
 
@@ -169,6 +171,8 @@ function watch_constructor() {
   let loading = false;
   let current_url: string = "";
   let mylist_callback: ((method: string, data: anime_data) => void) | null =
+    null;
+  let current_callback: ((redirect: string, image: string) => void) | null =
     null;
 
   const build = async (url: string) => {
@@ -195,9 +199,12 @@ function watch_constructor() {
   const render = async () => {
     const details = cache.get("details");
 
+    if (current_callback == null) return;
+    current_callback(current_url, details.image);
+
     const detail_wrapper = document.createElement("div");
     detail_wrapper.className =
-      "absolute inset-0 z-20 flex justify-center backdrop-brightness-50 overflow-y-auto";
+      "absolute inset-0 z-40 flex justify-center backdrop-brightness-50 overflow-y-auto";
 
     document.body.appendChild(detail_wrapper);
 
@@ -221,7 +228,7 @@ function watch_constructor() {
 
     const detail_exit = document.createElement("div");
     detail_exit.className =
-      "absolute z-20 top-0 right-0 m-4 h-4 w-4 p-4 flex items-center justify-center rounded-full bg-neutral-900";
+      "absolute z-20 top-0 right-0 m-4 h-4 w-4 p-4 flex items-center justify-center rounded-full bg-neutral-600/75 backdrop-blur cursor-pointer";
     detail_exit.innerHTML =
       "<img src='./icons/close_24dp.png' class='min-h-4 min-w-4' />";
 
@@ -276,7 +283,7 @@ function watch_constructor() {
       const [getList, setList, subscribeList] = createState(0);
       const on_list = document.createElement("div");
       on_list.className =
-        "flex items-center space-x-2 bg-neutral-800 hover:bg-neutral-700 px-4 py-2 rounded-lg";
+        "flex items-center space-x-2 bg-neutral-600/75 backdrop-blur hover:bg-neutral-400 px-4 py-2 rounded-full cursor-pointer transition ease-in duration-300";
       on_list.textContent = "...";
 
       detail_stats_outer.appendChild(on_list);
@@ -327,7 +334,8 @@ function watch_constructor() {
     }
 
     const detail_description = document.createElement("div");
-    detail_description.className = "m-4 text-sm text-gray-400 line-clamp-2";
+    detail_description.className =
+      "m-4 text-sm text-neutral-400 font-medium line-clamp-2";
     detail_description.textContent = details.desc;
 
     detail_node.appendChild(detail_description);
@@ -336,7 +344,7 @@ function watch_constructor() {
 
     const detail_selection = document.createElement("select");
     detail_selection.className =
-      "flex items-center space-x-2 bg-neutral-800 w-48 px-4 py-2 m-4 rounded-lg border-r-8 outline-0 border-neutral-800";
+      "flex items-center space-x-2 bg-neutral-800 w-48 px-4 py-2 m-4 rounded-full border-r-8 outline-0 border-neutral-800 cursor-pointer";
 
     detail_node.appendChild(detail_selection);
 
@@ -393,6 +401,12 @@ function watch_constructor() {
 
     function render_episodes(episodes: episode[]) {
       episode_wrapper.innerHTML = "";
+
+      const player_episodes: episode[] = [];
+
+      function call_player(index: number) {
+        player_constructor(player_episodes, index);
+      }
 
       episodes.forEach((episode: episode, i: number) => {
         const episode_node = document.createElement("div");
@@ -474,7 +488,11 @@ function watch_constructor() {
 
         const watched = async (duration: number, playtime: number) => {
           console.log("callback");
-          if (!localStorage.getItem("token")) return;
+          if (
+            !localStorage.getItem("token") ||
+            !(getProgress().playtime < playtime)
+          )
+            return;
 
           const res = await fetch("http://animenetwork.org/handle-seen", {
             method: "POST",
@@ -496,9 +514,11 @@ function watch_constructor() {
           }
         };
 
-        episode_node.addEventListener("click", () =>
-          player_constructor(episode, watched),
-        );
+        episode.watched = watched;
+
+        player_episodes.push(episode);
+
+        episode_node.addEventListener("click", () => call_player(i));
 
         const asyncImage = new Image();
         asyncImage.src = episode.image;
@@ -548,9 +568,11 @@ function watch_constructor() {
   };
 
   const setParams = (
-    callback: (method: string, data: anime_data) => Promise<void>,
+    ml_callback: (method: string, data: anime_data) => Promise<void>,
+    c_callback: (url: string, image: string) => void,
   ) => {
-    mylist_callback = callback;
+    mylist_callback = ml_callback;
+    current_callback = c_callback;
   };
 
   return {
