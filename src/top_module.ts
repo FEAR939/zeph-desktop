@@ -31,7 +31,7 @@ function top_constructor(
 
     const search_wrapper = document.createElement("div");
     search_wrapper.className =
-      "h-8 w-full flex items-center space-x-2 px-1 rounded-[18px] bg-neutral-600/75 backdrop-blur";
+      "h-8 w-full flex items-center space-x-2 px-1 rounded-[18px] bg-[#090b0c]/75 backdrop-blur border border-white/15 overflow-hidden";
     search_wrapper.innerHTML =
       "<img src='./icons/search_24dp.png' class='h-4 w-4 ml-2' />";
 
@@ -39,7 +39,7 @@ function top_constructor(
 
     const search_input = document.createElement("input");
     search_input.className =
-      "flex-1 h-8 bg-transparent border-0 outline-0 placeholder:text-neutral-200 text-sm";
+      "flex-1 h-8 bg-transparent border-0 outline-0 placeholder:text-neutral-200 text-sm font-medium";
     search_input.placeholder = "Search for anime...";
     search_input.accessKey = "f";
 
@@ -47,16 +47,28 @@ function top_constructor(
 
     const search_shortcut = document.createElement("div");
     search_shortcut.className =
-      "flex items-center justify-center h-6 px-2 bg-neutral-400 text-neutral-950 rounded-full text-xs font-medium";
-    search_shortcut.textContent = "Alt F";
+      "relative flex items-center justify-center h-6 px-2 bg-blue-400 rounded-full text-xs font-medium";
+    search_shortcut.innerHTML =
+      "<img src='./icons/keyboard_command_key_24dp.png' class='h-4 w-4' /><span>F</span>";
 
     search_wrapper.appendChild(search_shortcut);
 
+    const search_shortcut_glow = document.createElement("div");
+    search_shortcut_glow.className = "absolute -inset-2 bg-blue-400/50 blur-lg";
+
+    search_shortcut.appendChild(search_shortcut_glow);
+
     const search_results = document.createElement("div");
     search_results.className =
-      "absolute h-fit max-h-96 w-96 max-w-[50%] mt-2 overflow-y-scroll rounded-[18px] bg-neutral-600/75 backdrop-blur hidden group-hover:block group-focus-within:block";
+      "absolute h-fit max-h-96 w-96 max-w-[50%] mt-2 overflow-hidden rounded-[18px] bg-[#090b0c]/75 backdrop-blur border border-white/15 hidden group-hover:block group-focus-within:block";
 
     search_node.appendChild(search_results);
+
+    const search_results_inner = document.createElement("div");
+    search_results_inner.className =
+      "h-fit max-h-96 w-full overflow-y-scroll [mask-image:linear-gradient(to_bottom,transparent,black_5%,black_95%,transparent)]";
+
+    search_results.appendChild(search_results_inner);
 
     search_input.addEventListener("keyup", async (event) => {
       if (event.key !== "Enter" || search_input.value.trim().length == 0)
@@ -123,17 +135,17 @@ function top_constructor(
         ).json();
       }
 
-      search_results.innerHTML = "";
+      search_results_inner.innerHTML = "";
 
       results.forEach((item: search_result) => {
         if (!item.link.includes("/anime/stream/")) return;
 
         const search_result = document.createElement("div");
         search_result.className =
-          "h-8 w-auto px-4 m-2 flex items-center hover:bg-neutral-400 transition ease-in duration-300 cursor-pointer rounded-full";
+          "h-8 w-auto px-4 m-2 flex items-center hover:bg-blue-400/50 hover:text-blue-400 hover:shadow-lg hover:shadow-blue-400/50 transition ease-in duration-300 cursor-pointer rounded-full";
         search_result.innerHTML = `<div class='truncate'>${item.title.replace("<em>", "").replace("</em>", "")}</div>`;
 
-        search_results.appendChild(search_result);
+        search_results_inner.appendChild(search_result);
 
         search_result.addEventListener("click", () =>
           watch_callback(item.link),
@@ -192,7 +204,7 @@ function top_constructor(
 
         const account_menu = document.createElement("div");
         account_menu.className =
-          "absolute z-40 top-10 right-0 h-fit w-48 p-2 rounded-[18px] bg-neutral-600/75 backdrop-blur overflow-hidden";
+          "absolute z-40 top-10 right-0 h-fit w-48 p-2 rounded-[18px] bg-[#090b0c]/75 backdrop-blur border border-white/15 overflow-hidden";
         account_menu.style.visibility = "hidden";
 
         subscribeMenuState((newState) => {
@@ -223,7 +235,7 @@ function top_constructor(
 
         const change_avatar = document.createElement("div");
         change_avatar.className =
-          "w-full px-4 py-1 hover:bg-neutral-400 rounded-full transition ease-in duration-300 cursor-pointer flex items-center space-x-2";
+          "w-full px-4 py-1 hover:bg-blue-400/50 hover:text-blue-400 hover:shadow-lg hover:shadow-blue-400/50 rounded-full transition ease-in duration-300 cursor-pointer flex items-center space-x-2";
         change_avatar.innerHTML =
           "<img src='./icons/person_24dp.png' class='h-4 w-4' /><span>Change Avatar</span>";
 
@@ -235,7 +247,7 @@ function top_constructor(
 
         const logout = document.createElement("div");
         logout.className =
-          "w-full px-4 py-1 hover:bg-neutral-400 rounded-full transition ease-in duration-300 cursor-pointer flex items-center space-x-2";
+          "w-full px-4 py-1 hover:bg-blue-400/50 hover:text-blue-400 hover:shadow-lg hover:shadow-blue-400/50 rounded-full transition ease-in duration-300 cursor-pointer flex items-center space-x-2";
         logout.innerHTML =
           "<img src='./icons/logout_24dp.png' class='h-4 w-4' /><span>Logout</span>";
 

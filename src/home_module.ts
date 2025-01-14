@@ -315,7 +315,7 @@ function home_constructor() {
 
           const on_list = document.createElement("div");
           on_list.className =
-            "absolute group-hover/item:visible invisible left-0 bottom-2 w-fit flex items-center space-x-1 bg-neutral-600/75 backdrop-blur hover:bg-neutral-400 px-2 py-1 mx-2 rounded-full cursor-pointer transition ease-in duration-300";
+            "absolute group-hover/item:opacity-100 group-hover/item:translate-x-0 opacity-0 translate-x-1 left-0 bottom-2 w-fit flex items-center space-x-1 bg-[#090b0c]/50 backdrop-blur border border-white/15 px-2 py-1 mx-2 rounded-full cursor-pointer transition ease-in duration-300";
           on_list.textContent = "...";
           on_list.id = "on_list";
 
@@ -324,10 +324,10 @@ function home_constructor() {
           subscribeList((newList) => {
             if (newList == 1) {
               on_list.innerHTML =
-                "<img src='./icons/remove_24dp.png' class='h-4 w-4' /><span class='text-sm'>My List</span>";
+                "<img src='./icons/remove_24dp.png' class='h-4 w-4' /><span class='text-sm pr-1'>My List</span>";
             } else {
               on_list.innerHTML =
-                "<img src='./icons/add_24dp.png' class='h-4 w-4' /><span class='text-sm'>My List</span>";
+                "<img src='./icons/add_24dp.png' class='h-4 w-4' /><span class='text-sm pr-1'>My List</span>";
             }
           });
 
@@ -344,8 +344,16 @@ function home_constructor() {
             setList(0);
           }
 
+          let ackstate = false;
+
           on_list.addEventListener("click", async (e) => {
             e.stopPropagation();
+            if (getList() == 1 && !ackstate) {
+              ackstate = true;
+              on_list.innerHTML = "<span class='text-sm px-1'>Sure?</span>";
+              return;
+            }
+
             const res = await fetch("http://animenetwork.org/handle-marked", {
               method: "POST",
               headers: {
@@ -360,6 +368,11 @@ function home_constructor() {
               title: item.title,
             });
             setList(getList() == 0 ? 1 : 0);
+          });
+
+          on_list.addEventListener("mouseleave", () => {
+            ackstate = false;
+            setList(getList());
           });
         }
       });

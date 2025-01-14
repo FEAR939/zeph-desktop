@@ -269,7 +269,7 @@ function watch_constructor() {
     detail_stats_inner.appendChild(detail_stats_list);
 
     const detail_stats_seasoncount = document.createElement("span");
-    detail_stats_seasoncount.className = "text-sm";
+    detail_stats_seasoncount.className = "text-sm font-medium";
     detail_stats_seasoncount.textContent = `${details.seasons.length} Seasons`;
 
     detail_stats_list.appendChild(detail_stats_seasoncount);
@@ -283,7 +283,7 @@ function watch_constructor() {
       const [getList, setList, subscribeList] = createState(0);
       const on_list = document.createElement("div");
       on_list.className =
-        "flex items-center space-x-2 bg-neutral-600/75 backdrop-blur hover:bg-neutral-400 px-4 py-2 rounded-full cursor-pointer transition ease-in duration-300";
+        "flex items-center space-x-2 bg-[#090b0c]/50 backdrop-blur border border-white/15 px-4 py-2 rounded-full cursor-pointer transition ease-in duration-300";
       on_list.textContent = "...";
 
       detail_stats_outer.appendChild(on_list);
@@ -292,10 +292,10 @@ function watch_constructor() {
         console.log(newList);
         if (newList == 1) {
           on_list.innerHTML =
-            "<img src='./icons/remove_24dp.png' class='h-4 w-4' /><span>My List</span>";
+            "<img src='./icons/remove_24dp.png' class='h-4 w-4' /><span class='pr-1'>My List</span>";
         } else {
           on_list.innerHTML =
-            "<img src='./icons/add_24dp.png' class='h-4 w-4' /><span>My List</span>";
+            "<img src='./icons/add_24dp.png' class='h-4 w-4' /><span class='pr-1'>My List</span>";
         }
       });
 
