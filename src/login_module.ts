@@ -36,21 +36,22 @@ function login_constructor() {
 
     const username_field = document.createElement("input");
     username_field.className =
-      "w-96 p-4 border-0 outline-0 bg-neutral-800 rounded-lg";
+      "w-96 px-4 py-2 outline-0 rounded-full bg-[#090b0c] border border-white/15 placeholder:text-white placeholder:font-medium text-white font-medium";
     username_field.placeholder = "username";
 
     login_node.appendChild(username_field);
 
     const password_field = document.createElement("input");
     password_field.className =
-      "w-96 p-4 border-0 outline-0 bg-neutral-800 rounded-lg";
+      "w-96 px-4 py-2 outline-0 rounded-full bg-[#090b0c] border border-white/15 placeholder:text-white placeholder:font-medium text-white font-medium";
     password_field.placeholder = "password";
     password_field.type = "password";
 
     login_node.appendChild(password_field);
 
     const submit_node = document.createElement("button");
-    submit_node.className = "w-96 p-4 border-0 bg-neutral-800 rounded-lg";
+    submit_node.className =
+      "w-96 px-4 py-2 rounded-full bg-[#090b0c] border border-white/15 text-white font-medium";
     submit_node.textContent = "Login";
 
     login_node.appendChild(submit_node);
@@ -62,23 +63,26 @@ function login_constructor() {
           password_field.value,
         );
         if (!token) {
-          submit_node.className = "w-96 p-4 border-0 bg-red-600 rounded-lg";
+          submit_node.classList.toggle("bg-[#090b0c]");
+          submit_node.classList.add("bg-red-600");
           submit_node.textContent = "Something went wrong...";
 
           setTimeout(() => {
-            submit_node.className =
-              "w-96 p-4 border-0 bg-neutral-800 rounded-lg";
+            submit_node.classList.toggle("bg-[#090b0c]");
+            submit_node.classList.remove("bg-red-600");
             submit_node.textContent = "Login";
           }, 3000);
 
           return;
         }
 
-        submit_node.className = "w-96 p-4 border-0 bg-green-600 rounded-lg";
+        submit_node.classList.toggle("bg-[#090b0c]");
+        submit_node.classList.add("bg-green-600");
         submit_node.textContent = "Success!";
 
         setTimeout(() => {
-          submit_node.className = "w-96 p-4 border-0 bg-blue-600 rounded-lg";
+          submit_node.classList.remove("bg-green-600");
+          submit_node.classList.add("bg-blue-600");
           submit_node.textContent = "Go to Home";
         }, 3000);
 

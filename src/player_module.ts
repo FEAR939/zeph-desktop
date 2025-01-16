@@ -308,6 +308,19 @@ async function player_constructor(episodes: episode[], index: number) {
     timeCounter.textContent = `${new Date(video_player.currentTime * 1000).toISOString().substring(14, 19)} | ${new Date(video_player.duration * 1000).toISOString().substring(14, 19)}`;
   });
 
+  const introSkip = document.createElement("div");
+  introSkip.className =
+    "flex items-center rounded-full bg-[#090b0c] border border-white/15 px-2 py-1 space-x-2 cursor-pointer";
+  introSkip.innerHTML =
+    "<img src='./icons/skip_next_24dp.png' class='h-4 w-4' /><span class='text-sm'>Intro</span>";
+
+  startWrapper.appendChild(introSkip);
+
+  introSkip.addEventListener("click", () => {
+    if (video_player.currentTime + 85 > video_player.duration) return;
+    video_player.currentTime += 85;
+  });
+
   const middleWrapper = document.createElement("div");
   middleWrapper.className = "flex-1 flex items-center justify-center space-x-2";
 
@@ -537,12 +550,12 @@ async function player_constructor(episodes: episode[], index: number) {
     } else if (newHoster == "Doodstream" && final_url !== null) {
       video_player.src = final_url;
     }
+    video_player.currentTime = episodes[getIndex()].playtime * 60;
+    episode_title.textContent = episodes[getIndex()].title;
   });
 
   subscribeIndex(async (newIndex) => {
     console.log(newIndex);
-    video_player.currentTime = episodes[newIndex].playtime * 60;
-    episode_title.textContent = episodes[newIndex].title;
 
     const html = new DOMParser().parseFromString(
       await (

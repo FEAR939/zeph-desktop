@@ -1,11 +1,7 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import { open } from "@tauri-apps/plugin-shell";
 import createState from "./createstate";
-
-type search_result = {
-  title: string;
-  link: string;
-};
+import { search_result } from "./types";
 
 function top_constructor(
   top: HTMLElement,
@@ -24,16 +20,24 @@ function top_constructor(
 
     top.appendChild(top_node);
 
+    const title = document.createElement("div");
+    title.className = "absolute left-4 flex items-center space-x-2";
+    title.innerHTML =
+      "<img src='./icons/favicon-512x512.png' class='h-4 w-4 invert' /><span class='font-[Inter] font-medium text-lg'>hazl</span>";
+
+    top_node.appendChild(title);
+
     const search_node = document.createElement("div");
-    search_node.className = "group h-8 w-96 max-w-[50%] overflow-hidden";
+    search_node.className =
+      "relative group h-8 w-96 bg-white/15 rounded-[18px] max-w-[50%]";
 
     top_node.appendChild(search_node);
 
     const search_wrapper = document.createElement("div");
     search_wrapper.className =
-      "h-8 w-full flex items-center space-x-2 px-1 rounded-[18px] bg-[#090b0c]/75 backdrop-blur border border-white/15 overflow-hidden";
+      "absolute inset-[1px] flex items-center space-x-2 px-1 rounded-[18px] bg-[#090b0c]/90 overflow-hidden backdrop-blur";
     search_wrapper.innerHTML =
-      "<img src='./icons/search_24dp.png' class='h-4 w-4 ml-2' />";
+      "<img src='./icons/search_24dp.png' class='h-4 w-4 ml-1' />";
 
     search_node.appendChild(search_wrapper);
 
@@ -54,19 +58,64 @@ function top_constructor(
     search_wrapper.appendChild(search_shortcut);
 
     const search_shortcut_glow = document.createElement("div");
-    search_shortcut_glow.className = "absolute -inset-2 bg-blue-400/50 blur-lg";
+    search_shortcut_glow.className = "absolute -inset-2 bg-blue-400/75 blur-lg";
 
     search_shortcut.appendChild(search_shortcut_glow);
 
     const search_results = document.createElement("div");
     search_results.className =
-      "absolute h-fit max-h-96 w-96 max-w-[50%] mt-2 overflow-hidden rounded-[18px] bg-[#090b0c]/75 backdrop-blur border border-white/15 hidden group-hover:block group-focus-within:block";
+      "absolute left-0 right-0 top-10 max-h-96 h-0 overflow-hidden rounded-[18px] bg-white/15 transition-all ease-in-out duration-300 -translate-y-4";
+    search_results.style.opacity = "0";
+    search_results.style.transform = "translateY(-1rem)";
 
     search_node.appendChild(search_results);
 
+    let timeout: NodeJS.Timeout;
+
+    function showResults() {
+      clearTimeout(timeout);
+      search_results.style.opacity = "100";
+      search_results.style.transform = "translateY(0)";
+      search_results.classList.remove("h-0");
+      search_results.classList.add("h-fit");
+    }
+
+    function hideResults() {
+      search_results.style.opacity = "0";
+      search_results.style.transform = "translateY(-1rem)";
+      timeout = setTimeout(() => {
+        search_results.classList.remove("h-fit");
+        search_results.classList.add("h-0");
+      }, 300);
+    }
+
+    let isFocus = false;
+    let hasResults = false;
+
+    search_node.addEventListener("mouseenter", () => {
+      if (!hasResults) return;
+      showResults();
+    });
+
+    search_input.addEventListener("focus", () => {
+      isFocus = true;
+      if (!hasResults) return;
+      showResults();
+    });
+
+    search_node.addEventListener("mouseleave", () => {
+      if (isFocus) return;
+      hideResults();
+    });
+
+    search_input.addEventListener("focusout", () => {
+      isFocus = false;
+      hideResults();
+    });
+
     const search_results_inner = document.createElement("div");
     search_results_inner.className =
-      "h-fit max-h-96 w-full overflow-y-scroll [mask-image:linear-gradient(to_bottom,transparent,black_5%,black_95%,transparent)]";
+      "h-fit max-h-[calc(24rem-2px)] m-[1px] py-2 w-[calc(100%-2px)] bg-[#090b0c]/90 rounded-[18px] overflow-y-scroll backdrop-blur";
 
     search_results.appendChild(search_results_inner);
 
@@ -136,13 +185,17 @@ function top_constructor(
       }
 
       search_results_inner.innerHTML = "";
+      if (results.length !== 0) {
+        hasResults = true;
+        showResults();
+      }
 
       results.forEach((item: search_result) => {
         if (!item.link.includes("/anime/stream/")) return;
 
         const search_result = document.createElement("div");
         search_result.className =
-          "h-8 w-auto px-4 m-2 flex items-center hover:bg-blue-400/50 hover:text-blue-400 hover:shadow-lg hover:shadow-blue-400/50 transition ease-in duration-300 cursor-pointer rounded-full";
+          "h-8 w-auto px-2 mx-2 flex items-center hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-lg";
         search_result.innerHTML = `<div class='truncate'>${item.title.replace("<em>", "").replace("</em>", "")}</div>`;
 
         search_results_inner.appendChild(search_result);
@@ -204,14 +257,24 @@ function top_constructor(
 
         const account_menu = document.createElement("div");
         account_menu.className =
-          "absolute z-40 top-10 right-0 h-fit w-48 p-2 rounded-[18px] bg-[#090b0c]/75 backdrop-blur border border-white/15 overflow-hidden";
-        account_menu.style.visibility = "hidden";
+          "absolute z-40 top-10 right-0 h-fit w-48 p-2 rounded-[18px] bg-[#090b0c] backdrop-blur border border-white/15 overflow-hidden transition-all ease-in-out duration-300";
+        account_menu.style.opacity = "0";
+        account_menu.style.display = "none";
+        account_menu.style.transform = "translateX(1rem)";
 
         subscribeMenuState((newState) => {
           if (newState) {
-            account_menu.style.visibility = "visible";
+            account_menu.style.display = "block";
+            setTimeout(() => {
+              account_menu.style.opacity = "100";
+              account_menu.style.transform = "translateX(0)";
+            }, 5);
           } else {
-            account_menu.style.visibility = "hidden";
+            account_menu.style.opacity = "0";
+            account_menu.style.transform = "translateX(1rem)";
+            setTimeout(() => {
+              account_menu.style.display = "none";
+            }, 300);
           }
         });
 
@@ -235,7 +298,7 @@ function top_constructor(
 
         const change_avatar = document.createElement("div");
         change_avatar.className =
-          "w-full px-4 py-1 hover:bg-blue-400/50 hover:text-blue-400 hover:shadow-lg hover:shadow-blue-400/50 rounded-full transition ease-in duration-300 cursor-pointer flex items-center space-x-2";
+          "h-8 w-auto px-2 flex items-center space-x-2 hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-lg";
         change_avatar.innerHTML =
           "<img src='./icons/person_24dp.png' class='h-4 w-4' /><span>Change Avatar</span>";
 
@@ -247,7 +310,7 @@ function top_constructor(
 
         const logout = document.createElement("div");
         logout.className =
-          "w-full px-4 py-1 hover:bg-blue-400/50 hover:text-blue-400 hover:shadow-lg hover:shadow-blue-400/50 rounded-full transition ease-in duration-300 cursor-pointer flex items-center space-x-2";
+          "h-8 w-auto px-2 flex items-center space-x-2 hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-lg";
         logout.innerHTML =
           "<img src='./icons/logout_24dp.png' class='h-4 w-4' /><span>Logout</span>";
 

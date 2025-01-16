@@ -1,42 +1,8 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import createState from "./createstate.js";
 import player_constructor from "./player_module.js";
-
-type season = {
-  label: string;
-  redirect: string;
-};
-
-// type anime_details = {
-//   title: string;
-//   desc: string;
-//   image: string;
-//   rating: string;
-//   imdb: string;
-//   seasons: season[];
-// };
-
-type anime_data = {
-  redirect: string;
-  image: string;
-  title: string;
-};
-
-type api_episode = {
-  episode_id: string;
-  watch_duration: number;
-  watch_playtime: number;
-};
-
-type episode = {
-  redirect: string;
-  title: string;
-  image: string;
-  duration: number;
-  playtime: number;
-  id: string;
-  watched: ((duration: number, playtime: number) => Promise<void>) | null;
-};
+import { anime_data, season, api_episode, episode } from "./types.js";
+import { Episode } from "./components/episode.js";
 
 async function get_details(url: string) {
   const response = (await fetch(`https://aniworld.to${url}`)).text();
@@ -210,7 +176,7 @@ function watch_constructor() {
 
     const detail_node = document.createElement("div");
     detail_node.className =
-      "min-h-[calc(100%-1rem)] h-fit w-[64rem] bg-neutral-900 mt-4 overflow-hidden rounded-t-lg border-box";
+      "min-h-[calc(100%-1rem)] h-fit w-[64rem] bg-[#090b0c] border border-white/15 mt-4 overflow-hidden rounded-t-lg border-box";
 
     detail_wrapper.appendChild(detail_node);
 
@@ -243,7 +209,7 @@ function watch_constructor() {
 
     const detail_overlay = document.createElement("div");
     detail_overlay.className =
-      "absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/60 to-transparent";
+      "absolute inset-0 bg-gradient-to-t from-[#090b0c] via-[#090b0c]/60 to-transparent";
 
     detail_top.appendChild(detail_overlay);
 
@@ -409,124 +375,15 @@ function watch_constructor() {
       }
 
       episodes.forEach((episode: episode, i: number) => {
-        const episode_node = document.createElement("div");
-        episode_node.className =
-          "group relative flex items-center h-32 cursor-pointer rounded-lg overflow-hidden hover:bg-neutral-800 transition-colors";
-
-        episode_wrapper.appendChild(episode_node);
-
-        const episode_number = document.createElement("div");
-        episode_number.className =
-          "flex-shrink-0 w-20 flex items-center justify-center text-3xl font-bold text-neutral-500 group-hover:text-white transition-colors";
-        episode_number.textContent = (i + 1).toString();
-
-        episode_node.appendChild(episode_number);
-
-        const episode_image = document.createElement("div");
-        episode_image.className =
-          "relative w-40 flex-shrink-0 aspect-video overflow-hidden rounded-lg bg-neutral-700";
-
-        episode_node.appendChild(episode_image);
-
-        const [getProgress, setProgress, subscribeProgress] = createState({
-          duration: 0,
-          playtime: 0,
-        });
-
-        if (localStorage.getItem("token")) {
-          const episode_progress = document.createElement("div");
-          episode_progress.className = "absolute bottom-0 left-0 right-0 h-1";
-
-          episode_image.appendChild(episode_progress);
-
-          const episode_progress_inner = document.createElement("div");
-          episode_progress_inner.className =
-            "h-full bg-red-600 transition-all duration-300";
-
-          subscribeProgress((newProgress) => {
-            console.log("newState");
-            episode.duration = newProgress.duration;
-            episode.playtime = newProgress.playtime;
-
-            cache.set(`episodes-${cache.get("selectedSeason")}`, episodes);
-
-            episode_progress_inner.style.width =
-              episode.duration == 0
-                ? "0%"
-                : (newProgress.playtime / newProgress.duration) * 100 + "%";
-          });
-
-          episode_progress.appendChild(episode_progress_inner);
-          setProgress({
-            duration: episode.duration,
-            playtime: episode.playtime,
-          });
-        }
-
-        const episode_info = document.createElement("div");
-        episode_info.className = "flex-1 flex flex-col justify-center p-4";
-
-        episode_node.appendChild(episode_info);
-
-        const episode_info_inner = document.createElement("div");
-        episode_info_inner.className = "flex items-center";
-
-        episode_info.appendChild(episode_info_inner);
-
-        const episode_title = document.createElement("h3");
-        episode_title.className = "font-medium group-hover:text-white";
-        episode_title.textContent = `Episode ${i + 1}`;
-
-        episode_info_inner.appendChild(episode_title);
-
-        const episode_description = document.createElement("p");
-        episode_description.className =
-          "mt-1 text-sm text-neutral-400 line-clamp-2";
-        episode_description.textContent = episode.title;
-
-        episode_info.appendChild(episode_description);
-
-        const watched = async (duration: number, playtime: number) => {
-          console.log("callback");
-          if (
-            !localStorage.getItem("token") ||
-            !(getProgress().playtime < playtime)
-          )
-            return;
-
-          const res = await fetch("http://animenetwork.org/handle-seen", {
-            method: "POST",
-            headers: {
-              "Content-Type": "application/json",
-              Authorization: localStorage.getItem("token") || "",
-            },
-            body: JSON.stringify({
-              playtime: playtime,
-              duration: duration,
-              id: episode.id,
-            }),
-          });
-
-          console.log(res);
-
-          if (res.status == 200) {
-            setProgress({ duration: duration, playtime: playtime });
-          }
-        };
-
-        episode.watched = watched;
-
-        player_episodes.push(episode);
-
-        episode_node.addEventListener("click", () => call_player(i));
-
-        const asyncImage = new Image();
-        asyncImage.src = episode.image;
-        asyncImage.className = "w-full object-cover";
-
-        asyncImage.addEventListener("load", () => {
-          episode_image.appendChild(asyncImage);
-        });
+        Episode(
+          episode,
+          episode_wrapper,
+          i,
+          cache,
+          player_episodes,
+          episodes,
+          call_player,
+        );
       });
     }
 
