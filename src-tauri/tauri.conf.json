@@ -1,8 +1,8 @@
 {
   "$schema": "../node_modules/@tauri-apps/cli/config.schema.json",
-  "productName": "zeph_desktop",
+  "productName": "hazl",
   "version": "0.1.0",
-  "identifier": "com.zeph-desktop",
+  "identifier": "com.hazl.dev",
   "build": {
     "frontendDist": "../dist",
     "devUrl": "http://localhost:5173",
@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "zeph_desktop",
+        "title": "hazl",
         "width": 1280,
         "height": 720,
         "resizable": true,
