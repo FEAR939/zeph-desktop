@@ -1,7 +1,7 @@
 {
   "devDependencies": {
     "@eslint/js": "^9.17.0",
-    "@tauri-apps/cli": "^2.2.4",
+    "@tauri-apps/cli": "^2.2.5",
     "eslint": "^9.18.0",
     "typescript": "^5.7.3",
     "typescript-eslint": "^8.20.0",
@@ -13,9 +13,6 @@
   "dependencies": {
     "@tauri-apps/plugin-http": "^2.2.0",
     "@tauri-apps/plugin-shell": "^2.2.0",
-    "@types/react": "^19.0.7",
-    "@types/react-dom": "^19.0.3",
-    "@vitejs/plugin-react": "^4.3.4",
     "boolean": "^3.2.0",
     "buffer-crc32": "^0.2.13",
     "cacheable-lookup": "^5.0.4",

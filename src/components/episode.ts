@@ -87,7 +87,6 @@ export function Episode(
   episode_info.appendChild(episode_description);
 
   const watched = async (duration: number, playtime: number) => {
-    console.log("callback");
     if (!localStorage.getItem("token") || !(getProgress().playtime < playtime))
       return;
 
@@ -103,8 +102,6 @@ export function Episode(
         id: ep.id,
       }),
     });
-
-    console.log(res);
 
     if (res.status == 200) {
       setProgress({ duration: duration, playtime: playtime });

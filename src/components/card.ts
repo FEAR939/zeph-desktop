@@ -38,11 +38,18 @@ export function card(
 
   item_node.appendChild(item_glow);
 
+  const item_load = document.createElement("div");
+  item_load.className =
+    "absolute inset-0 bg-neutral-900/50 animate-pulse rounded-lg";
+
+  item_node.appendChild(item_load);
+
   const asyncImage = new Image();
   asyncImage.src = `https://aniworld.to${item.image}`;
   asyncImage.className = "w-full h-full object-cover object-top";
 
   asyncImage.addEventListener("load", () => {
+    item_load.remove();
     item_image.appendChild(asyncImage);
     item_glow.appendChild(asyncImage.cloneNode());
   });
