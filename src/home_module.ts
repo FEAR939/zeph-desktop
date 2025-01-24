@@ -2,6 +2,7 @@ import { fetch } from "@tauri-apps/plugin-http";
 import { carousel } from "./components/carousel";
 
 import { categorie, anime_data, anime } from "./types";
+import { Calendar } from "./components/calendar";
 
 async function get_categories() {
   try {
@@ -107,6 +108,7 @@ function home_constructor() {
         "categories",
         JSON.stringify({ categories: categories, timestamp: Date.now() }),
       );
+
       if (localStorage.getItem("token")) {
         const mylist = await get_mylist();
         localStorage.setItem(
@@ -134,7 +136,7 @@ function home_constructor() {
     render();
   };
 
-  const render = () => {
+  const render = async () => {
     if (content == null) return;
     content.innerHTML = "";
     let categories =
@@ -160,6 +162,8 @@ function home_constructor() {
       if (content == null || watch_callback == null) return;
       carousel(categorie, content, watch_callback, mylist_handler);
     });
+
+    Calendar(content);
   };
 
   async function mylist_handler(method: string, data?: anime_data) {
