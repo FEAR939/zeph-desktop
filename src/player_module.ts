@@ -2,6 +2,7 @@ import Hls from "hls.js";
 import { fetch } from "@tauri-apps/plugin-http";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import createState from "./createstate";
+import createUpscaler from "./upscaler";
 
 type episode = {
   redirect: string;
@@ -117,7 +118,7 @@ async function player_constructor(episodes: episode[], index: number) {
   player_wrapper.appendChild(player_exit);
 
   const video_player = document.createElement("video");
-  video_player.className = "video_player h-full w-full";
+  video_player.className = "h-full w-full";
   video_player.autoplay = true;
   video_player.preload = "auto";
 
