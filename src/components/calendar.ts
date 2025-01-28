@@ -95,22 +95,86 @@ export async function Calendar(content: HTMLElement) {
       JSON.parse(localStorage.getItem("calendar") || "[]").calendar || [];
   }
 
+  const tool_row = document.createElement("div");
+  tool_row.className =
+    "relative h-32 w-full px-4 space-x-2 space-y-2 flex flex-col justify-center";
+
+  const tool_month = document.createElement("div");
+  tool_month.className = "font-medium";
+  tool_month.textContent = new Date().toLocaleString("default", {
+    month: "long",
+  });
+
+  tool_row.appendChild(tool_month);
+
+  const tool_date = document.createElement("div");
+  tool_date.textContent = `${schedule[0].date} - ${schedule[schedule.length - 1].date}`;
+
+  tool_row.appendChild(tool_date);
+
+  const tool_search_wrapper = document.createElement("div");
+  tool_search_wrapper.className =
+    "absolute right-20 top-0 bottom-0 my-auto h-8 w-48 px-2 bg-neutral-800 rounded-full flex space-x-2 items-center";
+  tool_search_wrapper.innerHTML =
+    "<img src='./icons/search_24dp.svg' class='h-4 w-4' />";
+
+  const search_input = document.createElement("input");
+  search_input.className = "text-sm w-full";
+  search_input.placeholder = "Search";
+
+  tool_search_wrapper.appendChild(search_input);
+
+  tool_row.appendChild(tool_search_wrapper);
+
+  const prev = document.createElement("div");
+  prev.className =
+    "absolute right-10 top-0 bottom-0 my-auto h-8 w-8 bg-neutral-800 rounded-full flex items-center justify-center cursor-pointer";
+  prev.innerHTML =
+    "<img src='./icons/chevron_left_24dp.png' class='h-4 w-4' />";
+
+  tool_row.appendChild(prev);
+
+  const next = document.createElement("div");
+  next.className =
+    "absolute right-2 top-0 bottom-0 my-auto h-8 w-8 bg-neutral-800 rounded-full flex items-center justify-center cursor-pointer";
+  next.innerHTML =
+    "<img src='./icons/chevron_right_24dp.png' class='h-4 w-4' />";
+
+  tool_row.appendChild(next);
+
+  prev.addEventListener("click", () => {
+    top_days.scrollLeft = 0;
+    main_row_inner.scrollLeft = 0;
+  });
+
+  next.addEventListener("click", () => {
+    top_days.scrollLeft = top_days.scrollWidth;
+    main_row_inner.scrollLeft = main_row_inner.scrollWidth;
+  });
+
+  calendar_wrapper.appendChild(tool_row);
+
   const top_row = document.createElement("div");
-  top_row.className = "h-24 w-full flex border-b border-neutral-600";
+  top_row.className = "h-16 w-full flex border-b border-neutral-600";
   top_row.innerHTML =
     "<div class='h-full w-24 flex items-center justify-center border-r border-neutral-600 shrink-0'>CET</div>";
 
   calendar_wrapper.appendChild(top_row);
+
+  const top_days = document.createElement("div");
+  top_days.className = "h-full w-full flex overflow-hidden";
+
+  top_row.appendChild(top_days);
 
   const main_row = document.createElement("div");
   main_row.className = "h-full w-full overflow-y-scroll";
 
   calendar_wrapper.appendChild(main_row);
 
-  const main_row_inner = document.createElement("div");
-  main_row_inner.className = "relative h-fit w-full flex overflow-hidden";
+  const main_row_outer = document.createElement("div");
+  main_row_outer.className = "relative h-fit w-full flex overflow-hidden";
 
-  main_row.appendChild(main_row_inner);
+  main_row.appendChild(main_row_outer);
 
   const time_column = document.createElement("div");
   time_column.className =
@@ -130,7 +194,7 @@ export async function Calendar(content: HTMLElement) {
     }
     main_time_row.style.top = `${i * 4}rem`;
 
-    main_row_inner.appendChild(main_time_row);
+    main_row_outer.appendChild(main_time_row);
   }
 
   const current_time = document.createElement("div");
@@ -146,9 +210,9 @@ export async function Calendar(content: HTMLElement) {
   current_time_bar.innerHTML =
     "<div class='absolute -left-2 h-4 w-4 bg-blue-400 rounded-full'></div>";
 
-  main_row_inner.appendChild(current_time_bar);
+  main_row_outer.appendChild(current_time_bar);
 
-  main_row_inner.appendChild(time_column);
+  main_row_outer.appendChild(time_column);
 
   function moveCurrentTime() {
     const currentDate = new Date();
@@ -197,9 +261,18 @@ export async function Calendar(content: HTMLElement) {
 
   modal.appendChild(modal_list);
 
+  const main_row_inner = document.createElement("div");
+  main_row_inner.className = "h-auto w-full flex flex overflow-hidden";
+
+  main_row_outer.appendChild(main_row_inner);
+
+  main_row_inner.addEventListener("scroll", () => {
+    top_days.scrollLeft = main_row_inner.scrollLeft;
+  });
+
   if (schedule.length == 0) return;
 
-  schedule.slice(0, 7).map((day, i) => {
+  schedule.map((day, i) => {
     const time_groups = [];
     for (let i = 0; i < 24; i++) {
       time_groups.push({ items: [] });
@@ -213,17 +286,17 @@ export async function Calendar(content: HTMLElement) {
 
     const day_node = document.createElement("div");
     day_node.className =
-      "h-full w-[calc((100%-4rem)/7)] flex items-center justify-center";
-    day_node.textContent = day.day;
+      "h-full w-[calc(100%/7)] shrink-0 flex items-center justify-center";
+    day_node.innerHTML = `${day.day} <span class=" ml-2 font-medium">${day.date.substring(0, 2)}</span>`;
 
-    top_row.appendChild(day_node);
+    top_days.appendChild(day_node);
 
     const main_day_node = document.createElement("div");
-    main_day_node.className = "relative h-auto w-[calc((100%-4rem)/7)]";
+    main_day_node.className = "relative h-auto w-[calc(100%/7)] shrink-0";
 
     main_row_inner.appendChild(main_day_node);
 
-    if (i !== 6) {
+    if (i !== schedule.length - 1) {
       day_node.classList.add("border-r", "border-neutral-600");
       main_day_node.classList.add("border-r", "border-neutral-600");
     }
@@ -231,14 +304,26 @@ export async function Calendar(content: HTMLElement) {
     for (let i = 0; i < time_groups.length; i++) {
       if (time_groups[i].items.length == 0) continue;
       const group_node = document.createElement("div");
-      group_node.className = `absolute h-16 w-full flex items-center justify-center`;
+      group_node.className = `absolute z-20 h-16 w-full flex items-center justify-center`;
       group_node.style.top = `${i * 4}rem`;
 
       main_day_node.appendChild(group_node);
 
+      search_input.addEventListener("keyup", () => {
+        time_groups[i].items.map((item) => {
+          if (
+            item.title.toLowerCase().includes(search_input.value.toLowerCase())
+          ) {
+            group_node.style.display = "flex";
+          } else {
+            group_node.style.display = "none";
+          }
+        });
+      });
+
       const item_node = document.createElement("div");
       item_node.className =
-        "relative h-[calc(100%-0.5rem)] w-[calc(100%-0.5rem)] bg-neutral-800 rounded-lg cursor-pointer";
+        "relative h-[calc(100%-1rem)] w-[calc(100%-1rem)] bg-neutral-800 rounded-lg cursor-pointer";
 
       group_node.appendChild(item_node);
 
@@ -247,35 +332,30 @@ export async function Calendar(content: HTMLElement) {
         time_groups[i].items.map((item) => {
           const modal_node = document.createElement("div");
           modal_node.className =
-            "group relative flex items-center h-32 px-4 cursor-pointer rounded-lg overflow-hidden hover:bg-neutral-700 transition-colors";
+            "h-32 w-full px-4 flex items-center space-x-4 rounded-lg hover:bg-neutral-700 transition-colors";
 
           modal_list.appendChild(modal_node);
 
           const modal_image = document.createElement("div");
           modal_image.className =
-            "relative w-20 flex-shrink-0 aspect-[1/1.3] overflow-hidden rounded-lg bg-neutral-700";
+            "w-20 shrink-0 aspect-[1/1.3] overflow-hidden rounded-lg bg-neutral-700";
 
           modal_node.appendChild(modal_image);
 
           const modal_info = document.createElement("div");
-          modal_info.className = "flex-1 flex flex-col justify-center p-4";
+          modal_info.className =
+            "h-full w-full flex flex-col justify-center space-y-1 overflow-hidden";
 
           modal_node.appendChild(modal_info);
 
-          const modal_info_inner = document.createElement("div");
-          modal_info_inner.className = "flex items-center";
+          const modal_title = document.createElement("div");
+          modal_title.className = "flex font-medium group-hover:text-white";
+          modal_title.innerHTML = `<span class='truncate'>${item.title}</span>`;
 
-          modal_info.appendChild(modal_info_inner);
+          modal_info.appendChild(modal_title);
 
-          const modal_title = document.createElement("h3");
-          modal_title.className = "font-medium group-hover:text-white";
-          modal_title.textContent = item.title;
-
-          modal_info_inner.appendChild(modal_title);
-
-          const modal_description = document.createElement("p");
-          modal_description.className =
-            "mt-1 text-sm text-neutral-400 line-clamp-2";
+          const modal_description = document.createElement("div");
+          modal_description.className = "w-full text-sm text-neutral-400";
           modal_description.textContent = item.time;
 
           modal_info.appendChild(modal_description);
