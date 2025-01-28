@@ -1,7 +1,10 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import { search_result } from "./types";
 
-export function Search(top_node: HTMLElement) {
+export function Search(
+  top_node: HTMLElement,
+  watch_callback: (redirect: string) => void,
+) {
   const search_node = document.createElement("div");
   search_node.className =
     "relative group h-8 w-96 bg-neutral-800 rounded-full max-w-[50%]";
