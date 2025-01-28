@@ -1,17 +1,14 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import { open } from "@tauri-apps/plugin-shell";
 import createState from "./createstate";
-import { search_result } from "./types";
+import { Search } from "./components/search";
 
 function top_constructor(
   top: HTMLElement,
   login_callback: (fn: () => void) => void,
   watch_callback: (redirect: string) => void,
 ) {
-  const [getCurrent, setCurrent, subscribeCurrent] = createState({
-    url: "",
-    image: "",
-  });
+  const history_Array = [];
 
   function render() {
     const top_node = document.createElement("div");
@@ -27,203 +24,90 @@ function top_constructor(
 
     top_node.appendChild(title);
 
-    const search_node = document.createElement("div");
-    search_node.className =
-      "relative group h-8 w-96 bg-white/15 rounded-[18px] max-w-[50%]";
+    Search(top_node);
 
-    top_node.appendChild(search_node);
+    // const current_node = document.createElement("div");
+    // current_node.className =
+    //   "h-8 w-16 rounded-full bg-neutral-800 cursor-pointer overflow-hidden hidden";
 
-    const search_wrapper = document.createElement("div");
-    search_wrapper.className =
-      "absolute inset-[1px] flex items-center space-x-2 px-1 rounded-[18px] bg-[#090b0c]/90 overflow-hidden backdrop-blur";
-    search_wrapper.innerHTML =
-      "<img src='./icons/search_24dp.png' class='h-4 w-4 ml-1' />";
+    // top_node.appendChild(current_node);
 
-    search_node.appendChild(search_wrapper);
+    // current_node.addEventListener("click", () => {
+    //   watch_callback(getCurrent().url);
+    // });
 
-    const search_input = document.createElement("input");
-    search_input.className =
-      "flex-1 h-8 bg-transparent border-0 outline-0 placeholder:text-neutral-200 text-sm font-medium";
-    search_input.placeholder = "Search for anime...";
-    search_input.accessKey = "f";
+    // const current_image = document.createElement("img");
+    // current_image.className = "h-full w-full object-cover";
 
-    search_wrapper.appendChild(search_input);
+    // current_node.appendChild(current_image);
 
-    const search_shortcut = document.createElement("div");
-    search_shortcut.className =
-      "relative flex items-center justify-center h-6 px-2 bg-blue-400 rounded-full text-xs font-medium";
-    search_shortcut.innerHTML =
-      "<img src='./icons/keyboard_command_key_24dp.png' class='h-4 w-4' /><span>F</span>";
+    // subscribeCurrent((newCurrent) => {
+    //   current_image.src = `https://aniworld.to${newCurrent.image}`;
+    //   current_node.classList.remove("hidden");
+    // });
 
-    search_wrapper.appendChild(search_shortcut);
+    const history_wrapper = document.createElement("div");
+    history_wrapper.className =
+      "absolute right-12 h-8 w-8 rounded-full bg-neutral-800";
 
-    const search_shortcut_glow = document.createElement("div");
-    search_shortcut_glow.className = "absolute -inset-2 bg-blue-400/75 blur-lg";
+    const history_node = document.createElement("div");
+    history_node.className =
+      "h-full w-full flex items-center justify-center cursor-pointer";
+    history_node.innerHTML =
+      "<img src='./icons/history_24dp.svg' class='h-4 w-4' />";
 
-    search_shortcut.appendChild(search_shortcut_glow);
+    history_wrapper.appendChild(history_node);
 
-    const search_results = document.createElement("div");
-    search_results.className =
-      "absolute left-0 right-0 top-10 max-h-96 h-0 overflow-hidden rounded-[18px] bg-white/15 transition-all ease-in-out duration-300 -translate-y-4";
-    search_results.style.opacity = "0";
-    search_results.style.transform = "translateY(-1rem)";
+    const [getExpand, setExpand, subscribeExpand] = createState(false);
 
-    search_node.appendChild(search_results);
+    const history_list = document.createElement("div");
+    history_list.className =
+      "absolute h-fit max-h-96 w-48 p-4 top-10 right-0 bg-neutral-800 rounded-[18px] overflow-y-scroll";
 
-    let timeout: NodeJS.Timeout;
+    history_wrapper.appendChild(history_list);
 
-    function showResults() {
-      clearTimeout(timeout);
-      search_results.style.opacity = "100";
-      search_results.style.transform = "translateY(0)";
-      search_results.classList.remove("h-0");
-      search_results.classList.add("h-fit");
-    }
+    subscribeExpand((newExpand) => {
+      if (newExpand) {
+        history_list.style.display = "block";
+        if (history_Array.length == 0) {
+          history_list.innerHTML =
+            "<div class='w-full mb-2 px-2 text-neutral-200 border-b border-neutral-200'>History</div><div class='px-2'>No History</div>";
+        } else {
+          history_list.innerHTML =
+            "<div class='w-full mb-2 px-2 text-neutral-200 border-b border-neutral-200'>History</div>";
+          history_Array.toReversed().map((item) => {
+            const item_node = document.createElement("div");
+            item_node.className =
+              "h-8 w-auto px-2 flex items-center hover:bg-neutral-700 rounded-lg cursor-pointer transition duration-300";
+            item_node.innerHTML = `<span class='truncate'>${item.title}</span>`;
 
-    function hideResults() {
-      search_results.style.opacity = "0";
-      search_results.style.transform = "translateY(-1rem)";
-      timeout = setTimeout(() => {
-        search_results.classList.remove("h-fit");
-        search_results.classList.add("h-0");
-      }, 300);
-    }
+            history_list.appendChild(item_node);
 
-    let isFocus = false;
-    let hasResults = false;
-
-    search_node.addEventListener("mouseenter", () => {
-      if (!hasResults) return;
-      showResults();
-    });
-
-    search_input.addEventListener("focus", () => {
-      isFocus = true;
-      if (!hasResults) return;
-      showResults();
-    });
-
-    search_node.addEventListener("mouseleave", () => {
-      if (isFocus) return;
-      hideResults();
-    });
-
-    search_input.addEventListener("focusout", () => {
-      isFocus = false;
-      hideResults();
-    });
-
-    const search_results_inner = document.createElement("div");
-    search_results_inner.className =
-      "h-fit max-h-[calc(24rem-2px)] m-[1px] py-2 w-[calc(100%-2px)] bg-[#090b0c]/90 rounded-[18px] overflow-y-scroll backdrop-blur";
-
-    search_results.appendChild(search_results_inner);
-
-    search_input.addEventListener("keyup", async (event) => {
-      if (event.key !== "Enter" || search_input.value.trim().length == 0)
-        return;
-
-      let searchString = search_input.value.trim();
-
-      const tags = [];
-      for (let i = 0; i < searchString.length; i++) {
-        if (search_input.value[i] == "#") {
-          const tagEnd = searchString.indexOf(" ", i);
-          tags.push(
-            searchString.substring(
-              i,
-              tagEnd == -1 ? searchString.length : tagEnd,
-            ),
-          );
-          searchString = searchString.substring(tagEnd, searchString.length);
-        }
-      }
-
-      let results = [];
-
-      if (tags.includes("#mylist")) {
-        let storage = null;
-        let current = null;
-        if (localStorage.getItem("mylist")) {
-          storage = JSON.parse(localStorage.getItem("mylist") || "");
-          current = storage.mylist.items;
-        }
-
-        const index = [];
-
-        for (let i = 0; i < current.length; i++) {
-          let pos = -1;
-
-          pos = current[i].title
-            .toLowerCase()
-            .search(searchString.toLowerCase().trim());
-
-          if (pos !== -1) {
-            index.push(i);
-          }
-        }
-        if (index.length) {
-          index.forEach((i) => {
-            results.push({
-              link: current[i].redirect,
-              title: current[i].title,
+            item_node.addEventListener("click", () => {
+              watch_callback(item.url);
             });
           });
         }
       } else {
-        const formData = new FormData();
-        formData.append("keyword", searchString.trim());
-
-        results = await (
-          await fetch("https://aniworld.to/ajax/search", {
-            method: "POST",
-            body: new URLSearchParams(
-              formData as unknown as Record<string, string>,
-            ),
-          })
-        ).json();
+        history_list.style.display = "none";
       }
-
-      search_results_inner.innerHTML = "";
-      if (results.length !== 0) {
-        hasResults = true;
-        showResults();
-      }
-
-      results.forEach((item: search_result) => {
-        if (!item.link.includes("/anime/stream/")) return;
-
-        const search_result = document.createElement("div");
-        search_result.className =
-          "h-8 w-auto px-2 mx-2 flex items-center hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-lg";
-        search_result.innerHTML = `<div class='truncate'>${item.title.replace("<em>", "").replace("</em>", "")}</div>`;
-
-        search_results_inner.appendChild(search_result);
-
-        search_result.addEventListener("click", () =>
-          watch_callback(item.link),
-        );
-      });
     });
 
-    const current_node = document.createElement("div");
-    current_node.className =
-      "h-8 w-16 rounded-full bg-neutral-800 cursor-pointer overflow-hidden hidden";
+    setExpand(false);
 
-    top_node.appendChild(current_node);
+    top_node.appendChild(history_wrapper);
 
-    current_node.addEventListener("click", () => {
-      watch_callback(getCurrent().url);
-    });
+    history_node.addEventListener("click", () => setExpand(!getExpand()));
 
-    const current_image = document.createElement("img");
-    current_image.className = "h-full w-full object-cover";
-
-    current_node.appendChild(current_image);
-
-    subscribeCurrent((newCurrent) => {
-      current_image.src = `https://aniworld.to${newCurrent.image}`;
-      current_node.classList.remove("hidden");
+    window.addEventListener("click", (e) => {
+      if (
+        getExpand() &&
+        e.target !== account_node &&
+        e.target !== history_list &&
+        !history_wrapper.contains(e.target as Node)
+      ) {
+        setExpand(false);
+      }
     });
 
     const account_node = document.createElement("div");
@@ -257,7 +141,7 @@ function top_constructor(
 
         const account_menu = document.createElement("div");
         account_menu.className =
-          "absolute z-40 top-10 right-0 h-fit w-48 p-2 rounded-[18px] bg-[#090b0c] backdrop-blur border border-white/15 overflow-hidden transition-all ease-in-out duration-300";
+          "absolute z-40 top-10 right-0 h-fit w-64 p-4 rounded-[18px] bg-neutral-800 overflow-hidden transition-all ease-in-out duration-300";
         account_menu.style.opacity = "0";
         account_menu.style.display = "none";
         account_menu.style.transform = "translateX(1rem)";
@@ -337,8 +221,8 @@ function top_constructor(
     build_account();
   }
 
-  function current_handler(url: string, image: string) {
-    setCurrent({ url: url, image: image });
+  function current_handler(url: string, title: string) {
+    history_Array.push({ url: url, title: title });
   }
 
   return {

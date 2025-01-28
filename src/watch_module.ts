@@ -166,7 +166,7 @@ function watch_constructor() {
     const details = cache.get("details");
 
     if (current_callback == null) return;
-    current_callback(current_url, details.image);
+    current_callback(current_url, details.title);
 
     const detail_wrapper = document.createElement("div");
     detail_wrapper.className =
