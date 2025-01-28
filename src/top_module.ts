@@ -2,11 +2,13 @@ import { fetch } from "@tauri-apps/plugin-http";
 import { open } from "@tauri-apps/plugin-shell";
 import createState from "./createstate";
 import { Search } from "./components/search";
+import { SubscribeFunction } from "./types";
 
 function top_constructor(
   top: HTMLElement,
   login_callback: (fn: () => void) => void,
   watch_callback: (redirect: string) => void,
+  userSignal: SubscribeFunction<object | null>,
 ) {
   const history_Array = [];
 
@@ -24,27 +26,7 @@ function top_constructor(
 
     top_node.appendChild(title);
 
-    Search(top_node);
-
-    // const current_node = document.createElement("div");
-    // current_node.className =
-    //   "h-8 w-16 rounded-full bg-neutral-800 cursor-pointer overflow-hidden hidden";
-
-    // top_node.appendChild(current_node);
-
-    // current_node.addEventListener("click", () => {
-    //   watch_callback(getCurrent().url);
-    // });
-
-    // const current_image = document.createElement("img");
-    // current_image.className = "h-full w-full object-cover";
-
-    // current_node.appendChild(current_image);
-
-    // subscribeCurrent((newCurrent) => {
-    //   current_image.src = `https://aniworld.to${newCurrent.image}`;
-    //   current_node.classList.remove("hidden");
-    // });
+    Search(top_node, watch_callback);
 
     const history_wrapper = document.createElement("div");
     history_wrapper.className =
@@ -71,7 +53,7 @@ function top_constructor(
         history_list.style.display = "block";
         if (history_Array.length == 0) {
           history_list.innerHTML =
-            "<div class='w-full mb-2 px-2 text-neutral-200 border-b border-neutral-200'>History</div><div class='px-2'>No History</div>";
+            "<div class='w-full mb-2 px-2 text-neutral-200 border-b border-neutral-600'>History</div><div class='px-2'>No History</div>";
         } else {
           history_list.innerHTML =
             "<div class='w-full mb-2 px-2 text-neutral-200 border-b border-neutral-200'>History</div>";
@@ -112,25 +94,18 @@ function top_constructor(
 
     const account_node = document.createElement("div");
     account_node.className =
-      "absolute right-4 w-8 h-8 rounded-full bg-neutral-600 flex items-center cursor-pointer";
+      "absolute right-4 w-8 h-8 rounded-full bg-neutral-600 flex items-center";
 
     top_node.appendChild(account_node);
 
-    const build_account = async () => {
+    const build_account = async (user?: object) => {
       account_node.innerHTML = "";
 
-      if (localStorage.getItem("token")) {
-        const json = await (
-          await fetch("http://animenetwork.org/get-avatar", {
-            headers: {
-              Authorization: localStorage.getItem("token") || "",
-            },
-          })
-        ).json();
-
+      if (user) {
         const asyncImage = new Image();
-        asyncImage.src = json.avatar_url;
-        asyncImage.className = "h-full w-full rounded-full object-cover";
+        asyncImage.src = user.avatar_url;
+        asyncImage.className =
+          "h-full w-full rounded-full object-cover cursor-pointer";
 
         asyncImage.addEventListener("load", () => {
           account_node.appendChild(asyncImage);
@@ -180,6 +155,24 @@ function top_constructor(
 
         account_node.appendChild(account_menu);
 
+        const user_region = document.createElement("div");
+        user_region.className =
+          "w-full h-32 flex flex-col space-y-2 items-center justify-center border-b border-neutral-600 mb-2";
+
+        account_menu.appendChild(user_region);
+
+        const avatarImage = new Image();
+        avatarImage.src = user.avatar_url;
+        avatarImage.className = "h-16 w-16 rounded-full object-cover";
+
+        user_region.appendChild(avatarImage);
+
+        const user_nickname = document.createElement("div");
+        user_nickname.className = "w-full text-center font-bold truncate";
+        user_nickname.textContent = user.username;
+
+        user_region.appendChild(user_nickname);
+
         const change_avatar = document.createElement("div");
         change_avatar.className =
           "h-8 w-auto px-2 flex items-center space-x-2 hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-lg";
@@ -207,7 +200,8 @@ function top_constructor(
         });
       } else {
         const login_node = document.createElement("div");
-        login_node.className = "h-full w-full flex items-center justify-center";
+        login_node.className =
+          "h-full w-full flex items-center justify-center cursor-pointer";
         login_node.innerHTML =
           "<img src='./icons/person_24dp.png' class='h-4 w-4' />";
 
@@ -219,6 +213,8 @@ function top_constructor(
       }
     };
     build_account();
+
+    userSignal((newUser) => build_account(newUser));
   }
 
   function current_handler(url: string, title: string) {

@@ -23,8 +23,9 @@ async function get_token(username: string, password: string) {
 function login_constructor() {
   let content: HTMLElement | null = null;
   let home_callback: ((method: string) => void) | null = null;
+  let login_callback: ((token: string) => void) | null = null;
 
-  const build = (callback: () => void) => {
+  const build = () => {
     if (content == null) return;
     content.innerHTML = "";
 
@@ -87,7 +88,8 @@ function login_constructor() {
         }, 3000);
 
         localStorage.setItem("token", token);
-        callback();
+        if (login_callback == null) return;
+        login_callback(token);
       } else {
         if (home_callback == null) return;
         home_callback("update");
@@ -98,9 +100,11 @@ function login_constructor() {
   const setParams = (
     area: HTMLElement,
     callback: (method: string) => Promise<void>,
+    login: (token: string) => void,
   ) => {
     content = area;
     home_callback = callback;
+    login_callback = login;
   };
 
   return {

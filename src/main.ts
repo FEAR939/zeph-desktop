@@ -1,24 +1,28 @@
+import createState from "./createstate.js";
 import home_constructor from "./home_module.js";
 import login_constructor from "./login_module.js";
 import top_constructor from "./top_module.js";
 import watch_constructor from "./watch_module.js";
 
-// const glow_blob = document.createElement("div");
-// glow_blob.className =
-//   "absolute -z-10 h-96 w-96 bg-blue-400 rounded-full blur-3xl";
+const [getUser, setUser, subscribeUser] = createState<object | null>(null);
 
-// document.body.appendChild(glow_blob);
+async function login(token?: string) {
+  if (!localStorage.getItem("token") && typeof token !== "undefined") {
+    localStorage.setItem("token", token);
+  } else if (!localStorage.getItem("token")) {
+    return;
+  }
 
-// window.addEventListener("mousemove", (e: MouseEvent) => {
-//   setTimeout(() => {
-//     glow_blob.style.transform = `translate3D(${e.clientX - glow_blob.offsetWidth / 2}px, ${e.clientY - glow_blob.offsetWidth / 2}px, 0)`;
-//   }, 200);
-// });
+  const json = await (
+    await fetch("http://animenetwork.org/get-user", {
+      headers: {
+        Authorization: localStorage.getItem("token") || "",
+      },
+    })
+  ).json();
 
-// const blur_bg = document.createElement("div");
-// blur_bg.className = "absolute -z-5 h-full w-full bg-[#090b0c]/15";
-
-// document.body.appendChild(blur_bg);
+  setUser(json);
+}
 
 const top_area = document.createElement("div");
 top_area.className =
@@ -34,11 +38,18 @@ const home_page = home_constructor();
 const watch_page = watch_constructor();
 const login_page = login_constructor();
 
-const top_bar = top_constructor(top_area, login_page.build, watch_page.build);
+const top_bar = top_constructor(
+  top_area,
+  login_page.build,
+  watch_page.build,
+  subscribeUser,
+);
 
 home_page.setParams(content_area, watch_page.build);
 watch_page.setParams(home_page.mylist_handler, top_bar.current_handler);
-login_page.setParams(content_area, home_page.mylist_handler);
+login_page.setParams(content_area, home_page.mylist_handler, login);
 
 top_bar.render();
 home_page.build();
+
+login();
