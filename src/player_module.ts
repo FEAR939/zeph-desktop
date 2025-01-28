@@ -2,7 +2,6 @@ import Hls from "hls.js";
 import { fetch } from "@tauri-apps/plugin-http";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import createState from "./createstate";
-import createUpscaler from "./upscaler";
 
 type episode = {
   redirect: string;
@@ -98,6 +97,7 @@ async function extract_voe_url(video_redirect: string) {
 
 async function player_constructor(episodes: episode[], index: number) {
   const [getIndex, setIndex, subscribeIndex] = createState(0);
+  const [getMini, setMini, subscribeMini] = createState(false);
 
   const hosters: hoster[] = [
     { name: "VOE", standard: true },
@@ -105,17 +105,41 @@ async function player_constructor(episodes: episode[], index: number) {
   ];
 
   const player_wrapper = document.createElement("div");
-  player_wrapper.className = "absolute inset-0 z-40 bg-black";
+  subscribeMini((newMini) => {
+    if (newMini) {
+      player_wrapper.className =
+        "absolute bottom-4 right-4 h-64 aspect-video z-40 bg-black overflow-hidden rounded-lg";
+    } else {
+      player_wrapper.className = "absolute inset-0 z-40 bg-black";
+    }
+  });
 
   document.body.appendChild(player_wrapper);
 
   const player_exit = document.createElement("div");
-  player_exit.className =
-    "absolute z-50 top-0 left-0 m-4 h-4 w-4 p-4 flex items-center justify-center rounded-full bg-neutral-900 cursor-pointer";
+  player_exit.className = "absolute z-50 top-4 left-4 h-8 w-8 cursor-pointer";
   player_exit.innerHTML =
-    "<img src='./icons/close_24dp.png' class='min-h-4 min-w-4' />";
+    "<img src='./icons/keyboard_backspace_24dp.png' class='h-8 w-8' />";
 
   player_wrapper.appendChild(player_exit);
+
+  const player_toggleMini = document.createElement("div");
+  player_toggleMini.className =
+    "absolute z-50 top-4 left-16 h-8 w-8 cursor-pointer";
+  player_toggleMini.innerHTML =
+    "<img src='./icons/close_fullscreen_24dp.png' class='h-8 w-8' />";
+
+  player_wrapper.appendChild(player_toggleMini);
+
+  player_toggleMini.addEventListener("click", () => {
+    setMini(!getMini());
+  });
+
+  const episode_title = document.createElement("div");
+  episode_title.className =
+    "absolute top-4 left-28 h-8 flex items-center text-xl max-w-[50%] truncate";
+
+  player_wrapper.appendChild(episode_title);
 
   const video_player = document.createElement("video");
   video_player.className = "h-full w-full";
@@ -126,7 +150,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
   const video_controls = document.createElement("div");
   video_controls.className =
-    "absolute z-50 bottom-0 left-0 right-0 h-16 px-8 bg-black/50 flex items-center";
+    "absolute z-50 bottom-0 left-0 right-0 h-16 px-4 pt-4 bg-black/50 flex items-center";
   player_wrapper.appendChild(video_controls);
 
   let timeout: NodeJS.Timeout;
@@ -138,10 +162,14 @@ async function player_constructor(episodes: episode[], index: number) {
 
     video_controls.style.display = "flex";
     player_exit.style.display = "flex";
+    player_toggleMini.style.display = "flex";
+    episode_title.style.display = "flex";
     player_wrapper.style.cursor = "default";
     timeout = setTimeout(() => {
       video_controls.style.display = "none";
       player_exit.style.display = "none";
+      player_toggleMini.style.display = "none";
+      episode_title.style.display = "none";
       player_wrapper.style.cursor = "none";
     }, 3000);
   });
@@ -149,7 +177,7 @@ async function player_constructor(episodes: episode[], index: number) {
   // Create container for timeline elements
   const timelineContainer = document.createElement("div");
   timelineContainer.className =
-    "absolute bottom-[3.25rem] left-8 right-8 h-1 bg-neutral-700 cursor-pointer";
+    "absolute bottom-[3.25rem] left-4 right-4 h-0.75 bg-neutral-700 cursor-pointer";
 
   // Create buffer progress bar
   const bufferBar = document.createElement("div");
@@ -327,11 +355,6 @@ async function player_constructor(episodes: episode[], index: number) {
 
   video_controls.appendChild(middleWrapper);
 
-  const episode_title = document.createElement("div");
-  episode_title.className = "max-w-[50%] truncate";
-
-  middleWrapper.appendChild(episode_title);
-
   const [, setHoster, subscribeHoster] = createState("");
 
   const hoster_selection = document.createElement("select");
@@ -507,6 +530,20 @@ async function player_constructor(episodes: episode[], index: number) {
     setFullscreenState(!getFullscreenState()),
   );
 
+  subscribeMini((newMini) => {
+    if (newMini) {
+      introSkip.style.display = "none";
+      hoster_selection.style.display = "none";
+      episodeToggle.style.display = "none";
+      fullscreen.style.display = "none";
+    } else {
+      introSkip.style.display = "flex";
+      hoster_selection.style.display = "flex";
+      episodeToggle.style.display = "flex";
+      fullscreen.style.display = "flex";
+    }
+  });
+
   let episode_hosters: NodeListOf<HTMLAnchorElement>;
   let video_redirect = "";
 
@@ -592,6 +629,7 @@ async function player_constructor(episodes: episode[], index: number) {
     await getCurrentWindow().setFullscreen(false);
   });
 
+  setMini(false);
   setIndex(index);
 }
 

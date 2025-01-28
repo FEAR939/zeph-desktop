@@ -3,22 +3,22 @@ import login_constructor from "./login_module.js";
 import top_constructor from "./top_module.js";
 import watch_constructor from "./watch_module.js";
 
-const glow_blob = document.createElement("div");
-glow_blob.className =
-  "absolute -z-10 h-96 w-96 bg-orange-400/50 rounded-full blur-3xl";
+// const glow_blob = document.createElement("div");
+// glow_blob.className =
+//   "absolute -z-10 h-96 w-96 bg-blue-400 rounded-full blur-3xl";
 
-document.body.appendChild(glow_blob);
+// document.body.appendChild(glow_blob);
 
-window.addEventListener("mousemove", (e: MouseEvent) => {
-  setTimeout(() => {
-    glow_blob.style.transform = `translate3D(${e.clientX - glow_blob.offsetWidth / 2}px, ${e.clientY - glow_blob.offsetWidth / 2}px, 0)`;
-  }, 200);
-});
+// window.addEventListener("mousemove", (e: MouseEvent) => {
+//   setTimeout(() => {
+//     glow_blob.style.transform = `translate3D(${e.clientX - glow_blob.offsetWidth / 2}px, ${e.clientY - glow_blob.offsetWidth / 2}px, 0)`;
+//   }, 200);
+// });
 
-const blur_bg = document.createElement("div");
-blur_bg.className = "absolute -z-5 h-full w-full bg-[#090b0c]/15";
+// const blur_bg = document.createElement("div");
+// blur_bg.className = "absolute -z-5 h-full w-full bg-[#090b0c]/15";
 
-document.body.appendChild(blur_bg);
+// document.body.appendChild(blur_bg);
 
 const top_area = document.createElement("div");
 top_area.className =
