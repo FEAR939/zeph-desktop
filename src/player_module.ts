@@ -2,6 +2,7 @@ import Hls from "hls.js";
 import { fetch } from "@tauri-apps/plugin-http";
 import { getCurrentWindow } from "@tauri-apps/api/window";
 import createState from "./createstate";
+import { Selector } from "./components/selector";
 
 type episode = {
   redirect: string;
@@ -14,7 +15,7 @@ type episode = {
 };
 
 type hoster = {
-  name: string;
+  label: string;
   standard: boolean;
 };
 
@@ -100,8 +101,8 @@ async function player_constructor(episodes: episode[], index: number) {
   const [getMini, setMini, subscribeMini] = createState(false);
 
   const hosters: hoster[] = [
-    { name: "VOE", standard: true },
-    { name: "Doodstream", standard: false },
+    { label: "VOE", standard: true },
+    { label: "Doodstream", standard: false },
   ];
 
   const player_wrapper = document.createElement("div");
@@ -357,15 +358,9 @@ async function player_constructor(episodes: episode[], index: number) {
 
   const [, setHoster, subscribeHoster] = createState("");
 
-  const hoster_selection = document.createElement("select");
-  hoster_selection.className =
-    "flex items-center space-x-2 bg-neutral-800 w-32 px-2 py-0.5 rounded-full border-r-8 outline-0 border-neutral-800 cursor-pointer";
+  const selector = Selector(middleWrapper, hosters);
 
-  middleWrapper.appendChild(hoster_selection);
-
-  hoster_selection.addEventListener("change", () => {
-    setHoster(hoster_selection.value);
-  });
+  selector.subscribe((newHoster) => setHoster(newHoster.label));
 
   const endWrapper = document.createElement("div");
   endWrapper.className = "flex items-center justify-end space-x-2";
@@ -533,12 +528,13 @@ async function player_constructor(episodes: episode[], index: number) {
   subscribeMini((newMini) => {
     if (newMini) {
       introSkip.style.display = "none";
-      hoster_selection.style.display = "none";
+      selector.element.style.display = "none";
+      episodeWrapper.classList.add("hidden");
       episodeToggle.style.display = "none";
       fullscreen.style.display = "none";
     } else {
       introSkip.style.display = "flex";
-      hoster_selection.style.display = "flex";
+      selector.element.style.display = "flex";
       episodeToggle.style.display = "flex";
       fullscreen.style.display = "flex";
     }
@@ -604,18 +600,12 @@ async function player_constructor(episodes: episode[], index: number) {
 
     episode_hosters = html.querySelectorAll(".watchEpisode");
 
-    hoster_selection.innerHTML = "";
-    hosters.forEach((hoster: hoster) => {
-      const hoster_option = document.createElement("option");
-      hoster_option.value = hoster.name;
-      hoster_option.textContent = hoster.name;
-      if (hoster.standard) {
-        hoster_option.selected = true;
-        setHoster(hoster.name);
+    for (let i = 0; i < hosters.length; i++) {
+      if (hosters[i].standard) {
+        selector.set(hosters[i]);
+        break;
       }
-
-      hoster_selection.appendChild(hoster_option);
-    });
+    }
   });
 
   player_exit.addEventListener("click", async () => {

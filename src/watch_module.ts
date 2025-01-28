@@ -3,6 +3,7 @@ import createState from "./createstate.js";
 import player_constructor from "./player_module.js";
 import { anime_data, season, api_episode, episode } from "./types.js";
 import { Episode } from "./components/episode.js";
+import { Selector } from "./components/selector.js";
 
 async function get_details(url: string) {
   const response = (await fetch(`https://aniworld.to${url}`)).text();
@@ -249,7 +250,7 @@ function watch_constructor() {
       const [getList, setList, subscribeList] = createState(0);
       const on_list = document.createElement("div");
       on_list.className =
-        "flex items-center space-x-2 bg-[#090b0c]/50 backdrop-blur border border-white/15 px-4 py-2 rounded-full cursor-pointer transition ease-in duration-300";
+        "flex items-center space-x-2 bg-neutral-900 px-2 py-1 rounded-lg cursor-pointer transition ease-in duration-300";
       on_list.textContent = "...";
 
       detail_stats_outer.appendChild(on_list);
@@ -299,43 +300,32 @@ function watch_constructor() {
       });
     }
 
+    const detail_main = document.createElement("div");
+    detail_main.className = "h-fit w-full px-4";
+
+    detail_node.appendChild(detail_main);
+
     const detail_description = document.createElement("div");
     detail_description.className =
-      "m-4 text-sm text-neutral-400 font-medium line-clamp-2";
+      "my-4 text-sm text-neutral-400 font-medium line-clamp-2";
     detail_description.textContent = details.desc;
 
-    detail_node.appendChild(detail_description);
+    detail_main.appendChild(detail_description);
 
     const [getSeason, setSeason, subscribeSeason] = createState("");
 
-    const detail_selection = document.createElement("select");
-    detail_selection.className =
-      "flex items-center space-x-2 bg-neutral-800 w-48 px-4 py-2 m-4 rounded-full border-r-8 outline-0 border-neutral-800 cursor-pointer";
+    let previous = cache.get("selectedSeason")?.label || undefined;
 
-    detail_node.appendChild(detail_selection);
+    const selector = Selector(detail_main, details.seasons, previous);
 
-    const detail_option = document.createElement("option");
-    detail_option.selected = true;
-    detail_option.disabled = true;
-    detail_option.textContent = "Choose season";
-    detail_selection.appendChild(detail_option);
-
-    details.seasons.forEach((season: season, i: number) => {
-      const detail_option = document.createElement("option");
-      detail_option.value = i.toString();
-      detail_option.textContent = season.label;
-
-      detail_selection.appendChild(detail_option);
-    });
-
-    detail_selection.addEventListener("change", () => {
-      setSeason(detail_selection.value);
+    selector.subscribe((newValue) => {
+      setSeason(newValue);
     });
 
     const episode_wrapper = document.createElement("div");
-    episode_wrapper.className = "p-4";
+    episode_wrapper.className = "my-4";
 
-    detail_node.appendChild(episode_wrapper);
+    detail_main.appendChild(episode_wrapper);
 
     subscribeSeason(async (newSeason) => {
       episode_wrapper.innerHTML = "";
@@ -350,7 +340,7 @@ function watch_constructor() {
 
       cache.set("selectedSeason", newSeason);
       if (!cache.get(`episodes-${newSeason}`)) {
-        episodes = await get_episodes(details.seasons[newSeason], details.imdb);
+        episodes = await get_episodes(newSeason, details.imdb);
         cache.set(`episodes-${newSeason}`, episodes);
         console.log(cache);
       } else {
@@ -361,7 +351,6 @@ function watch_constructor() {
     });
 
     if (cache.get("selectedSeason")) {
-      detail_selection.value = cache.get("selectedSeason");
       setSeason(cache.get("selectedSeason"));
     }
 

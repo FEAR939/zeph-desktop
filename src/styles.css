@@ -5,6 +5,11 @@
     src: url("../fonts/Inter-VariableFont_opsz,wght.ttf");
 }
 
+input {
+    outline: none;
+    border: none;
+}
+
 ::-webkit-scrollbar {
     display: none;
 }
