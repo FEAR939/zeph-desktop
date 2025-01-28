@@ -53,7 +53,7 @@ export function carousel(
 
   const carousel_previous = document.createElement("button");
   carousel_previous.className =
-    "absolute left-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-r-lg hover:bg-opacity-75 transition-all ease-in-out duration-300";
+    "absolute left-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black/50 rounded-r-lg hover:bg-opacity-75 transition-all ease-in-out duration-300 cursor-pointer";
   carousel_previous.innerHTML =
     "<img src='./icons/chevron_left_24dp.png' class='h-8 w-8' />";
   carousel_previous.style.opacity = "0";
@@ -62,7 +62,7 @@ export function carousel(
 
   const carousel_next = document.createElement("button");
   carousel_next.className =
-    "absolute right-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black bg-opacity-50 rounded-l-lg hover:bg-opacity-75 transition-all ease-in-out duration-300";
+    "absolute right-0 top-[46px] bottom-[-2px] w-[30px] flex items-center justify-center z-10 bg-black/50 rounded-l-lg hover:bg-opacity-75 transition-all ease-in-out duration-300 cursor-pointer";
   carousel_next.innerHTML =
     "<img src='./icons/chevron_right_24dp.png' class='h-8 w-8' />";
   carousel_next.style.opacity = "0";

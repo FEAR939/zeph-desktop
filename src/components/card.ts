@@ -59,7 +59,7 @@ export function card(
 
     const on_list = document.createElement("div");
     on_list.className =
-      "absolute group-hover/item:opacity-100 group-hover/item:translate-x-0 opacity-0 translate-x-1 left-0 bottom-2 w-fit flex items-center space-x-1 bg-[#090b0c]/50 backdrop-blur border border-white/15 px-2 py-1 mx-2 rounded-full cursor-pointer transition ease-in duration-300";
+      "absolute group-hover/item:opacity-100 group-hover/item:translate-x-0 opacity-0 translate-x-1 left-2 bottom-2 w-fit flex items-center space-x-1 bg-neutral-800 px-2 py-1 rounded-lg cursor-pointer transition ease-in duration-300";
     on_list.textContent = "...";
     on_list.id = "on_list";
 
