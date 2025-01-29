@@ -44,7 +44,18 @@ function top_constructor(
 
     const history_list = document.createElement("div");
     history_list.className =
-      "absolute h-fit max-h-96 w-48 p-4 top-10 right-0 bg-neutral-800 rounded-[18px] overflow-y-scroll";
+      "absolute h-fit w-64 p-4 top-10 right-0 bg-neutral-800 rounded-[18px]";
+
+    const history_list_header = document.createElement("div");
+    history_list_header.className = "w-full mb-2 flex items-center font-medium";
+    history_list_header.textContent = "Browse History";
+
+    history_list.appendChild(history_list_header);
+
+    const history_list_inner = document.createElement("div");
+    history_list_inner.className = "h-fit max-h-96 w-full overflow-y-scroll";
+
+    history_list.appendChild(history_list_inner);
 
     history_wrapper.appendChild(history_list);
 
@@ -52,18 +63,16 @@ function top_constructor(
       if (newExpand) {
         history_list.style.display = "block";
         if (history_Array.length == 0) {
-          history_list.innerHTML =
-            "<div class='w-full mb-2 px-2 text-neutral-200 border-b border-neutral-600'>History</div><div class='px-2'>No History</div>";
+          history_list_inner.innerHTML = "<div class='px-2'>No History</div>";
         } else {
-          history_list.innerHTML =
-            "<div class='w-full mb-2 px-2 text-neutral-200 border-b border-neutral-200'>History</div>";
+          history_list_inner.innerHTML = "";
           history_Array.toReversed().map((item) => {
             const item_node = document.createElement("div");
             item_node.className =
               "h-8 w-auto px-2 flex items-center hover:bg-neutral-700 rounded-lg cursor-pointer transition duration-300";
             item_node.innerHTML = `<span class='truncate'>${item.title}</span>`;
 
-            history_list.appendChild(item_node);
+            history_list_inner.appendChild(item_node);
 
             item_node.addEventListener("click", () => {
               watch_callback(item.url);
@@ -137,7 +146,7 @@ function top_constructor(
           }
         });
 
-        account_node.addEventListener("click", (e) => {
+        asyncImage.addEventListener("click", (e) => {
           e.stopPropagation();
           setMenuState(!getMenuState());
         });
