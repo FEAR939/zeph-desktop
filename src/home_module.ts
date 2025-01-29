@@ -67,7 +67,7 @@ async function get_mylist() {
       const redirect = anime.series_id;
       let image = "";
       let title = "";
-      const serverData = await fetch("http://localhost:5000/get-anime", {
+      const serverData = await fetch("http://animenetwork.org/get-anime", {
         method: "POST",
         body: redirect,
       });
@@ -84,7 +84,7 @@ async function get_mylist() {
         title = html.querySelector(".series-title h1")?.textContent || "";
 
         if (image.length !== 0 && title.length !== 0) {
-          await fetch("http://localhost:5000/set-anime", {
+          await fetch("http://animenetwork.org/set-anime", {
             method: "POST",
             body: JSON.stringify({
               redirect: redirect,
