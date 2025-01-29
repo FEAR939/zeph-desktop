@@ -14,6 +14,9 @@ export function Selector(
   selector_node.className =
     "relative h-8 w-48 flex items-center bg-neutral-900 rounded-lg";
 
+  const selector_header = document.createElement("div");
+  selector_header.className = "h-full w-full flex items-center cursor-pointer";
+
   const value_node = document.createElement("div");
   value_node.className = "h-full w-full px-2 text-sm flex items-center";
   value_node.textContent = "Select";
@@ -21,14 +24,16 @@ export function Selector(
     value_node.textContent = init;
   }
 
-  selector_node.appendChild(value_node);
+  selector_header.appendChild(value_node);
 
   const expand_node = document.createElement("img");
-  expand_node.className = "h-8 w-8 pr-2 shrink-0 cursor-pointer";
+  expand_node.className = "h-8 w-8 pr-2 shrink-0";
 
-  selector_node.appendChild(expand_node);
+  selector_header.appendChild(expand_node);
 
-  expand_node.addEventListener("click", () => setExpand(!getExpand()));
+  selector_header.addEventListener("click", () => setExpand(!getExpand()));
+
+  selector_node.appendChild(selector_header);
 
   subscribeValue((newValue) => {
     value_node.textContent = newValue.label;
@@ -76,7 +81,10 @@ export function Selector(
 
     options_list.appendChild(option_node);
 
-    option_node.addEventListener("click", () => setValue(option));
+    option_node.addEventListener("click", () => {
+      setExpand(false);
+      setValue(option);
+    });
 
     search_input.addEventListener("keyup", () => {
       if (
