@@ -1,6 +1,6 @@
 import createState from "./createstate.js";
 import home_constructor from "./home_module.js";
-import login_constructor from "./login_module.js";
+import auth_constructor from "./auth_module.js";
 import top_constructor from "./top_module.js";
 import watch_constructor from "./watch_module.js";
 
@@ -36,7 +36,7 @@ document.body.appendChild(content_area);
 
 const home_page = home_constructor();
 const watch_page = watch_constructor();
-const login_page = login_constructor();
+const login_page = auth_constructor();
 
 const top_bar = top_constructor(
   top_area,
