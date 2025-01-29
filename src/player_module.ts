@@ -105,7 +105,7 @@ async function player_constructor(episodes: episode[], index: number) {
     { label: "Doodstream", standard: false },
   ];
 
-  const player_wrapper = document.createElement("div");
+  let player_wrapper = document.createElement("div");
   subscribeMini((newMini) => {
     if (newMini) {
       player_wrapper.className =
@@ -616,6 +616,7 @@ async function player_constructor(episodes: episode[], index: number) {
     }
 
     player_wrapper.remove();
+    player_wrapper = null;
     await getCurrentWindow().setFullscreen(false);
   });
 

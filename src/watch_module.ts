@@ -195,9 +195,9 @@ function watch_constructor() {
 
     const detail_exit = document.createElement("div");
     detail_exit.className =
-      "absolute z-20 top-0 right-0 m-4 h-4 w-4 p-4 flex items-center justify-center rounded-full bg-neutral-600/75 backdrop-blur cursor-pointer";
+      "absolute z-20 top-4 left-4 h-8 w-8 flex items-center justify-center cursor-pointer";
     detail_exit.innerHTML =
-      "<img src='./icons/close_24dp.png' class='min-h-4 min-w-4' />";
+      "<img src='./icons/keyboard_backspace_24dp.png' class='h-full w-full' />";
 
     detail_top.appendChild(detail_exit);
 
