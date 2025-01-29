@@ -64,16 +64,41 @@ async function get_mylist() {
   // Use Promise.all to wait for all async operations
   await Promise.all(
     list.map(async (anime: anime) => {
-      const html = new DOMParser().parseFromString(
-        await (await fetch(`https://aniworld.to${anime.series_id}`)).text(),
-        "text/html",
-      );
-
       const redirect = anime.series_id;
-      const image = html
-        .querySelector(".seriesCoverBox img")
-        ?.getAttribute("data-src");
-      const title = html.querySelector(".series-title h1")?.textContent;
+      let image = "";
+      let title = "";
+      const serverData = await fetch("http://localhost:5000/get-anime", {
+        method: "POST",
+        body: redirect,
+      });
+
+      if (serverData.status == 404) {
+        const html = new DOMParser().parseFromString(
+          await (await fetch(`https://aniworld.to${anime.series_id}`)).text(),
+          "text/html",
+        );
+
+        image =
+          html.querySelector(".seriesCoverBox img")?.getAttribute("data-src") ||
+          "";
+        title = html.querySelector(".series-title h1")?.textContent || "";
+
+        if (image.length !== 0 && title.length !== 0) {
+          await fetch("http://localhost:5000/set-anime", {
+            method: "POST",
+            body: JSON.stringify({
+              redirect: redirect,
+              image: image,
+              title: title,
+            }),
+          });
+        }
+      } else {
+        const data = await serverData.json();
+        console.log(data);
+        image = data.image;
+        title = data.title;
+      }
 
       watched_list.push({
         redirect: redirect || "",
