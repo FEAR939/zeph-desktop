@@ -36,18 +36,18 @@ document.body.appendChild(content_area);
 
 const home_page = home_constructor();
 const watch_page = watch_constructor();
-const login_page = auth_constructor();
+const auth_page = auth_constructor(subscribeUser);
 
 const top_bar = top_constructor(
   top_area,
-  login_page.build,
+  auth_page.build,
   watch_page.build,
   subscribeUser,
 );
 
 home_page.setParams(content_area, watch_page.build);
 watch_page.setParams(home_page.mylist_handler, top_bar.current_handler);
-login_page.setParams(content_area, home_page.mylist_handler, login);
+auth_page.setParams(content_area, home_page.mylist_handler, login);
 
 top_bar.render();
 home_page.build();

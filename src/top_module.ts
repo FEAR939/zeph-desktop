@@ -69,8 +69,8 @@ function top_constructor(
           history_Array.toReversed().map((item) => {
             const item_node = document.createElement("div");
             item_node.className =
-              "h-8 w-auto px-2 flex items-center hover:bg-neutral-700 rounded-lg cursor-pointer transition duration-300";
-            item_node.innerHTML = `<span class='truncate'>${item.title}</span>`;
+              "h-16 w-auto p-2 flex items-center hover:bg-neutral-700 rounded-lg cursor-pointer transition duration-300 space-x-2";
+            item_node.innerHTML = `<img src="https://aniworld.to${item.image}" class="h-full aspect-[1/1.3] rounded-md"/><span class='truncate'>${item.title}</span>`;
 
             history_list_inner.appendChild(item_node);
 
@@ -226,8 +226,8 @@ function top_constructor(
     userSignal((newUser) => build_account(newUser));
   }
 
-  function current_handler(url: string, title: string) {
-    history_Array.push({ url: url, title: title });
+  function current_handler(url: string, image: string, title: string) {
+    history_Array.push({ url: url, image: image, title: title });
   }
 
   return {

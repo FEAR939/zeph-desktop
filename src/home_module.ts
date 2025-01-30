@@ -95,7 +95,7 @@ async function get_mylist() {
         }
       } else {
         const data = await serverData.json();
-        console.log(data);
+
         image = data.image;
         title = data.title;
       }
