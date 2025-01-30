@@ -114,7 +114,7 @@ export async function Calendar(content: HTMLElement) {
 
   const tool_search_wrapper = document.createElement("div");
   tool_search_wrapper.className =
-    "absolute right-20 top-0 bottom-0 my-auto h-8 w-48 px-2 bg-neutral-800 rounded-full flex space-x-2 items-center";
+    "absolute right-22 top-4 h-8 w-48 px-2 bg-neutral-800 rounded-full flex space-x-2 items-center";
   tool_search_wrapper.innerHTML =
     "<img src='./icons/search_24dp.svg' class='h-4 w-4' />";
 
@@ -128,7 +128,7 @@ export async function Calendar(content: HTMLElement) {
 
   const prev = document.createElement("div");
   prev.className =
-    "absolute right-10 top-0 bottom-0 my-auto h-8 w-8 bg-neutral-800 rounded-full flex items-center justify-center cursor-pointer";
+    "absolute right-12 top-4 h-8 w-8 bg-neutral-800 rounded-full flex items-center justify-center cursor-pointer";
   prev.innerHTML =
     "<img src='./icons/chevron_left_24dp.png' class='h-4 w-4' />";
 
@@ -136,7 +136,7 @@ export async function Calendar(content: HTMLElement) {
 
   const next = document.createElement("div");
   next.className =
-    "absolute right-2 top-0 bottom-0 my-auto h-8 w-8 bg-neutral-800 rounded-full flex items-center justify-center cursor-pointer";
+    "absolute right-4 top-4 h-8 w-8 bg-neutral-800 rounded-full flex items-center justify-center cursor-pointer";
   next.innerHTML =
     "<img src='./icons/chevron_right_24dp.png' class='h-4 w-4' />";
 
@@ -314,9 +314,9 @@ export async function Calendar(content: HTMLElement) {
           if (
             item.title.toLowerCase().includes(search_input.value.toLowerCase())
           ) {
-            group_node.style.display = "flex";
+            group_node.style.opacity = "1";
           } else {
-            group_node.style.display = "none";
+            group_node.style.opacity = "0.1";
           }
         });
       });
@@ -372,7 +372,8 @@ export async function Calendar(content: HTMLElement) {
       });
 
       const item_count = document.createElement("div");
-      item_count.className = "absolute right-1 bottom-1 text-sm";
+      item_count.className =
+        "absolute z-10 right-1 bottom-1 px-2 text-sm bg-black/30 rounded-full text-sm";
       item_count.textContent = `${time_groups[i].items.length}+`;
 
       item_node.appendChild(item_count);
@@ -380,7 +381,7 @@ export async function Calendar(content: HTMLElement) {
       for (let j = 0; j < Math.min(time_groups[i].items.length, 1); j++) {
         const preview_image = document.createElement("img");
         preview_image.className =
-          "absolute bottom-0 left-0 h-full aspect-[1/1.3] object-cover rounded-lg";
+          "absolute inset-0 h-full w-full object-cover rounded-lg blur-xs brightness-75";
 
         preview_image.src = `https://aniworld.to${time_groups[i].items[j]?.image}`;
 
