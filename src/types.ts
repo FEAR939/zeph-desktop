@@ -55,5 +55,6 @@ export type episode = {
   duration: number;
   playtime: number;
   id: string;
+  langs: string[];
   watched: ((duration: number, playtime: number) => Promise<void>) | null;
 };

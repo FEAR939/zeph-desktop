@@ -111,6 +111,13 @@ async function get_episodes(season: season, imdb: string) {
       const duration = episode_watched[index]?.watch_duration || 0;
       const playtime = episode_watched[index]?.watch_playtime || 0;
       const id = episodes_nodes[i].getAttribute("data-episode-id");
+      const languages = Array.from(
+        episodes_nodes[i]?.querySelectorAll(".flag"),
+      ).map((item) => {
+        const lang = item.getAttribute("src");
+        if (lang !== null && typeof lang !== "undefined") return lang;
+        return "";
+      });
 
       if (imdb_season_images !== null && i < imdb_season_images.length) {
         image = imdb_season_images[i].getAttribute("src") || "";
@@ -123,6 +130,7 @@ async function get_episodes(season: season, imdb: string) {
         duration: duration,
         playtime: playtime,
         id: id || "",
+        langs: languages || [],
         watched: null,
       });
     });
@@ -139,8 +147,9 @@ function watch_constructor() {
   let current_url: string = "";
   let mylist_callback: ((method: string, data: anime_data) => void) | null =
     null;
-  let current_callback: ((redirect: string, image: string) => void) | null =
-    null;
+  let current_callback:
+    | ((redirect: string, image: string, title: string) => void)
+    | null = null;
 
   const build = async (url: string) => {
     if (loading) return;
@@ -167,7 +176,7 @@ function watch_constructor() {
     const details = cache.get("details");
 
     if (current_callback == null) return;
-    current_callback(current_url, details.title);
+    current_callback(current_url, details.image, details.title);
 
     const detail_wrapper = document.createElement("div");
     detail_wrapper.className =
@@ -177,7 +186,7 @@ function watch_constructor() {
 
     const detail_node = document.createElement("div");
     detail_node.className =
-      "min-h-[calc(100%-1rem)] h-fit w-[64rem] bg-[#090b0c] border border-white/15 mt-4 overflow-hidden rounded-t-lg border-box";
+      "min-h-[calc(100%-1rem)] h-fit w-[64rem] bg-neutral-950 mt-4 overflow-hidden rounded-t-lg border-box";
 
     detail_wrapper.appendChild(detail_node);
 
@@ -210,7 +219,7 @@ function watch_constructor() {
 
     const detail_overlay = document.createElement("div");
     detail_overlay.className =
-      "absolute inset-0 bg-gradient-to-t from-[#090b0c] via-[#090b0c]/60 to-transparent";
+      "absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/60 to-transparent";
 
     detail_top.appendChild(detail_overlay);
 
@@ -415,7 +424,7 @@ function watch_constructor() {
 
   const setParams = (
     ml_callback: (method: string, data: anime_data) => Promise<void>,
-    c_callback: (url: string, image: string) => void,
+    c_callback: (url: string, image: string, title: string) => void,
   ) => {
     mylist_callback = ml_callback;
     current_callback = c_callback;
