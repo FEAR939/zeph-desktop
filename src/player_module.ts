@@ -358,9 +358,9 @@ async function player_constructor(episodes: episode[], index: number) {
 
   const [, setHoster, subscribeHoster] = createState("");
 
-  const selector = Selector(middleWrapper, hosters);
+  const selector = Selector(middleWrapper, []);
 
-  selector.subscribe((newHoster) => setHoster(newHoster.label));
+  selector.subscribe((newHoster) => setHoster(newHoster));
 
   const endWrapper = document.createElement("div");
   endWrapper.className = "flex items-center justify-end space-x-2";
@@ -540,31 +540,15 @@ async function player_constructor(episodes: episode[], index: number) {
     }
   });
 
-  let episode_hosters: NodeListOf<HTMLAnchorElement>;
-  let video_redirect = "";
-
   subscribeHoster(async (newHoster) => {
-    for (let i = 0; i < episode_hosters.length; i++) {
-      const hoster = episode_hosters[i];
-      const hoster_name = hoster.querySelector("h4")?.textContent;
-      const hoster_redirect = hoster.getAttribute("href");
-      console.log(hoster_name, hoster_redirect);
-      if (hoster_redirect == null || hoster_redirect == undefined) continue;
-      if (hoster_name == newHoster) {
-        video_redirect = hoster_redirect;
-        break;
-      }
-    }
-
     let final_url: string | null = null;
 
-    console.log(video_redirect);
-    if (video_redirect !== null) {
+    if (newHoster.redirect !== null) {
       try {
-        if (newHoster == "Doodstream") {
-          final_url = await extract_doodstream_url(video_redirect);
-        } else if (newHoster == "VOE") {
-          final_url = await extract_voe_url(video_redirect);
+        if (newHoster.label.includes("Doodstream")) {
+          final_url = await extract_doodstream_url(newHoster.redirect);
+        } else if (newHoster.label.includes("VOE")) {
+          final_url = await extract_voe_url(newHoster.redirect);
         }
       } catch (e) {
         console.error(e);
@@ -573,7 +557,11 @@ async function player_constructor(episodes: episode[], index: number) {
 
     console.log(final_url);
 
-    if (Hls.isSupported() && newHoster == "VOE" && final_url !== null) {
+    if (
+      Hls.isSupported() &&
+      newHoster.label.includes("VOE") &&
+      final_url !== null
+    ) {
       const hls = new Hls({
         enableWorker: true,
         debug: false,
@@ -581,7 +569,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
       hls.loadSource(final_url);
       hls.attachMedia(video_player as HTMLVideoElement);
-    } else if (newHoster == "Doodstream" && final_url !== null) {
+    } else if (newHoster.label.includes("Doodstream") && final_url !== null) {
       video_player.src = final_url;
     }
     video_player.currentTime = episodes[getIndex()].playtime * 60;
@@ -598,14 +586,70 @@ async function player_constructor(episodes: episode[], index: number) {
       "text/html",
     );
 
-    episode_hosters = html.querySelectorAll(".watchEpisode");
+    const episode_hosters = html.querySelectorAll(".watchEpisode");
+    const hoster_redirects = [];
 
-    for (let i = 0; i < hosters.length; i++) {
-      if (hosters[i].standard) {
-        selector.set(hosters[i]);
-        break;
+    const langs = Array.from(
+      html.querySelectorAll(".changeLanguageBox img"),
+    ).map((lang) => {
+      const imageSrc = lang.getAttribute("src");
+      let langString = "";
+      switch (imageSrc) {
+        case "/public/img/german.svg": {
+          langString = "German";
+          break;
+        }
+        case "/public/img/japanese-german.svg": {
+          langString = "German Sub";
+          break;
+        }
+        case "/public/img/japanese-english.svg": {
+          langString = "Englisch Sub";
+          break;
+        }
+        case "/public/img/japanese.svg": {
+          langString = "Japanese";
+          break;
+        }
+      }
+      const langKey = lang.getAttribute("data-lang-key");
+
+      return {
+        lang: langString,
+        key: langKey,
+      };
+    });
+
+    for (let i = 0; i < episode_hosters.length; i++) {
+      const hoster = episode_hosters[i];
+      const hoster_name = hoster.querySelector("h4")?.textContent;
+      const hoster_redirect = hoster.getAttribute("href");
+      console.log(hoster_name, hoster_redirect);
+      if (hoster_redirect == null || hoster_redirect == undefined) continue;
+      const hosterIndex = hosters.findIndex((a) => a.label == hoster_name);
+      if (hosterIndex !== -1) {
+        const langIndex = langs.findIndex(
+          (a) =>
+            a.key ==
+            hoster.parentElement?.parentElement?.getAttribute("data-lang-key"),
+        );
+        hoster_redirects.push({
+          hoster: hosters[hosterIndex].label,
+          lang: langs[langIndex],
+          redirect: hoster_redirect,
+        });
       }
     }
+
+    const selectorOptions = hoster_redirects.map((hoster) => {
+      return {
+        label: `${hoster.hoster} ${hoster.lang.lang}`,
+        redirect: hoster.redirect,
+      };
+    });
+
+    selector.setOptions(selectorOptions);
+    selector.set(selectorOptions[0]);
   });
 
   player_exit.addEventListener("click", async () => {

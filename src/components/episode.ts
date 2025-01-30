@@ -86,6 +86,53 @@ export function Episode(
 
   episode_info.appendChild(episode_description);
 
+  const [getExpand, setExpand, subscribeExpand] = createState(false);
+
+  const language = document.createElement("div");
+  language.className = "absolute top-4 right-4";
+
+  const language_header = document.createElement("div");
+  language_header.className =
+    "h-8 w-8 bg-neutral-900 rounded-full flex items-center justify-center";
+  language_header.innerHTML =
+    "<img src='./icons/language_24dp.svg' class='h-4 w-4' />";
+
+  language.appendChild(language_header);
+
+  const language_list = document.createElement("div");
+  language_list.className =
+    "absolute top-10 right-0 h-8 px-4 bg-neutral-900 rounded-full flex items-center space-x-2 overflow-hidden";
+  language_list.style.width = `calc(${ep.langs.length} * 2rem)`;
+
+  ep.langs.map((lang) => {
+    if (lang.length !== 0) {
+      const langNode = document.createElement("img");
+      langNode.className = "h-4 w-4 object-contain";
+      langNode.src = `https://aniworld.to${lang}`;
+
+      language_list.appendChild(langNode);
+    }
+  });
+
+  subscribeExpand((newExpand) => {
+    if (newExpand) {
+      language_list.style.display = "flex";
+    } else {
+      language_list.style.display = "none";
+    }
+  });
+
+  language.appendChild(language_list);
+
+  episode_node.appendChild(language);
+
+  language_header.addEventListener("click", (e: Event) => {
+    e.stopPropagation();
+    setExpand(!getExpand());
+  });
+
+  setExpand(false);
+
   const watched = async (duration: number, playtime: number) => {
     if (!localStorage.getItem("token") || !(getProgress().playtime < playtime))
       return;

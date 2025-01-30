@@ -8,6 +8,9 @@ export function Selector(
   const [getValue, setValue, subscribeValue] = createState<
     string | number | null
   >(null);
+  const [getOptions, setOptions, subscribeOptions] = createState<Array<object>>(
+    [],
+  );
   const [getExpand, setExpand, subscribeExpand] = createState(false);
 
   const selector_node = document.createElement("div");
@@ -72,33 +75,36 @@ export function Selector(
   const options_list = document.createElement("div");
   options_list.className =
     "h-fit max-h-96 w-full mt-2 pt-2 border-t border-neutral-600 overflow-y-scroll";
+  subscribeOptions((newOptions) => {
+    newOptions.map((option) => {
+      const option_node = document.createElement("div");
+      option_node.className =
+        "h-8 w-full px-2 flex items-center truncate rounded-lg hover:bg-neutral-800 cursor-pointer";
+      option_node.textContent = option.label;
 
-  options.map((option) => {
-    const option_node = document.createElement("div");
-    option_node.className =
-      "h-8 w-full px-2 flex items-center truncate rounded-lg hover:bg-neutral-800 cursor-pointer";
-    option_node.textContent = option.label;
+      options_list.appendChild(option_node);
 
-    options_list.appendChild(option_node);
+      option_node.addEventListener("click", () => {
+        setExpand(false);
+        setValue(option);
+      });
 
-    option_node.addEventListener("click", () => {
-      setExpand(false);
-      setValue(option);
-    });
-
-    search_input.addEventListener("keyup", () => {
-      if (
-        option.label
-          .toString()
-          .toLowerCase()
-          .includes(search_input.value.toLowerCase())
-      ) {
-        option_node.style.display = "flex";
-      } else {
-        option_node.style.display = "none";
-      }
+      search_input.addEventListener("keyup", () => {
+        if (
+          option.label
+            .toString()
+            .toLowerCase()
+            .includes(search_input.value.toLowerCase())
+        ) {
+          option_node.style.display = "flex";
+        } else {
+          option_node.style.display = "none";
+        }
+      });
     });
   });
+
+  setOptions(options);
 
   options_node.appendChild(options_list);
 
@@ -111,5 +117,6 @@ export function Selector(
     get: getValue,
     set: (value: string | number) => setValue(value),
     subscribe: subscribeValue,
+    setOptions: (options: Array<object>) => setOptions(options),
   };
 }
