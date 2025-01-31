@@ -316,7 +316,7 @@ function watch_constructor() {
 
     const detail_description = document.createElement("div");
     detail_description.className =
-      "my-4 text-sm text-neutral-400 font-medium line-clamp-2";
+      "p-4 rounded-[18px] bg-neutral-900 my-4 text-sm";
     detail_description.textContent = details.desc;
 
     detail_main.appendChild(detail_description);

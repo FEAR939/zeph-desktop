@@ -20,7 +20,7 @@ function top_constructor(
     top.appendChild(top_node);
 
     const title = document.createElement("div");
-    title.className = "absolute left-4 flex items-center space-x-2";
+    title.className = "absolute left-8 flex items-center space-x-2";
     title.innerHTML =
       "<img src='./icons/favicon-512x512.png' class='h-4 w-4 invert' /><span class='font-[Inter] font-medium text-lg'>hazl</span>";
 
@@ -29,14 +29,13 @@ function top_constructor(
     Search(top_node, watch_callback);
 
     const history_wrapper = document.createElement("div");
-    history_wrapper.className =
-      "absolute right-12 h-8 w-8 rounded-full bg-neutral-800";
+    history_wrapper.className = "absolute right-18 h-10 w-10";
 
     const history_node = document.createElement("div");
     history_node.className =
-      "h-full w-full flex items-center justify-center cursor-pointer";
+      "h-full w-full flex items-center justify-center cursor-pointer rounded-full hover:bg-neutral-800";
     history_node.innerHTML =
-      "<img src='./icons/history_24dp.svg' class='h-4 w-4' />";
+      "<img src='./icons/history_24dp.svg' class='h-6 w-6' />";
 
     history_wrapper.appendChild(history_node);
 
@@ -44,7 +43,7 @@ function top_constructor(
 
     const history_list = document.createElement("div");
     history_list.className =
-      "absolute h-fit w-64 p-4 top-10 right-0 bg-neutral-800 rounded-[18px]";
+      "absolute h-fit w-64 p-4 top-12 right-0 bg-neutral-800 rounded-[18px]";
 
     const history_list_header = document.createElement("div");
     history_list_header.className = "w-full mb-2 flex items-center font-medium";
@@ -103,7 +102,7 @@ function top_constructor(
 
     const account_node = document.createElement("div");
     account_node.className =
-      "absolute right-4 w-8 h-8 rounded-full bg-neutral-600 flex items-center";
+      "absolute right-8 w-8 h-8 rounded-full bg-neutral-600 flex items-center";
 
     top_node.appendChild(account_node);
 
@@ -125,7 +124,7 @@ function top_constructor(
 
         const account_menu = document.createElement("div");
         account_menu.className =
-          "absolute z-40 top-10 right-0 h-fit w-64 p-4 rounded-[18px] bg-neutral-800 overflow-hidden transition-all ease-in-out duration-300";
+          "absolute z-40 top-10 right-0 h-fit w-64 p-2 rounded-[18px] bg-neutral-800 overflow-hidden transition-all ease-in-out duration-300";
         account_menu.style.opacity = "0";
         account_menu.style.display = "none";
         account_menu.style.transform = "translateX(1rem)";
@@ -184,7 +183,7 @@ function top_constructor(
 
         const change_avatar = document.createElement("div");
         change_avatar.className =
-          "h-8 w-auto px-2 flex items-center space-x-2 hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-lg";
+          "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-[12px]";
         change_avatar.innerHTML =
           "<img src='./icons/person_24dp.png' class='h-4 w-4' /><span>Change Avatar</span>";
 
@@ -196,7 +195,7 @@ function top_constructor(
 
         const logout = document.createElement("div");
         logout.className =
-          "h-8 w-auto px-2 flex items-center space-x-2 hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-lg";
+          "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-[12px]";
         logout.innerHTML =
           "<img src='./icons/logout_24dp.png' class='h-4 w-4' /><span>Logout</span>";
 

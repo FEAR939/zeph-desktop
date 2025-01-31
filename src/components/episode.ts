@@ -12,22 +12,24 @@ export function Episode(
 ) {
   const episode_node = document.createElement("div");
   episode_node.className =
-    "group relative flex items-center h-32 cursor-pointer rounded-lg overflow-hidden hover:bg-neutral-800 transition-colors";
+    "group relative flex items-center h-fit p-4 cursor-pointer rounded-[24px] hover:bg-neutral-900 transition-colors";
 
   episode_wrapper.appendChild(episode_node);
 
-  const episode_number = document.createElement("div");
-  episode_number.className =
-    "flex-shrink-0 w-20 flex items-center justify-center text-3xl font-bold text-neutral-500 group-hover:text-white transition-colors";
-  episode_number.textContent = (i + 1).toString();
-
-  episode_node.appendChild(episode_number);
-
   const episode_image = document.createElement("div");
   episode_image.className =
-    "relative w-40 flex-shrink-0 aspect-video overflow-hidden rounded-lg bg-neutral-700";
+    "relative h-28 flex-shrink-0 aspect-video overflow-hidden rounded-[12px] bg-neutral-800";
 
   episode_node.appendChild(episode_image);
+
+  if (ep.duration !== 0) {
+    const episode_duration = document.createElement("div");
+    episode_duration.className =
+      "absolute right-2 bottom-2 px-2 py-1 bg-neutral-900/90 rounded-lg text-sm";
+    episode_duration.textContent = `${ep.duration} Min`;
+
+    episode_image.appendChild(episode_duration);
+  }
 
   const [getProgress, setProgress, subscribeProgress] = createState({
     duration: 0,
@@ -65,35 +67,42 @@ export function Episode(
   }
 
   const episode_info = document.createElement("div");
-  episode_info.className = "flex-1 flex flex-col justify-center p-4";
+  episode_info.className =
+    "flex-1 flex flex-col justify-center space-y-1 px-4 overflow-hidden";
 
   episode_node.appendChild(episode_info);
 
-  const episode_info_inner = document.createElement("div");
-  episode_info_inner.className = "flex items-center";
-
-  episode_info.appendChild(episode_info_inner);
-
   const episode_title = document.createElement("h3");
   episode_title.className = "font-medium group-hover:text-white";
-  episode_title.textContent = `Episode ${i + 1}`;
+  episode_title.textContent = ep.title;
 
-  episode_info_inner.appendChild(episode_title);
+  episode_info.appendChild(episode_title);
 
   const episode_description = document.createElement("p");
-  episode_description.className = "mt-1 text-sm text-neutral-400 line-clamp-2";
-  episode_description.textContent = ep.title;
+  episode_description.className = "text-sm text-neutral-400 line-clamp-2";
+  episode_description.textContent = `Episode ${i + 1}`;
 
   episode_info.appendChild(episode_description);
+
+  const episode_buttons = document.createElement("div");
+  episode_buttons.className = "h-8 w-full flex space-x-2 mt-2";
+
+  const episode_watch = document.createElement("div");
+  episode_watch.className =
+    "h-8 w-fit pl-2 pr-3 bg-red-700 rounded-lg space-x-1 flex items-center";
+  episode_watch.innerHTML =
+    "<img src='./icons/play_arrow_24dp.png' class='h-4 w-fit object-cover' /><span class='text-sm'>Watch now</span>";
+
+  episode_buttons.appendChild(episode_watch);
 
   const [getExpand, setExpand, subscribeExpand] = createState(false);
 
   const language = document.createElement("div");
-  language.className = "absolute top-4 right-4";
+  language.className = "relative h-8";
 
   const language_header = document.createElement("div");
   language_header.className =
-    "h-8 w-8 bg-neutral-900 rounded-full flex items-center justify-center";
+    "h-full p-2 bg-red-100/15 text-red-800 rounded-lg flex items-center justify-center";
   language_header.innerHTML =
     "<img src='./icons/language_24dp.svg' class='h-4 w-4' />";
 
@@ -101,7 +110,7 @@ export function Episode(
 
   const language_list = document.createElement("div");
   language_list.className =
-    "absolute top-10 right-0 h-8 px-4 bg-neutral-900 rounded-full flex items-center space-x-2 overflow-hidden";
+    "absolute bottom-10 right-0 h-8 px-4 bg-neutral-800 rounded-lg flex items-center space-x-2 overflow-hidden";
   language_list.style.width = `calc(${ep.langs.length} * 2rem)`;
 
   ep.langs.map((lang) => {
@@ -124,7 +133,7 @@ export function Episode(
 
   language.appendChild(language_list);
 
-  episode_node.appendChild(language);
+  episode_buttons.appendChild(language);
 
   language_header.addEventListener("click", (e: Event) => {
     e.stopPropagation();
@@ -132,6 +141,8 @@ export function Episode(
   });
 
   setExpand(false);
+
+  episode_info.appendChild(episode_buttons);
 
   const watched = async (duration: number, playtime: number) => {
     if (!localStorage.getItem("token") || !(getProgress().playtime < playtime))
