@@ -1,4 +1,5 @@
 import createState from "../createstate";
+import { fetch } from "@tauri-apps/plugin-http";
 import { GetStateFunction, SubscribeFunction, anime_data } from "../types";
 
 export function card(

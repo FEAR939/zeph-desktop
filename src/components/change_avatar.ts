@@ -1,3 +1,5 @@
+import { fetch } from "@tauri-apps/plugin-http";
+
 export function AvatarChanger(parent: HTMLElement, userState) {
   const modal = document.createElement("div");
   modal.className =

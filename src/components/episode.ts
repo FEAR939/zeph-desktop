@@ -1,4 +1,5 @@
 import createState from "../createstate";
+import { fetch } from "@tauri-apps/plugin-http";
 import { episode } from "../types";
 
 export function Episode(
