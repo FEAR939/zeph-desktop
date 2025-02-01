@@ -69,7 +69,7 @@ async function get_episodes(season: season, imdb: string) {
     let episode_watched: api_episode[] = [];
     if (localStorage.getItem("token")) {
       episode_watched = await (
-        await fetch("http://animenetwork.org/get-seen", {
+        await fetch(`${localStorage.getItem("api_url")}/get-seen`, {
           method: "POST",
           headers: {
             "Content-Type": "application/json",
@@ -276,7 +276,7 @@ function watch_constructor() {
       });
 
       const json = await (
-        await fetch("http://animenetwork.org/get-marked", {
+        await fetch(`${localStorage.getItem("api_url")}/get-marked`, {
           method: "POST",
           headers: {
             Authorization: localStorage.getItem("token") || "",
@@ -292,13 +292,16 @@ function watch_constructor() {
       }
 
       on_list.addEventListener("click", async () => {
-        const res = await fetch("http://animenetwork.org/handle-marked", {
-          method: "POST",
-          headers: {
-            Authorization: localStorage.getItem("token") || "",
+        const res = await fetch(
+          `${localStorage.getItem("api_url")}/handle-marked`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: localStorage.getItem("token") || "",
+            },
+            body: current_url.toString(),
           },
-          body: current_url.toString(),
-        });
+        );
         if (!res.ok || mylist_callback == null) return;
         mylist_callback(getList() == 0 ? "add" : "rm", {
           redirect: current_url,

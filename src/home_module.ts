@@ -48,7 +48,7 @@ async function get_categories() {
 
 async function get_mylist() {
   const list = await (
-    await fetch("http://animenetwork.org/get-list", {
+    await fetch(`${localStorage.getItem("api_url")}/get-list`, {
       headers: {
         Authorization: localStorage.getItem("token") || "",
       },
@@ -67,10 +67,13 @@ async function get_mylist() {
       const redirect = anime.series_id;
       let image = "";
       let title = "";
-      const serverData = await fetch("http://animenetwork.org/get-anime", {
-        method: "POST",
-        body: redirect,
-      });
+      const serverData = await fetch(
+        `${localStorage.getItem("api_url")}/get-anime`,
+        {
+          method: "POST",
+          body: redirect,
+        },
+      );
 
       if (serverData.status == 404) {
         const html = new DOMParser().parseFromString(
@@ -84,7 +87,7 @@ async function get_mylist() {
         title = html.querySelector(".series-title h1")?.textContent || "";
 
         if (image.length !== 0 && title.length !== 0) {
-          await fetch("http://animenetwork.org/set-anime", {
+          await fetch(`${localStorage.getItem("api_url")}/set-anime`, {
             method: "POST",
             body: JSON.stringify({
               redirect: redirect,

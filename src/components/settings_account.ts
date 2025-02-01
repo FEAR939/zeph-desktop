@@ -28,10 +28,10 @@ export function AccountSettings(
 
   const avatarImage = document.createElement("img");
   avatarImage.className = "h-full w-full rounded-full";
-  avatarImage.src = `http://animenetwork.org${userState.get().avatar_url}`;
+  avatarImage.src = `${localStorage.getItem("api_url") + userState.get().avatar_url}`;
 
   userState.subscribe((newUser) => {
-    avatarImage.src = `http://animenetwork.org${newUser.avatar_url}`;
+    avatarImage.src = `${localStorage.getItem("api_url") + newUser.avatar_url}`;
   });
 
   avatarWrapper.appendChild(avatarImage);

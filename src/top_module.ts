@@ -122,7 +122,7 @@ function top_constructor(
 
       if (user) {
         const asyncImage = new Image();
-        asyncImage.src = `http://animenetwork.org${user.avatar_url}`;
+        asyncImage.src = `${localStorage.getItem("api_url") + user.avatar_url}`;
         asyncImage.alt = "avatar";
         asyncImage.className =
           "h-full w-full rounded-full object-cover cursor-pointer";
@@ -179,7 +179,7 @@ function top_constructor(
         account_menu.appendChild(user_region);
 
         const avatarImage = new Image();
-        avatarImage.src = `http://animenetwork.org${user.avatar_url}`;
+        avatarImage.src = `${localStorage.getItem("api_url") + user.avatar_url}`;
         avatarImage.alt = "avatar";
         avatarImage.className = "h-16 w-16 rounded-full object-cover";
 

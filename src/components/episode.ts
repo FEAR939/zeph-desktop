@@ -148,7 +148,7 @@ export function Episode(
     if (!localStorage.getItem("token") || !(getProgress().playtime < playtime))
       return;
 
-    const res = await fetch("http://animenetwork.org/handle-seen", {
+    const res = await fetch(`${localStorage.getItem("api_url")}/handle-seen`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",

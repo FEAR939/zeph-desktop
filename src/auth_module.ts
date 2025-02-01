@@ -11,7 +11,7 @@ async function get_token(username: string, password: string) {
     formData.append("password", password.toString());
 
     const json = await (
-      await fetch("http://animenetwork.org/auth-login", {
+      await fetch(`${localStorage.getItem("api_url")}/auth-login`, {
         method: "POST",
         body: new URLSearchParams(
           formData as unknown as Record<string, string>,
@@ -30,10 +30,15 @@ async function register(username: string, password: string) {
     formData.append("username", username.toString());
     formData.append("password", password.toString());
 
-    const res = await fetch("http://animenetwork.org/auth-register", {
-      method: "POST",
-      body: new URLSearchParams(formData as unknown as Record<string, string>),
-    });
+    const res = await fetch(
+      `${localStorage.getItem("api_url")}/auth-register`,
+      {
+        method: "POST",
+        body: new URLSearchParams(
+          formData as unknown as Record<string, string>,
+        ),
+      },
+    );
 
     return res.status;
   } catch (e) {
@@ -186,7 +191,7 @@ function auth_constructor(loginSignal: SubscribeFunction<object | null>) {
       const user = document.createElement("div");
       user.className = "w-full mb-8 flex space-x-2 items-center";
       user.innerHTML = `
-        <img src="${newLogin.avatar_url}" class="h-8 w-8 rounded-full" />
+        <img src="${localStorage.getItem("api_url") + newLogin.avatar_url}" class="h-8 w-8 rounded-full" />
         <span class="font-medium">${newLogin.username}</span>
         `;
 

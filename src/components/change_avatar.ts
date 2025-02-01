@@ -89,13 +89,16 @@ export function AvatarChanger(parent: HTMLElement, userState) {
         const formData = new FormData();
         formData.append("file", file);
 
-        const response = await fetch("http://animenetwork.org/avatar-upload", {
-          method: "POST",
-          headers: {
-            Authorization: localStorage.getItem("token") || "",
+        const response = await fetch(
+          `${localStorage.getItem("api_url")}/avatar-upload`,
+          {
+            method: "POST",
+            headers: {
+              Authorization: localStorage.getItem("token") || "",
+            },
+            body: formData,
           },
-          body: formData,
-        });
+        );
 
         if (response.status !== 200) return;
         const json = await response.json();

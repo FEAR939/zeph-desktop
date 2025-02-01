@@ -98,13 +98,16 @@ export function card(
         return;
       }
 
-      const res = await fetch("http://animenetwork.org/handle-marked", {
-        method: "POST",
-        headers: {
-          Authorization: localStorage.getItem("token") || "",
+      const res = await fetch(
+        `${localStorage.getItem("api_url")}/handle-marked`,
+        {
+          method: "POST",
+          headers: {
+            Authorization: localStorage.getItem("token") || "",
+          },
+          body: item.redirect.toString(),
         },
-        body: item.redirect.toString(),
-      });
+      );
       if (!res.ok) return;
       mylist_handler(getList() == 0 ? "add" : "rm", {
         redirect: item.redirect,

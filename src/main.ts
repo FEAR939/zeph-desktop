@@ -5,6 +5,8 @@ import top_constructor from "./top_module.js";
 import watch_constructor from "./watch_module.js";
 import { Settings } from "./settings.js";
 
+localStorage.setItem("api_url", "http://animenetwork.org");
+
 const [getUser, setUser, subscribeUser] = createState<object | null>(null);
 
 async function login(token?: string) {
@@ -15,7 +17,7 @@ async function login(token?: string) {
   }
 
   const json = await (
-    await fetch("http://animenetwork.org/get-user", {
+    await fetch(`${localStorage.getItem("api_url")}/get-user`, {
       headers: {
         Authorization: localStorage.getItem("token") || "",
       },
