@@ -103,7 +103,7 @@ function top_constructor(
 
     const settings_node = document.createElement("div");
     settings_node.className =
-      "absolute right-18 h-10 w-10 flex items-center justify-center hover:bg-neutral-800 rounded-full";
+      "absolute right-18 h-10 w-10 flex items-center justify-center hover:bg-neutral-800 rounded-full cursor-pointer";
     settings_node.innerHTML =
       "<img src='./icons/settings_24dp.svg' class='h-6 w-6 object-cover' />";
 
