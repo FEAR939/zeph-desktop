@@ -3,6 +3,7 @@ import home_constructor from "./home_module.js";
 import auth_constructor from "./auth_module.js";
 import top_constructor from "./top_module.js";
 import watch_constructor from "./watch_module.js";
+import { Settings } from "./settings.js";
 
 const [getUser, setUser, subscribeUser] = createState<object | null>(null);
 
@@ -38,11 +39,21 @@ const home_page = home_constructor();
 const watch_page = watch_constructor();
 const auth_page = auth_constructor(subscribeUser);
 
+const settings_page = Settings(
+  {
+    get: getUser,
+    set: (value) => setUser(value),
+    subscribe: subscribeUser,
+  },
+  auth_page.build,
+);
+
 const top_bar = top_constructor(
   top_area,
   auth_page.build,
   watch_page.build,
   subscribeUser,
+  settings_page,
 );
 
 home_page.setParams(content_area, watch_page.build);

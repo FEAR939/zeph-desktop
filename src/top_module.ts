@@ -1,14 +1,15 @@
 import { fetch } from "@tauri-apps/plugin-http";
-import { open } from "@tauri-apps/plugin-shell";
 import createState from "./createstate";
 import { Search } from "./components/search";
 import { SubscribeFunction } from "./types";
+import { Settings } from "./settings";
 
 function top_constructor(
   top: HTMLElement,
   login_callback: (fn: () => void) => void,
   watch_callback: (redirect: string) => void,
   userSignal: SubscribeFunction<object | null>,
+  settings: () => void,
 ) {
   const history_Array = [];
 
@@ -29,7 +30,7 @@ function top_constructor(
     Search(top_node, watch_callback);
 
     const history_wrapper = document.createElement("div");
-    history_wrapper.className = "absolute right-18 h-10 w-10";
+    history_wrapper.className = "absolute right-30 h-10 w-10";
 
     const history_node = document.createElement("div");
     history_node.className =
@@ -100,6 +101,16 @@ function top_constructor(
       }
     });
 
+    const settings_node = document.createElement("div");
+    settings_node.className =
+      "absolute right-18 h-10 w-10 flex items-center justify-center hover:bg-neutral-800 rounded-full";
+    settings_node.innerHTML =
+      "<img src='./icons/settings_24dp.svg' class='h-6 w-6 object-cover' />";
+
+    top_node.appendChild(settings_node);
+
+    settings_node.addEventListener("click", () => settings());
+
     const account_node = document.createElement("div");
     account_node.className =
       "absolute right-8 w-8 h-8 rounded-full bg-neutral-600 flex items-center";
@@ -111,13 +122,11 @@ function top_constructor(
 
       if (user) {
         const asyncImage = new Image();
-        asyncImage.src = user.avatar_url;
+        asyncImage.src = `http://animenetwork.org${user.avatar_url}`;
+        asyncImage.alt = "avatar";
         asyncImage.className =
           "h-full w-full rounded-full object-cover cursor-pointer";
-
-        asyncImage.addEventListener("load", () => {
-          account_node.appendChild(asyncImage);
-        });
+        account_node.appendChild(asyncImage);
 
         const [getMenuState, setMenuState, subscribeMenuState] =
           createState(false);
@@ -170,7 +179,8 @@ function top_constructor(
         account_menu.appendChild(user_region);
 
         const avatarImage = new Image();
-        avatarImage.src = user.avatar_url;
+        avatarImage.src = `http://animenetwork.org${user.avatar_url}`;
+        avatarImage.alt = "avatar";
         avatarImage.className = "h-16 w-16 rounded-full object-cover";
 
         user_region.appendChild(avatarImage);
@@ -180,18 +190,6 @@ function top_constructor(
         user_nickname.textContent = user.username;
 
         user_region.appendChild(user_nickname);
-
-        const change_avatar = document.createElement("div");
-        change_avatar.className =
-          "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-[12px]";
-        change_avatar.innerHTML =
-          "<img src='./icons/person_24dp.png' class='h-4 w-4' /><span>Change Avatar</span>";
-
-        account_menu.appendChild(change_avatar);
-
-        change_avatar.addEventListener("click", () =>
-          open("http://animenetwork.org/avatar"),
-        );
 
         const logout = document.createElement("div");
         logout.className =
