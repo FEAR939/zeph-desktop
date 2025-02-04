@@ -4,8 +4,10 @@ import auth_constructor from "./auth_module.js";
 import top_constructor from "./top_module.js";
 import watch_constructor from "./watch_module.js";
 import { Settings } from "./settings.js";
+import { Navbar } from "./components/navbar.js";
+import { Calendar } from "./components/calendar.js";
 
-localStorage.setItem("api_url", "http://animenetwork.org");
+localStorage.setItem("api_url", "http://localhost:5000");
 
 const [getUser, setUser, subscribeUser] = createState<object | null>(null);
 
@@ -41,6 +43,21 @@ const home_page = home_constructor();
 const watch_page = watch_constructor();
 const auth_page = auth_constructor(subscribeUser);
 
+const navs = [
+  {
+    label: "Home",
+    fn: home_page.build,
+  },
+  {
+    label: "Calendar",
+    fn: () => {
+      content_area.innerHTML = "";
+      Calendar(content_area);
+    },
+  },
+];
+const nav = Navbar(content_area, navs);
+
 const settings_page = Settings(
   {
     get: getUser,
@@ -56,6 +73,7 @@ const top_bar = top_constructor(
   watch_page.build,
   subscribeUser,
   settings_page,
+  nav.show,
 );
 
 home_page.setParams(content_area, watch_page.build);

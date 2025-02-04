@@ -3,6 +3,8 @@ import { carousel } from "./components/carousel";
 
 import { categorie, anime_data, anime } from "./types";
 import { Calendar } from "./components/calendar";
+import createState from "./createstate";
+import { card } from "./components/card";
 
 async function get_categories() {
   try {
@@ -46,24 +48,24 @@ async function get_categories() {
   }
 }
 
-async function get_mylist() {
-  const list = await (
-    await fetch(`${localStorage.getItem("api_url")}/get-list`, {
+async function get_item_batch(page: number) {
+  const items = await (
+    await fetch(`${localStorage.getItem("api_url")}/get-list?page=${page}`, {
       headers: {
         Authorization: localStorage.getItem("token") || "",
       },
     })
   ).json();
 
-  if (!list.length) {
-    return {};
+  if (!items.length) {
+    return null;
   }
 
-  const watched_list: anime_data[] = [];
+  const items_list: anime_data[] = [];
 
   // Use Promise.all to wait for all async operations
   await Promise.all(
-    list.map(async (anime: anime) => {
+    items.map(async (anime: anime) => {
       const redirect = anime.series_id;
       let image = "";
       let title = "";
@@ -103,7 +105,7 @@ async function get_mylist() {
         title = data.title;
       }
 
-      watched_list.push({
+      items_list.push({
         redirect: redirect || "",
         image: image || "",
         title: title || "",
@@ -111,12 +113,9 @@ async function get_mylist() {
     }),
   );
 
-  const mylist = {
-    label: "My List",
-    items: watched_list,
-  };
+  console.log(items_list);
 
-  return mylist;
+  return items_list;
 }
 
 function home_constructor() {
@@ -136,14 +135,6 @@ function home_constructor() {
         "categories",
         JSON.stringify({ categories: categories, timestamp: Date.now() }),
       );
-
-      if (localStorage.getItem("token")) {
-        const mylist = await get_mylist();
-        localStorage.setItem(
-          "mylist",
-          JSON.stringify({ mylist: mylist, timestamp: Date.now() }),
-        );
-      }
       loading = false;
     }
 
@@ -170,28 +161,109 @@ function home_constructor() {
     let categories =
       JSON.parse(localStorage.getItem("categories") || "").categories || [];
     if (localStorage.getItem("token")) {
-      const mylist = JSON.parse(localStorage.getItem("mylist") || "").mylist;
-      if (mylist.items && mylist.items.length !== 0) {
-        mylist.items.sort(function (a: anime_data, b: anime_data) {
-          if (a.title < b.title) {
-            return -1;
-          }
-          if (a.title > b.title) {
-            return 1;
-          }
-          return 0;
-        });
+      const mylist = {
+        label: "My List",
+        items: [],
+      };
 
-        categories = [mylist, ...categories];
-      }
+      categories = [...categories, mylist];
     }
 
-    categories.forEach((categorie: categorie) => {
-      if (content == null || watch_callback == null) return;
-      carousel(categorie, content, watch_callback, mylist_handler);
+    // categories.forEach((categorie: categorie) => {
+    //   if (content == null || watch_callback == null) return;
+    //   carousel(categorie, content, watch_callback, mylist_handler);
+    // });
+
+    const [getSelectedList, setSelectedList, subscribeSelectedList] =
+      createState(null);
+
+    const pagination = [];
+
+    const selectedWrapper = document.createElement("div");
+    selectedWrapper.className =
+      "m-4 p-2 w-fit flex space-x-2 bg-neutral-900 rounded-lg";
+
+    categories.map((categorie, i) => {
+      pagination.push({
+        page: 0,
+      });
+
+      const selectedCategorie = document.createElement("div");
+      selectedCategorie.className =
+        "px-2 py-1 hover:bg-neutral-800 rounded-md cursor-pointer";
+      selectedCategorie.textContent = categorie.label;
+
+      selectedWrapper.appendChild(selectedCategorie);
+
+      selectedCategorie.addEventListener("click", () => setSelectedList(i));
     });
 
-    Calendar(content);
+    content.appendChild(selectedWrapper);
+
+    const itemGrid = document.createElement("div");
+    itemGrid.className = "px-4 h-fit w-full grid gap-2";
+
+    function handleGridSize(size) {
+      itemGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+    }
+
+    window.addEventListener("resize", () => {
+      handleGridSize(Math.floor(window.outerWidth / 200));
+    });
+
+    handleGridSize(Math.floor(window.outerWidth / 200));
+
+    content.appendChild(itemGrid);
+
+    async function handleItems() {
+      const items = await get_item_batch(pagination[getSelectedList()].page);
+      if (items == null) return;
+
+      categories[getSelectedList()].items = [
+        ...categories[getSelectedList()].items,
+        ...items,
+      ];
+
+      items.map((item) => {
+        card(item, itemGrid, watch_callback, mylist_handler);
+      });
+
+      pagination[getSelectedList()].page += 1;
+    }
+
+    subscribeSelectedList(async (newList) => {
+      itemGrid.innerHTML = "";
+      if (
+        pagination[newList].page == 0 &&
+        categories[newList].label == "My List"
+      ) {
+        while (
+          content?.clientHeight >
+          content?.scrollHeight - selectedWrapper.clientHeight
+        ) {
+          await handleItems();
+        }
+      } else {
+        categories[newList].items.map((item) => {
+          card(item, itemGrid, watch_callback, mylist_handler);
+        });
+      }
+    });
+
+    content.addEventListener("scroll", async () => {
+      if (
+        getSelectedList() == null ||
+        content.scrollHeight > content.scrollTop + content.clientHeight ||
+        categories[getSelectedList()].label !== "My List"
+      )
+        return;
+
+      handleItems();
+    });
+
+    setSelectedList(0);
+
+    // Calendar(content);
   };
 
   async function mylist_handler(method: string, data?: anime_data) {

@@ -10,6 +10,7 @@ function top_constructor(
   watch_callback: (redirect: string) => void,
   userSignal: SubscribeFunction<object | null>,
   settings: () => void,
+  nav_show: () => void,
 ) {
   const history_Array = [];
 
@@ -20,8 +21,16 @@ function top_constructor(
 
     top.appendChild(top_node);
 
+    const show = document.createElement("img");
+    show.className = "absolute left-8 h-8 w-8 cursor-pointer";
+    show.src = "./icons/menu_24dp.svg";
+
+    top_node.appendChild(show);
+
+    show.addEventListener("click", nav_show);
+
     const title = document.createElement("div");
-    title.className = "absolute left-8 flex items-center space-x-2";
+    title.className = "absolute left-20 flex items-center space-x-2";
     title.innerHTML =
       "<img src='./icons/favicon-512x512.png' class='h-4 w-4 invert' /><span class='font-[Inter] font-medium text-lg'>hazl</span>";
 
