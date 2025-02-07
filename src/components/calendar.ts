@@ -67,7 +67,7 @@ async function get_calendar() {
 export async function Calendar(content: HTMLElement) {
   const calendar_wrapper = document.createElement("div");
   calendar_wrapper.className =
-    "relative flex flex-col m-8 pb-4 h-[36rem] bg-neutral-900 rounded-[18px] overflow-hidden";
+    "relative flex flex-col m-8 pb-4 h-[calc(100%-4rem)] bg-neutral-900 rounded-xl overflow-hidden";
 
   content.appendChild(calendar_wrapper);
 
@@ -114,7 +114,7 @@ export async function Calendar(content: HTMLElement) {
 
   const tool_search_wrapper = document.createElement("div");
   tool_search_wrapper.className =
-    "absolute right-22 top-4 h-8 w-48 px-2 bg-neutral-800 rounded-full flex space-x-2 items-center";
+    "absolute right-22 top-4 h-8 w-48 px-2 rounded-xl border border-neutral-700 flex space-x-2 items-center";
   tool_search_wrapper.innerHTML =
     "<img src='./icons/search_24dp.svg' class='h-4 w-4' />";
 
@@ -128,17 +128,17 @@ export async function Calendar(content: HTMLElement) {
 
   const prev = document.createElement("div");
   prev.className =
-    "absolute right-12 top-4 h-8 w-8 bg-neutral-800 rounded-full flex items-center justify-center cursor-pointer";
+    "absolute right-12 top-4 h-8 w-8 bg-neutral-800 hover:bg-neutral-700 rounded-xl flex items-center justify-center cursor-pointer transition-colors";
   prev.innerHTML =
-    "<img src='./icons/chevron_left_24dp.png' class='h-4 w-4' />";
+    "<img src='./icons/chevron_left_24dp.png' class='h-6 w-6' />";
 
   tool_row.appendChild(prev);
 
   const next = document.createElement("div");
   next.className =
-    "absolute right-4 top-4 h-8 w-8 bg-neutral-800 rounded-full flex items-center justify-center cursor-pointer";
+    "absolute right-4 top-4 h-8 w-8 bg-neutral-800 hover:bg-neutral-700 rounded-xl flex items-center justify-center cursor-pointer transition-colors";
   next.innerHTML =
-    "<img src='./icons/chevron_right_24dp.png' class='h-4 w-4' />";
+    "<img src='./icons/chevron_right_24dp.png' class='h-6 w-6' />";
 
   tool_row.appendChild(next);
 
@@ -199,16 +199,16 @@ export async function Calendar(content: HTMLElement) {
 
   const current_time = document.createElement("div");
   current_time.className =
-    "absolute left-0 right-0 h-6 w-fit mx-auto px-2 bg-blue-400 rounded-full flex items-center justify-center text-sm";
+    "absolute left-0 right-0 h-6 w-fit mx-auto px-2 bg-white text-black rounded-md flex items-center justify-center text-sm";
 
   time_column.appendChild(current_time);
 
   const current_time_bar = document.createElement("div");
   current_time_bar.className =
-    "absolute left-24 h-0.5 w-full bg-blue-400 flex items-center z-10";
+    "absolute left-24 h-0.5 w-full bg-white flex items-center z-10";
 
   current_time_bar.innerHTML =
-    "<div class='absolute -left-2 h-4 w-4 bg-blue-400 rounded-full'></div>";
+    "<div class='absolute -left-2 h-4 w-4 bg-white rounded-full'></div>";
 
   main_row_outer.appendChild(current_time_bar);
 
@@ -234,7 +234,7 @@ export async function Calendar(content: HTMLElement) {
 
   const modal = document.createElement("div");
   modal.className =
-    "absolute z-30 inset-0 m-auto h-[32rem] w-96 p-4 bg-neutral-800 rounded-lg flex flex-col";
+    "absolute z-30 inset-0 m-auto h-[32rem] w-96 p-4 bg-neutral-950 border border-neutral-800 rounded-xl flex flex-col";
 
   calendar_wrapper.appendChild(modal);
 
@@ -257,7 +257,7 @@ export async function Calendar(content: HTMLElement) {
   modal_close.addEventListener("click", () => setShow(false));
 
   const modal_list = document.createElement("div");
-  modal_list.className = "h-full w-full overflow-y-scroll";
+  modal_list.className = "h-full w-full mt-2 space-y-2 overflow-y-scroll";
 
   modal.appendChild(modal_list);
 
@@ -332,13 +332,13 @@ export async function Calendar(content: HTMLElement) {
         time_groups[i].items.map((item) => {
           const modal_node = document.createElement("div");
           modal_node.className =
-            "h-32 w-full px-4 flex items-center space-x-4 rounded-lg hover:bg-neutral-700 transition-colors";
+            "h-fit w-full flex items-center space-x-4 transition-colors";
 
           modal_list.appendChild(modal_node);
 
           const modal_image = document.createElement("div");
           modal_image.className =
-            "w-20 shrink-0 aspect-[1/1.3] overflow-hidden rounded-lg bg-neutral-700";
+            "h-16 shrink-0 aspect-[1/1.3] overflow-hidden rounded-lg bg-neutral-700";
 
           modal_node.appendChild(modal_image);
 

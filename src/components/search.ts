@@ -7,13 +7,13 @@ export function Search(
 ) {
   const search_node = document.createElement("div");
   search_node.className =
-    "relative group h-10 w-96 bg-neutral-800 rounded-full max-w-[50%] drop-shadow-[0_0_15px_rgba(80,80,80,0.25)]";
+    "relative group h-8 w-96 border border-neutral-800 rounded-xl max-w-[50%]";
 
   top_node.appendChild(search_node);
 
   const search_wrapper = document.createElement("div");
   search_wrapper.className =
-    "absolute inset-[1px] flex items-center space-x-2 px-2 rounded-[18px] overflow-hidden";
+    "absolute inset-[1px] flex items-center space-x-2 px-1 rounded-[18px] overflow-hidden";
   search_wrapper.innerHTML =
     "<img src='./icons/icons8-search.svg' class='h-4 w-4 ml-1 object-cover' />";
 
@@ -21,7 +21,7 @@ export function Search(
 
   const search_input = document.createElement("input");
   search_input.className =
-    "h-8 w-full bg-transparent border-0 outline-0 placeholder:text-neutral-200 text-s font-[Inter]";
+    "h-full w-full bg-transparent border-0 outline-0 placeholder:text-neutral-500 text-xs text-neutral-500 font-[Inter]";
   search_input.placeholder = "Search";
   search_input.accessKey = "f";
 
@@ -37,7 +37,7 @@ export function Search(
 
   const search_results = document.createElement("div");
   search_results.className =
-    "absolute left-0 right-0 top-16 max-h-96 h-0 py-2 overflow-hidden rounded-[18px] bg-neutral-800 transition-all ease-in-out duration-300 -translate-y-4";
+    "absolute left-0 right-0 top-16 max-h-96 h-0 py-2 overflow-hidden rounded-xl bg-neutral-950 border border-neutral-800 transition-all ease-in-out duration-300 -translate-y-4";
   search_results.style.opacity = "0";
   search_results.style.transform = "translateY(-1rem)";
 
@@ -167,7 +167,7 @@ export function Search(
 
       const search_result = document.createElement("div");
       search_result.className =
-        "w-auto px-4 py-2 mx-2 flex items-center hover:bg-white/10 transition ease-in duration-300 cursor-pointer rounded-[12px]";
+        "w-auto px-2 py-1 mx-1 flex items-center cursor-pointer text-xs text-neutral-300";
       search_result.innerHTML = `<div class='truncate'>${item.title.replace("<em>", "").replace("</em>", "")}</div>`;
 
       search_results_inner.appendChild(search_result);

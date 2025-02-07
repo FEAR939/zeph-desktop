@@ -5,6 +5,10 @@
     src: url("../fonts/Inter-VariableFont_opsz,wght.ttf");
 }
 
+:root {
+    --text-xs: 14px;
+}
+
 input {
     outline: none;
     border: none;

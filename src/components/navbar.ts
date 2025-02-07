@@ -1,12 +1,16 @@
+import createState from "../createstate";
+
 export function Navbar(contentArea: HTMLElement, navs: Array<object>) {
+  const [getShow, setShow, subscribeShow] = createState(false);
   const node = document.createElement("div");
   node.className =
-    "absolute z-30 h-full w-64 p-4 pt-16 bg-neutral-900 -left-64 transition duration-300";
+    "absolute z-20 h-full w-64 p-4 pt-16 bg-neutral-950 border-r border-neutral-800 -left-64 transition duration-300";
 
   navs.map((nav) => {
     const nav_node = document.createElement("div");
-    nav_node.className = "w-full p-4 hover:bg-neutral-700 rounded-lg";
-    nav_node.textContent = nav.label;
+    nav_node.className =
+      "w-full p-2 hover:bg-neutral-800 flex items-center space-x-4 rounded-md transition-colors cursor-pointer";
+    nav_node.innerHTML = `<img src="${nav.icon}" class="h-6 w-6" /><span>${nav.label}</span>`;
 
     node.appendChild(nav_node);
 
@@ -15,15 +19,16 @@ export function Navbar(contentArea: HTMLElement, navs: Array<object>) {
 
   document.body.appendChild(node);
 
-  node.addEventListener("mouseleave", () => {
-    node.style.transform = "translateX(0)";
+  subscribeShow((newShow) => {
+    if (newShow) {
+      node.style.transform = "translateX(100%)";
+    } else {
+      node.style.transform = "translateX(0)";
+    }
   });
 
-  const show = () => {
-    node.style.transform = "translateX(100%)";
-  };
-
   return {
-    show: show,
+    getShow: getShow,
+    setShow: (value) => setShow(value),
   };
 }

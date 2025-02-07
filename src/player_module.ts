@@ -187,7 +187,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
   // Create playback progress bar
   const progressBar = document.createElement("div");
-  progressBar.className = "absolute h-full bg-red-600";
+  progressBar.className = "absolute h-full bg-white";
   progressBar.style.width = "0%";
 
   // Add elements to DOM
@@ -247,7 +247,7 @@ async function player_constructor(episodes: episode[], index: number) {
   // Add handle/knob
   const handle = document.createElement("div");
   handle.className =
-    "absolute h-3 w-3 bg-red-600 rounded-full -right-1.5 top-1/2 -translate-y-1/2";
+    "absolute h-3 w-3 bg-white rounded-full -right-1.5 top-1/2 -translate-y-1/2";
   progressBar.appendChild(handle);
 
   // Optional: Add hover state to timeline
@@ -340,7 +340,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
   const introSkip = document.createElement("div");
   introSkip.className =
-    "flex items-center rounded-full bg-[#090b0c] border border-white/15 px-2 py-1 space-x-2 cursor-pointer";
+    "flex items-center rounded-md bg-neutral-900 hover:bg-neutral-800 px-2 py-1 space-x-2 cursor-pointer transition-colors";
   introSkip.innerHTML =
     "<img src='./icons/skip_next_24dp.png' class='h-4 w-4' /><span class='text-sm'>Intro</span>";
 

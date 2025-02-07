@@ -12,14 +12,7 @@ export function card(
 ) {
   const item_node = document.createElement("div");
   item_node.className =
-    "relative h-full w-full group/item flex items-center justify-center flex-shrink-0 mx-[.25rem] rounded-lg cursor-pointer";
-  // item_node.style.width = `calc(((100vw - 4rem) / ${getCardCount()}) - .5rem)`;
-  // item_node.style.height = `calc(((100vw - 4rem) / ${getCardCount()}) - .5rem) * 1.3/1)`;
-
-  // subscribeCardCount((newCount) => {
-  //   item_node.style.width = `calc(((100vw - 4rem) / ${newCount}) - .5rem)`;
-  //   item_node.style.height = `calc(((100vw - 4rem) / ${newCount}) - .5rem) * 1.3/1)`;
-  // });
+    "relative h-full w-full group/item flex flex-col space-y-2 items-center rounded-lg cursor-pointer";
 
   item_node.addEventListener("click", () => {
     if (watch_callback == null) return;
@@ -29,29 +22,28 @@ export function card(
   carousel.appendChild(item_node);
 
   const item_image = document.createElement("div");
-  item_image.className = "w-full aspect-[1/1.3] overflow-hidden rounded-lg";
+  item_image.className = "w-full aspect-[72/97] overflow-hidden rounded-lg";
 
   item_node.appendChild(item_image);
 
-  const item_glow = document.createElement("div");
-  item_glow.className =
-    "absolute -inset-8 -z-10 blur-2xl opacity-0 group-hover/item:opacity-100 transition-all ease-in-out duration-300";
+  const item_title = document.createElement("h5");
+  item_title.className = "w-full font-semibold text-sm line-clamp-2";
+  item_title.textContent = item.title;
 
-  item_node.appendChild(item_glow);
+  item_node.appendChild(item_title);
 
   const item_load = document.createElement("div");
   item_load.className =
-    "absolute inset-0 bg-neutral-900/50 animate-pulse rounded-lg";
+    "absolute left-0 right-0 aspect-[72/97] bg-neutral-950 border border-neutral-800 animate-pulse rounded-lg";
 
   item_node.appendChild(item_load);
 
   const asyncImage = new Image();
   asyncImage.src = `https://aniworld.to${item.image}`;
-  asyncImage.className = "w-full h-full object-cover object-top";
+  asyncImage.className = "w-full h-full object-fit";
 
   asyncImage.addEventListener("load", () => {
     item_load.remove();
     item_image.appendChild(asyncImage);
-    item_glow.appendChild(asyncImage.cloneNode());
   });
 }

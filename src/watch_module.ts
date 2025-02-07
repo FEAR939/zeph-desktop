@@ -4,6 +4,7 @@ import player_constructor from "./player_module.js";
 import { anime_data, season, api_episode, episode } from "./types.js";
 import { Episode } from "./components/episode.js";
 import { Selector } from "./components/selector.js";
+import Devider from "./components/devider.js";
 
 async function get_details(url: string) {
   const response = (await fetch(`https://aniworld.to${url}`)).text();
@@ -259,7 +260,7 @@ function watch_constructor() {
       const [getList, setList, subscribeList] = createState(0);
       const on_list = document.createElement("div");
       on_list.className =
-        "flex items-center space-x-2 bg-neutral-900 px-2 py-1 rounded-lg cursor-pointer transition ease-in duration-300";
+        "flex items-center space-x-2 bg-neutral-900 hover:bg-neutral-800 p-2 rounded-md cursor-pointer transition-colors";
       on_list.textContent = "...";
 
       detail_stats_outer.appendChild(on_list);
@@ -268,10 +269,10 @@ function watch_constructor() {
         console.log(newList);
         if (newList == 1) {
           on_list.innerHTML =
-            "<img src='./icons/remove_24dp.png' class='h-4 w-4' /><span class='pr-1'>My List</span>";
+            "<img src='./icons/bookmark_24dp_FILL.svg' class='h-6 w-6' />";
         } else {
           on_list.innerHTML =
-            "<img src='./icons/add_24dp.png' class='h-4 w-4' /><span class='pr-1'>My List</span>";
+            "<img src='./icons/bookmark_24dp.svg' class='h-6 w-6' />";
         }
       });
 
@@ -317,9 +318,10 @@ function watch_constructor() {
 
     detail_node.appendChild(detail_main);
 
+    Devider(detail_main, "description");
+
     const detail_description = document.createElement("div");
-    detail_description.className =
-      "p-4 rounded-[18px] bg-neutral-900 my-4 text-sm";
+    detail_description.className = "p-4 rounded-xl bg-neutral-900 my-4 text-sm";
     detail_description.textContent = details.desc;
 
     detail_main.appendChild(detail_description);
@@ -328,14 +330,18 @@ function watch_constructor() {
 
     let previous = cache.get("selectedSeason")?.label || undefined;
 
+    Devider(detail_main, "Episodes");
+
     const selector = Selector(detail_main, details.seasons, previous);
 
     selector.subscribe((newValue) => {
       setSeason(newValue);
     });
 
+    console.log(cache);
+
     const episode_wrapper = document.createElement("div");
-    episode_wrapper.className = "my-4";
+    episode_wrapper.className = "my-4 space-y-4";
 
     detail_main.appendChild(episode_wrapper);
 
@@ -344,19 +350,19 @@ function watch_constructor() {
       const episode_node = document.createElement("div");
       episode_node.className = "h-32 rounded-lg overflow-hidden animate-pulse";
       episode_node.innerHTML =
-        "<div class='h-full w-full bg-neutral-800'></div>";
+        "<div class='h-full w-full bg-neutral-900'></div>";
 
       episode_wrapper.appendChild(episode_node);
 
       let episodes;
 
-      cache.set("selectedSeason", newSeason);
-      if (!cache.get(`episodes-${newSeason}`)) {
+      cache.set("selectedSeason", newSeason.redirect);
+      if (!cache.get(`episodes-${newSeason.redirect}`)) {
         episodes = await get_episodes(newSeason, details.imdb);
-        cache.set(`episodes-${newSeason}`, episodes);
+        cache.set(`episodes-${newSeason.redirect}`, episodes);
         console.log(cache);
       } else {
-        episodes = cache.get(`episodes-${newSeason}`);
+        episodes = cache.get(`episodes-${newSeason.redirect}`);
       }
 
       render_episodes(episodes);

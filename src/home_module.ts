@@ -1,8 +1,6 @@
 import { fetch } from "@tauri-apps/plugin-http";
-import { carousel } from "./components/carousel";
 
 import { categorie, anime_data, anime } from "./types";
-import { Calendar } from "./components/calendar";
 import createState from "./createstate";
 import { card } from "./components/card";
 
@@ -169,19 +167,13 @@ function home_constructor() {
       categories = [...categories, mylist];
     }
 
-    // categories.forEach((categorie: categorie) => {
-    //   if (content == null || watch_callback == null) return;
-    //   carousel(categorie, content, watch_callback, mylist_handler);
-    // });
-
     const [getSelectedList, setSelectedList, subscribeSelectedList] =
       createState(null);
 
     const pagination = [];
 
     const selectedWrapper = document.createElement("div");
-    selectedWrapper.className =
-      "m-4 p-2 w-fit flex space-x-2 bg-neutral-900 rounded-lg";
+    selectedWrapper.className = "m-4 p-1 w-fit flex bg-neutral-800 rounded-md";
 
     categories.map((categorie, i) => {
       pagination.push({
@@ -190,10 +182,20 @@ function home_constructor() {
 
       const selectedCategorie = document.createElement("div");
       selectedCategorie.className =
-        "px-2 py-1 hover:bg-neutral-800 rounded-md cursor-pointer";
+        "px-3 py-1.5 rounded cursor-pointer transition duration-300 text-sm text-neutral-400 font-medium";
       selectedCategorie.textContent = categorie.label;
 
       selectedWrapper.appendChild(selectedCategorie);
+
+      subscribeSelectedList((newList) => {
+        if (newList == i) {
+          selectedCategorie.classList.remove("text-neutral-400");
+          selectedCategorie.classList.add("bg-neutral-950", "text-white");
+        } else {
+          selectedCategorie.classList.add("text-neutral-400");
+          selectedCategorie.classList.remove("bg-neutral-950", "text-white");
+        }
+      });
 
       selectedCategorie.addEventListener("click", () => setSelectedList(i));
     });
@@ -201,17 +203,17 @@ function home_constructor() {
     content.appendChild(selectedWrapper);
 
     const itemGrid = document.createElement("div");
-    itemGrid.className = "px-4 h-fit w-full grid gap-2";
+    itemGrid.className = "px-4 pb-4 h-fit w-full grid gap-x-4 gap-y-8";
 
     function handleGridSize(size) {
       itemGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
     }
 
     window.addEventListener("resize", () => {
-      handleGridSize(Math.floor(window.outerWidth / 200));
+      handleGridSize(Math.floor(window.outerWidth / 250));
     });
 
-    handleGridSize(Math.floor(window.outerWidth / 200));
+    handleGridSize(Math.floor(window.outerWidth / 250));
 
     content.appendChild(itemGrid);
 
@@ -250,10 +252,9 @@ function home_constructor() {
       }
     });
 
-    content.addEventListener("scroll", async () => {
+    content.addEventListener("scrollend", async () => {
       if (
         getSelectedList() == null ||
-        content.scrollHeight > content.scrollTop + content.clientHeight ||
         categories[getSelectedList()].label !== "My List"
       )
         return;
@@ -262,8 +263,6 @@ function home_constructor() {
     });
 
     setSelectedList(0);
-
-    // Calendar(content);
   };
 
   async function mylist_handler(method: string, data?: anime_data) {

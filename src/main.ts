@@ -7,7 +7,7 @@ import { Settings } from "./settings.js";
 import { Navbar } from "./components/navbar.js";
 import { Calendar } from "./components/calendar.js";
 
-localStorage.setItem("api_url", "http://localhost:5000");
+localStorage.setItem("api_url", "http://animenetwork.org");
 
 const [getUser, setUser, subscribeUser] = createState<object | null>(null);
 
@@ -30,8 +30,7 @@ async function login(token?: string) {
 }
 
 const top_area = document.createElement("div");
-top_area.className =
-  "absolute z-30 top-0 left-0 right-0 h-14 bg-gradient-to-t from-transparent via-bg-[#090b0c]/60 to-[#090b0c]";
+top_area.className = "absolute z-30 top-0 left-0 right-0 h-14 bg-neutral-950";
 document.body.appendChild(top_area);
 
 const content_area = document.createElement("div");
@@ -46,10 +45,12 @@ const auth_page = auth_constructor(subscribeUser);
 const navs = [
   {
     label: "Home",
+    icon: "./icons/home_24dp.png",
     fn: home_page.build,
   },
   {
     label: "Calendar",
+    icon: "./icons/calendar_month_24dp.svg",
     fn: () => {
       content_area.innerHTML = "";
       Calendar(content_area);
@@ -73,7 +74,7 @@ const top_bar = top_constructor(
   watch_page.build,
   subscribeUser,
   settings_page,
-  nav.show,
+  nav,
 );
 
 home_page.setParams(content_area, watch_page.build);
