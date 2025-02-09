@@ -111,8 +111,6 @@ async function get_item_batch(page: number) {
     }),
   );
 
-  console.log(items_list);
-
   return items_list;
 }
 
@@ -227,7 +225,7 @@ function home_constructor() {
       ];
 
       items.map((item) => {
-        card(item, itemGrid, watch_callback, mylist_handler);
+        card(item, itemGrid, watch_callback);
       });
 
       pagination[getSelectedList()].page += 1;
@@ -247,7 +245,7 @@ function home_constructor() {
         }
       } else {
         categories[newList].items.map((item) => {
-          card(item, itemGrid, watch_callback, mylist_handler);
+          card(item, itemGrid, watch_callback);
         });
       }
     });
@@ -265,38 +263,6 @@ function home_constructor() {
     setSelectedList(0);
   };
 
-  async function mylist_handler(method: string, data?: anime_data) {
-    let storage = null;
-    let current = null;
-    if (localStorage.getItem("mylist")) {
-      storage = JSON.parse(localStorage.getItem("mylist") || "");
-      current = storage.mylist.items;
-    }
-
-    if (method == "add") {
-      current.push(data);
-    } else if (method == "rm") {
-      const index = current.findIndex(
-        (a: anime_data) => a.redirect == data?.redirect,
-      );
-      if (!index) return;
-
-      current.splice(index, 1);
-    } else if (method == "update") {
-      const mylist = await get_mylist();
-      localStorage.setItem(
-        "mylist",
-        JSON.stringify({ mylist: mylist, timestamp: Date.now() }),
-      );
-    }
-
-    if (method !== "update") {
-      localStorage.setItem("mylist", JSON.stringify(storage));
-    }
-
-    render();
-  }
-
   const setParams = (
     area: HTMLElement,
     w_callback: (url: string) => Promise<void>,
@@ -308,7 +274,6 @@ function home_constructor() {
   return {
     build: build,
     setParams: setParams,
-    mylist_handler: mylist_handler,
   };
 }
 

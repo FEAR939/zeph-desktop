@@ -146,8 +146,6 @@ function watch_constructor() {
   const cache = new Map<string, any>();
   let loading = false;
   let current_url: string = "";
-  let mylist_callback: ((method: string, data: anime_data) => void) | null =
-    null;
   let current_callback:
     | ((redirect: string, image: string, title: string) => void)
     | null = null;
@@ -303,12 +301,8 @@ function watch_constructor() {
             body: current_url.toString(),
           },
         );
-        if (!res.ok || mylist_callback == null) return;
-        mylist_callback(getList() == 0 ? "add" : "rm", {
-          redirect: current_url,
-          image: details.image,
-          title: details.title,
-        });
+        if (!res.ok == null) return;
+
         setList(getList() == 0 ? 1 : 0);
       });
     }
@@ -432,10 +426,8 @@ function watch_constructor() {
   };
 
   const setParams = (
-    ml_callback: (method: string, data: anime_data) => Promise<void>,
     c_callback: (url: string, image: string, title: string) => void,
   ) => {
-    mylist_callback = ml_callback;
     current_callback = c_callback;
   };
 

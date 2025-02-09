@@ -6,7 +6,6 @@ export function card(
   item: anime_data,
   carousel: HTMLElement,
   watch_callback: (url: string) => void,
-  mylist_handler: (method: string, data?: anime_data) => Promise<void>,
   // getCardCount: GetStateFunction<number>,
   // subscribeCardCount: SubscribeFunction<number>,
 ) {

@@ -1,4 +1,5 @@
 import { AvatarChanger } from "./change_avatar";
+import Devider from "./devider";
 
 export function AccountSettings(
   parent: HTMLElement,
@@ -7,6 +8,9 @@ export function AccountSettings(
   auth_page,
 ) {
   parent.innerHTML = "";
+
+  Devider(parent, "account");
+
   if (!localStorage.getItem("token")) {
     const signinBtn = document.createElement("div");
     signinBtn.className =
@@ -38,7 +42,7 @@ export function AccountSettings(
 
   const avatarChange = document.createElement("div");
   avatarChange.className =
-    "absolute right-0 bottom-0 h-6 w-6 bg-neutral-700 rounded-full flex items-center justify-center";
+    "absolute -right-1 -bottom-1 h-6 w-6 bg-neutral-900 hover:bg-neutral-800 rounded-lg flex items-center justify-center transition-colors";
   avatarChange.innerHTML =
     "<img src='./icons/edit_24dp.svg' class='h4 w-4 object-cover cursor-pointer' />";
 

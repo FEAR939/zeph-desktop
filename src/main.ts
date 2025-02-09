@@ -78,8 +78,8 @@ const top_bar = top_constructor(
 );
 
 home_page.setParams(content_area, watch_page.build);
-watch_page.setParams(home_page.mylist_handler, top_bar.current_handler);
-auth_page.setParams(content_area, home_page.mylist_handler, login);
+watch_page.setParams(top_bar.current_handler);
+auth_page.setParams(content_area, home_page.build, login);
 
 top_bar.render();
 home_page.build();

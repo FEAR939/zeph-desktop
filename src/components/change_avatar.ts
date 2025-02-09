@@ -3,7 +3,7 @@ import { fetch } from "@tauri-apps/plugin-http";
 export function AvatarChanger(parent: HTMLElement, userState) {
   const modal = document.createElement("div");
   modal.className =
-    "absolute inset-0 h-fit w-64 p-4 m-auto bg-neutral-700 rounded-[18px]";
+    "absolute inset-0 h-fit w-64 p-4 m-auto bg-neutral-950 border border-neutral-800 rounded-xl";
 
   function ImageCropper(file) {
     modal.innerHTML = "";
@@ -23,7 +23,8 @@ export function AvatarChanger(parent: HTMLElement, userState) {
     modal.appendChild(scaleInput);
 
     const submit = document.createElement("div");
-    submit.className = "px-4 py-2 rounded-lg bg-neutral-600 mt-2";
+    submit.className =
+      "px-4 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 mt-2 transition-colors cursor-pointer";
     submit.textContent = "Submit";
 
     modal.appendChild(submit);
