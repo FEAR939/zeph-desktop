@@ -108,9 +108,12 @@ async function player_constructor(episodes: episode[], index: number) {
 
   let player_wrapper = document.createElement("div");
   subscribeMini((newMini) => {
-    if (newMini) {
+    if (newMini && !isMobileDevice) {
       player_wrapper.className =
         "absolute bottom-4 right-4 h-64 aspect-video z-40 bg-black overflow-hidden rounded-lg";
+    } else if (newMini && isMobileDevice) {
+      player_wrapper.className = player_wrapper.className =
+        "absolute bottom-4 right-4 h-44 aspect-video z-40 bg-black overflow-hidden rounded-lg";
     } else {
       player_wrapper.className =
         "absolute inset-0 z-40 bg-black overflow-hidden";
@@ -151,6 +154,28 @@ async function player_constructor(episodes: episode[], index: number) {
 
   player_wrapper.appendChild(video_player);
 
+  const video_layer = document.createElement("div");
+  video_layer.className = "absolute inset-0 h-full w-full";
+
+  player_wrapper.appendChild(video_layer);
+
+  let touched = false;
+
+  video_layer.addEventListener("click", () => {
+    if (!isMobileDevice) return;
+
+    if (!touched) {
+      touched = true;
+      return;
+    }
+
+    if (video_player.paused) {
+      video_player.play();
+    } else {
+      video_player.pause();
+    }
+  });
+
   const video_controls = document.createElement("div");
   video_controls.className =
     "absolute z-50 bottom-0 left-0 right-0 h-16 px-4 pt-4 bg-black/50 flex items-center";
@@ -169,11 +194,13 @@ async function player_constructor(episodes: episode[], index: number) {
     episode_title.style.display = "flex";
     player_wrapper.style.cursor = "default";
     timeout = setTimeout(() => {
+      if (video_player.paused) return;
       video_controls.style.display = "none";
       player_exit.style.display = "none";
       player_toggleMini.style.display = "none";
       episode_title.style.display = "none";
       player_wrapper.style.cursor = "none";
+      touched = false;
     }, 3000);
   });
 
@@ -332,6 +359,7 @@ async function player_constructor(episodes: episode[], index: number) {
   });
 
   const timeCounter = document.createElement("div");
+  timeCounter.className = "w-32";
   timeCounter.textContent = "00:00 | 00:00";
 
   startWrapper.appendChild(timeCounter);
@@ -378,6 +406,10 @@ async function player_constructor(episodes: episode[], index: number) {
   const episodeWrapper = document.createElement("div");
   episodeWrapper.className =
     "absolute bottom-20 right-4 h-[36rem] w-96 p-2 bg-neutral-900 rounded-lg overflow-hidden overflow-y-scroll hidden";
+
+  if (isMobileDevice) {
+    episodeWrapper.classList.replace("h-[36rem]", "h-[16rem]");
+  }
 
   player_wrapper.appendChild(episodeWrapper);
 
@@ -567,6 +599,7 @@ async function player_constructor(episodes: episode[], index: number) {
     }
 
     console.log(final_url);
+    video_player.src = "";
 
     if (
       Hls.isSupported() &&
