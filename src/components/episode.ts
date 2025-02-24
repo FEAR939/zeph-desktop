@@ -1,6 +1,7 @@
 import createState from "../createstate";
 import { fetch } from "@tauri-apps/plugin-http";
 import { episode } from "../types";
+import circle_progress from "./circle_progress";
 
 export function Episode(
   ep: episode,
@@ -11,6 +12,8 @@ export function Episode(
   episodes: episode[],
   call_player: (i: number) => void,
 ) {
+  const isMobileDevice = /Mobi/i.test(window.navigator.userAgent);
+
   const episode_node = document.createElement("div");
   episode_node.className =
     "group relative flex items-center h-fit cursor-pointer";
@@ -19,14 +22,20 @@ export function Episode(
 
   const episode_image = document.createElement("div");
   episode_image.className =
-    "relative h-28 flex-shrink-0 aspect-video overflow-hidden rounded-lg bg-neutral-900";
+    "relative flex-shrink-0 aspect-video overflow-hidden rounded-lg bg-neutral-900";
+
+  if (isMobileDevice) {
+    episode_image.classList.add("h-22");
+  } else {
+    episode_image.classList.add("h-28");
+  }
 
   episode_node.appendChild(episode_image);
 
   if (ep.duration !== 0) {
     const episode_duration = document.createElement("div");
     episode_duration.className =
-      "absolute right-2 bottom-2 px-2 py-1 bg-neutral-900/90 rounded-lg text-sm";
+      "absolute right-2 bottom-4 px-2 py-1 bg-neutral-900/90 rounded-lg text-sm";
     episode_duration.textContent = `${ep.duration} Min`;
 
     episode_image.appendChild(episode_duration);
@@ -39,7 +48,8 @@ export function Episode(
 
   if (localStorage.getItem("token")) {
     const episode_progress = document.createElement("div");
-    episode_progress.className = "absolute bottom-0 left-0 right-0 h-1";
+    episode_progress.className =
+      "absolute bottom-2 left-2 right-2 h-0.75 rounded-xl overflow-hidden";
 
     episode_image.appendChild(episode_progress);
 
@@ -54,10 +64,13 @@ export function Episode(
 
       cache.set(`episodes-${cache.get("selectedSeason")}`, episodes);
 
-      episode_progress_inner.style.width =
-        ep.duration == 0
-          ? "0%"
-          : (newProgress.playtime / newProgress.duration) * 100 + "%";
+      if (ep.duration !== 0) {
+        episode_progress.classList.add("bg-neutral-900");
+        episode_progress_inner.style.width =
+          (newProgress.playtime / newProgress.duration) * 100 + "%";
+      } else {
+        episode_progress_inner.style.width = "0%";
+      }
     });
 
     episode_progress.appendChild(episode_progress_inner);
@@ -76,6 +89,10 @@ export function Episode(
   const episode_title = document.createElement("h3");
   episode_title.className = "font-medium group-hover:text-white";
   episode_title.textContent = ep.title;
+
+  if (isMobileDevice) {
+    episode_title.classList.add("truncate");
+  }
 
   episode_info.appendChild(episode_title);
 

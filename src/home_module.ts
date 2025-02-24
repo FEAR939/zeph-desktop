@@ -152,6 +152,7 @@ function home_constructor() {
   };
 
   const render = async () => {
+    const isMobileDevice = /Mobi/i.test(window.navigator.userAgent);
     if (content == null) return;
     content.innerHTML = "";
     let categories =
@@ -207,11 +208,15 @@ function home_constructor() {
       itemGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
     }
 
-    window.addEventListener("resize", () => {
-      handleGridSize(Math.floor(window.outerWidth / 250));
-    });
+    if (!isMobileDevice) {
+      window.addEventListener("resize", () => {
+        handleGridSize(Math.floor(window.outerWidth / 250));
+      });
 
-    handleGridSize(Math.floor(window.outerWidth / 250));
+      handleGridSize(Math.floor(window.outerWidth / 250));
+    } else {
+      handleGridSize(2);
+    }
 
     content.appendChild(itemGrid);
 

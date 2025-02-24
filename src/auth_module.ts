@@ -10,15 +10,17 @@ async function get_token(username: string, password: string) {
     formData.append("username", username.toString());
     formData.append("password", password.toString());
 
-    const json = await (
-      await fetch(`${localStorage.getItem("api_url")}/auth-login`, {
-        method: "POST",
-        body: new URLSearchParams(
-          formData as unknown as Record<string, string>,
-        ),
-      })
-    ).json();
-    return json.token;
+    const json = await fetch(`${localStorage.getItem("api_url")}/auth-login`, {
+      method: "POST",
+      mode: "no-cors",
+      body: new URLSearchParams(formData as unknown as Record<string, string>),
+    });
+
+    if (json.status !== 200) throw new Error("Login failed");
+
+    const parsedJson = await json.json();
+
+    return parsedJson.token;
   } catch (e) {
     console.error(e);
   }

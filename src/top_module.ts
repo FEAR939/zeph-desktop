@@ -16,6 +16,7 @@ function top_constructor(
   const history_Array = [];
 
   function render() {
+    const isMobileDevice = /Mobi/i.test(window.navigator.userAgent);
     const top_node = document.createElement("div");
     top_node.className =
       "relative h-full w-full flex items-center justify-center px-4 space-x-2";
@@ -31,92 +32,87 @@ function top_constructor(
 
     show.addEventListener("click", () => nav_show.setShow(!nav_show.getShow()));
 
-    const title = document.createElement("div");
-    title.className = "absolute left-22 flex items-center space-x-2";
-    title.innerHTML =
-      "<img src='./icons/favicon-512x512.png' class='h-4 w-4 invert' /><span class='font-[Inter] font-medium text-lg'>hazl</span>";
-
-    top_node.appendChild(title);
-
     Search(top_node, watch_callback);
 
-    const history_wrapper = document.createElement("div");
-    history_wrapper.className = "absolute right-30 h-10 w-10";
+    if (!isMobileDevice) {
+      const history_wrapper = document.createElement("div");
+      history_wrapper.className = "absolute right-30 h-10 w-10";
 
-    const history_node = document.createElement("div");
-    history_node.className =
-      "h-full w-full cursor-pointer hover:bg-neutral-800 flex items-center justify-center rounded-md transition-colors";
-    history_node.innerHTML =
-      "<img src='./icons/history_24dp.svg' class='h-6 w-6' />";
+      const history_node = document.createElement("div");
+      history_node.className =
+        "h-full w-full cursor-pointer hover:bg-neutral-800 flex items-center justify-center rounded-md transition-colors";
+      history_node.innerHTML =
+        "<img src='./icons/history_24dp.svg' class='h-6 w-6' />";
 
-    history_wrapper.appendChild(history_node);
+      history_wrapper.appendChild(history_node);
 
-    const [getExpand, setExpand, subscribeExpand] = createState(false);
+      const [getExpand, setExpand, subscribeExpand] = createState(false);
 
-    const history_list = document.createElement("div");
-    history_list.className =
-      "absolute h-fit w-64 p-4 top-12 right-0 bg-neutral-950 border border-neutral-800 rounded-md";
+      const history_list = document.createElement("div");
+      history_list.className =
+        "absolute h-fit w-64 p-4 top-12 right-0 bg-neutral-950 border border-neutral-800 rounded-md";
 
-    Devider(history_list, "history");
+      Devider(history_list, "history");
 
-    const history_list_inner = document.createElement("div");
-    history_list_inner.className = "h-fit max-h-96 w-full overflow-y-scroll";
+      const history_list_inner = document.createElement("div");
+      history_list_inner.className = "h-fit max-h-96 w-full overflow-y-scroll";
 
-    history_list.appendChild(history_list_inner);
+      history_list.appendChild(history_list_inner);
 
-    history_wrapper.appendChild(history_list);
+      history_wrapper.appendChild(history_list);
 
-    subscribeExpand((newExpand) => {
-      if (newExpand) {
-        history_list.style.display = "block";
-        if (history_Array.length == 0) {
-          history_list_inner.innerHTML = "<div class='px-2'>No History</div>";
-        } else {
-          history_list_inner.innerHTML = "";
-          history_Array.toReversed().map((item) => {
-            const item_node = document.createElement("div");
-            item_node.className =
-              "h-12 w-auto flex items-center cursor-pointer space-x-2";
-            item_node.innerHTML = `<img src="https://aniworld.to${item.image}" class="h-full aspect-[1/1.3] rounded"/><span class='truncate'>${item.title}</span>`;
+      subscribeExpand((newExpand) => {
+        if (newExpand) {
+          history_list.style.display = "block";
+          if (history_Array.length == 0) {
+            history_list_inner.innerHTML = "<div class='px-2'>No History</div>";
+          } else {
+            history_list_inner.innerHTML = "";
+            history_Array.toReversed().map((item) => {
+              const item_node = document.createElement("div");
+              item_node.className =
+                "h-12 w-auto flex items-center cursor-pointer space-x-2";
+              item_node.innerHTML = `<img src="https://aniworld.to${item.image}" class="h-full aspect-[1/1.3] rounded"/><span class='truncate'>${item.title}</span>`;
 
-            history_list_inner.appendChild(item_node);
+              history_list_inner.appendChild(item_node);
 
-            item_node.addEventListener("click", () => {
-              watch_callback(item.url);
+              item_node.addEventListener("click", () => {
+                watch_callback(item.url);
+              });
             });
-          });
+          }
+        } else {
+          history_list.style.display = "none";
         }
-      } else {
-        history_list.style.display = "none";
-      }
-    });
+      });
 
-    setExpand(false);
+      setExpand(false);
 
-    top_node.appendChild(history_wrapper);
+      top_node.appendChild(history_wrapper);
 
-    history_node.addEventListener("click", () => setExpand(!getExpand()));
+      history_node.addEventListener("click", () => setExpand(!getExpand()));
 
-    window.addEventListener("click", (e) => {
-      if (
-        getExpand() &&
-        e.target !== account_node &&
-        e.target !== history_list &&
-        !history_wrapper.contains(e.target as Node)
-      ) {
-        setExpand(false);
-      }
-    });
+      window.addEventListener("click", (e) => {
+        if (
+          getExpand() &&
+          e.target !== account_node &&
+          e.target !== history_list &&
+          !history_wrapper.contains(e.target as Node)
+        ) {
+          setExpand(false);
+        }
+      });
 
-    const settings_node = document.createElement("div");
-    settings_node.className =
-      "absolute right-18 h-10 w-10 cursor-pointer hover:bg-neutral-800 flex items-center justify-center rounded-md transition-colors";
-    settings_node.innerHTML =
-      "<img src='./icons/settings_24dp.svg' class='h-6 w-6 object-cover' />";
+      const settings_node = document.createElement("div");
+      settings_node.className =
+        "absolute right-18 h-10 w-10 cursor-pointer hover:bg-neutral-800 flex items-center justify-center rounded-md transition-colors";
+      settings_node.innerHTML =
+        "<img src='./icons/settings_24dp.svg' class='h-6 w-6 object-cover' />";
 
-    top_node.appendChild(settings_node);
+      top_node.appendChild(settings_node);
 
-    settings_node.addEventListener("click", () => settings());
+      settings_node.addEventListener("click", () => settings());
+    }
 
     const account_node = document.createElement("div");
     account_node.className =

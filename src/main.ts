@@ -6,8 +6,9 @@ import watch_constructor from "./watch_module.js";
 import { Settings } from "./settings.js";
 import { Navbar } from "./components/navbar.js";
 import { Calendar } from "./components/calendar.js";
+import { fetch } from "@tauri-apps/plugin-http";
 
-localStorage.setItem("api_url", "http://animenetwork.org");
+localStorage.setItem("api_url", "https://animenetwork.org:5000");
 
 const [getUser, setUser, subscribeUser] = createState<object | null>(null);
 

@@ -29,9 +29,9 @@ export function Search(
 
   const search_shortcut = document.createElement("div");
   search_shortcut.className =
-    "relative flex items-center justify-center h-6 px-2";
+    "relative flex items-center justify-center h-full px-1 space-x-0.5";
   search_shortcut.innerHTML =
-    "<img src='./icons/keyboard_command_key_24dp.png' class='h-4 w-4 object-cover' /><span class='text-base'>F</span>";
+    "<img src='./icons/keyboard_command_key_24dp.png' class='shrink-0 bg-neutral-800 h-6 w-6 p-1.25 object-cover rounded-lg' /><span class='shrink-0 flex items-center justify-center text-[11px] font-semibold bg-neutral-800 h-6 w-6 p-1.25 rounded-lg'>F</span>";
 
   search_wrapper.appendChild(search_shortcut);
 

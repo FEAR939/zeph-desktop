@@ -185,7 +185,7 @@ function watch_constructor() {
 
     const detail_node = document.createElement("div");
     detail_node.className =
-      "min-h-[calc(100%-1rem)] h-fit w-[64rem] bg-neutral-950 mt-4 overflow-hidden rounded-t-lg border-box";
+      "min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-neutral-950 mt-4 overflow-hidden rounded-t-lg border-box";
 
     detail_wrapper.appendChild(detail_node);
 
