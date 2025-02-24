@@ -255,14 +255,23 @@ function home_constructor() {
       }
     });
 
-    content.addEventListener("scrollend", async () => {
+    let loading = false;
+
+    content.addEventListener("scroll", async () => {
+      const { scrollHeight, scrollTop, clientHeight } = event.target;
+
+      if (Math.abs(scrollHeight - clientHeight - scrollTop) > 1) return;
+
       if (
         getSelectedList() == null ||
-        categories[getSelectedList()].label !== "My List"
+        categories[getSelectedList()].label !== "My List" ||
+        loading
       )
         return;
 
-      handleItems();
+      loading = true;
+      await handleItems();
+      loading = false;
     });
 
     setSelectedList(0);
