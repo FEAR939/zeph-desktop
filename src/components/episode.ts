@@ -179,8 +179,35 @@ export function Episode(
       }),
     });
 
+    const nowDate = new Date();
+
+    const activityObj = {
+      time: playtime,
+      day: nowDate.getDate(),
+      month: nowDate.getMonth() + 1,
+      year: nowDate.getFullYear(),
+    };
+
+    console.log(activityObj);
+
+    const activityres = await fetch(
+      `${localStorage.getItem("api_url")}/user/activity/update`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify(activityObj),
+      },
+    );
+
     if (res.status == 200) {
       setProgress({ duration: duration, playtime: playtime });
+    }
+
+    if (activityres.status !== 200) {
+      console.error("Could not update user activity");
     }
   };
 
