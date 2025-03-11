@@ -110,10 +110,10 @@ async function player_constructor(episodes: episode[], index: number) {
   subscribeMini((newMini) => {
     if (newMini && !isMobileDevice) {
       player_wrapper.className =
-        "absolute bottom-4 right-4 h-64 aspect-video z-40 bg-black overflow-hidden rounded-lg";
+        "absolute bottom-4 right-4 h-64 aspect-video z-50 bg-black overflow-hidden rounded-lg";
     } else if (newMini && isMobileDevice) {
       player_wrapper.className = player_wrapper.className =
-        "absolute bottom-4 right-4 h-44 aspect-video z-40 bg-black overflow-hidden rounded-lg";
+        "absolute bottom-4 right-4 h-44 aspect-video z-50 bg-black overflow-hidden rounded-lg";
     } else {
       player_wrapper.className =
         "absolute inset-0 z-40 bg-black overflow-hidden";
@@ -549,17 +549,10 @@ async function player_constructor(episodes: episode[], index: number) {
     if (newState == true) {
       fullscreen.src = "./icons/fullscreen_exit_24dp.png";
 
-      if (isMobileDevice) {
-        player_wrapper.requestFullscreen();
-        return;
-      }
       await getCurrentWindow().setFullscreen(true);
     } else if (newState == false) {
       fullscreen.src = "./icons/fullscreen_24dp.png";
-      if (isMobileDevice) {
-        document.exitFullscreen();
-        return;
-      }
+
       await getCurrentWindow().setFullscreen(false);
     }
   });
