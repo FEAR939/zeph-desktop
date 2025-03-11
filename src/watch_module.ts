@@ -314,11 +314,39 @@ function watch_constructor() {
 
     Devider(detail_main, "description");
 
-    const detail_description = document.createElement("div");
-    detail_description.className = "p-4 rounded-xl bg-neutral-900 my-4 text-sm";
-    detail_description.textContent = details.desc;
+    const detail_description_wrapper = document.createElement("div");
+    detail_description_wrapper.className = "p-4 rounded-xl bg-neutral-900 my-4";
 
-    detail_main.appendChild(detail_description);
+    detail_main.appendChild(detail_description_wrapper);
+
+    const desc = document.createElement("div");
+    desc.className = "text-sm line-clamp-3";
+    desc.textContent = details.desc;
+
+    detail_description_wrapper.appendChild(desc);
+
+    const desc_expand = document.createElement("div");
+    desc_expand.className = "mt-1 w-fit text-xs font-semibold cursor-pointer";
+    desc_expand.textContent = "Show more";
+
+    detail_description_wrapper.appendChild(desc_expand);
+
+    const [getMore, setMore, subscribeMore] = createState(false);
+
+    subscribeMore((more) => {
+      if (more) {
+        desc.classList.remove("line-clamp-3");
+        desc_expand.textContent = "Show less";
+      } else {
+        desc.classList.add("line-clamp-3");
+        desc_expand.textContent = "Show more";
+      }
+    });
+
+    desc_expand.addEventListener("click", (e) => {
+      e.stopPropagation();
+      setMore(!getMore());
+    });
 
     const [getSeason, setSeason, subscribeSeason] = createState("");
 
