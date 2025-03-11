@@ -17,7 +17,7 @@ export function Settings(userState, auth_page) {
 
     const settingsPanel = document.createElement("div");
     settingsPanel.className =
-      "h-[calc(100% - 1rem)] w-[64rem] max-w-1/2 mt-4 bg-neutral-950 rounded-t-xl flex flex-col";
+      "min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-neutral-950 mt-4 overflow-hidden rounded-t-lg border-box";
 
     const closePanel = document.createElement("img");
     closePanel.className = "m-4 h-8 w-8 cursor-pointer";
@@ -35,8 +35,7 @@ export function Settings(userState, auth_page) {
     settingsPanel.appendChild(settings_main);
 
     const main_nav = document.createElement("div");
-    main_nav.className =
-      "h-full w-64 p-2 border-r border-t border-neutral-800 rounded-tr-xl";
+    main_nav.className = "h-full w-64 p-2";
 
     settings_main.appendChild(main_nav);
 
