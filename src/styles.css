@@ -9,11 +9,6 @@
     --text-xs: 14px;
 }
 
-input {
-    outline: none;
-    border: none;
-}
-
 ::-webkit-scrollbar {
     display: none;
 }
