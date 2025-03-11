@@ -1,5 +1,3 @@
-import { fetch } from "@tauri-apps/plugin-http";
-
 export function AvatarChanger(parent: HTMLElement, userState) {
   const modal = document.createElement("div");
   modal.className =
@@ -24,7 +22,7 @@ export function AvatarChanger(parent: HTMLElement, userState) {
 
     const submit = document.createElement("div");
     submit.className =
-      "px-4 py-2 rounded-lg bg-neutral-900 hover:bg-neutral-800 mt-2 transition-colors cursor-pointer";
+      "px-4 py-2 flex items-center justify-center rounded bg-neutral-900 hover:bg-neutral-800 mt-2 transition-colors cursor-pointer";
     submit.textContent = "Submit";
 
     modal.appendChild(submit);
@@ -60,6 +58,44 @@ export function AvatarChanger(parent: HTMLElement, userState) {
         drawArea(pointX, pointY, parseInt(scaleInput.value) / 10);
       });
 
+      canvas.addEventListener("touchstart", (e: TouchEvent) => {
+        e.preventDefault(); // Prevent scrolling when touching the canvas
+        if (e.touches.length > 0) {
+          drag = true;
+
+          const rect = canvas.getBoundingClientRect();
+          const touchX = e.touches[0].clientX - rect.left;
+          const touchY = e.touches[0].clientY - rect.top;
+
+          pointX = touchX * (image.naturalWidth / canvas.clientWidth);
+          pointY = touchY * (image.naturalHeight / canvas.clientHeight);
+
+          drawArea(pointX, pointY, parseInt(scaleInput.value) / 10);
+        }
+      });
+
+      canvas.addEventListener("touchmove", (e: TouchEvent) => {
+        e.preventDefault(); // Prevent scrolling when touching the canvas
+        if (!drag || e.touches.length === 0) return;
+
+        const rect = canvas.getBoundingClientRect();
+        const touchX = e.touches[0].clientX - rect.left;
+        const touchY = e.touches[0].clientY - rect.top;
+
+        pointX = touchX * (image.naturalWidth / canvas.clientWidth);
+        pointY = touchY * (image.naturalHeight / canvas.clientHeight);
+
+        drawArea(pointX, pointY, parseInt(scaleInput.value) / 10);
+      });
+
+      canvas.addEventListener("touchend", () => {
+        drag = false;
+      });
+
+      canvas.addEventListener("touchcancel", () => {
+        drag = false;
+      });
+
       scaleInput.addEventListener("change", () => {
         drawArea(pointX, pointY, parseInt(scaleInput.value) / 10);
       });
@@ -89,43 +125,148 @@ export function AvatarChanger(parent: HTMLElement, userState) {
 
         if (!file || !localStorage.getItem("token")) return;
 
-        const formData = new FormData();
-        formData.append("file", file);
+        modal.innerHTML = "";
 
-        const response = await fetch(
-          `${localStorage.getItem("api_url")}/avatar-upload`,
-          {
-            method: "POST",
-            headers: {
-              Authorization: localStorage.getItem("token") || "",
-            },
-            body: formData,
-          },
-        );
+        const progressNumber = document.createElement("div");
+        progressNumber.className =
+          "w-full mb-1 flex items-center justify-center text-neutral-600";
+        progressNumber.textContent = "Preparing...";
 
-        if (response.status !== 200) return;
-        const json = await response.json();
+        modal.appendChild(progressNumber);
+
+        const progressBar = document.createElement("div");
+        progressBar.className =
+          "w-full h-1 bg-neutral-900 rounded-full overflow-hidden";
+
+        const progress = document.createElement("div");
+        progress.className = "h-full bg-white";
+        progress.style.width = "0";
+
+        progressBar.appendChild(progress);
+
+        modal.appendChild(progressBar);
+
+        const finish = document.createElement("div");
+        finish.className =
+          "w-full px-2 py-1 flex items-center justify-center bg-neutral-900 hover:bg-neutral-800 transition-colors text-neutral-700 rounded cursor-pointer mt-4";
+        finish.textContent = "Finish";
+
+        modal.appendChild(finish);
+
+        const updateProgress = (percent: number) => {
+          progressNumber.textContent = `${percent}%`;
+          progress.style.width = `${percent}%`;
+        };
+
+        const response = await uploadFileWithProgress(file, updateProgress);
+
         const user = userState.get();
-        user.avatar_url = json.url;
+        user.avatar_url = response.url;
         userState.set(user);
 
-        modal.remove();
+        finish.classList.replace("text-neutral-700", "text-white");
+
+        finish.addEventListener("click", () => {
+          modal.remove();
+        });
       });
     });
 
+    function uploadFileWithProgress(
+      file: File,
+      progressCallback: (percent: number) => void,
+    ): Promise<any> {
+      return new Promise((resolve, reject) => {
+        const xhr = new XMLHttpRequest();
+        const apiUrl = localStorage.getItem("api_url") || "";
+        const token = localStorage.getItem("token") || "";
+
+        // Setup form data
+        const formData = new FormData();
+        formData.append("file", file);
+
+        // Track upload progress
+        xhr.upload.addEventListener("progress", (event) => {
+          if (event.lengthComputable) {
+            const percentComplete = Math.round(
+              (event.loaded / event.total) * 100,
+            );
+            progressCallback(percentComplete);
+          }
+        });
+
+        // Handle response
+        xhr.addEventListener("load", () => {
+          if (xhr.status === 200) {
+            try {
+              const response = JSON.parse(xhr.responseText);
+              resolve(response);
+            } catch (e) {
+              reject(new Error("Failed to parse response"));
+            }
+          } else {
+            reject(new Error(`Upload failed with status: ${xhr.status}`));
+          }
+        });
+
+        // Handle errors
+        xhr.addEventListener("error", () => {
+          reject(new Error("Network error occurred during upload"));
+        });
+
+        xhr.addEventListener("abort", () => {
+          reject(new Error("Upload was aborted"));
+        });
+
+        // Open and send the request
+        xhr.open("POST", `${apiUrl}/avatar-upload`);
+        xhr.setRequestHeader("Authorization", token);
+        xhr.send(formData);
+      });
+    }
+
     function drawArea(x: number, y: number, scale: number) {
       if (!ctx) return;
-      ctx.reset();
-      ctx?.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
-      ctx.strokeStyle = "rgb(255, 0, 0, 1";
 
+      // Get the bounds for the selection area
       const bounds = bound(image, scale, x, y);
+
+      // Calculate the center of the bounding box
+      const centerX = bounds.x1 + (bounds.x2 - bounds.x1) / 2;
+      const centerY = bounds.y1 + (bounds.y4 - bounds.y1) / 2;
+
+      // Calculate the radius - use the smaller of width/height to ensure circle fits in box
+      const width = bounds.x2 - bounds.x1;
+      const height = bounds.y4 - bounds.y1;
+      const radius = Math.min(width, height) / 2;
+
+      // Clear the canvas first
+      ctx.reset();
+
+      // Step 1: Draw the original image
+      ctx.drawImage(image, 0, 0, image.naturalWidth, image.naturalHeight);
+
+      // Step 2: Save the current state
+      ctx.save();
+
+      // Step 3: Create a clipping region outside the circle
       ctx.beginPath();
-      ctx.moveTo(bounds.x1, bounds.y1);
-      ctx.lineTo(bounds.x2, bounds.y2);
-      ctx.lineTo(bounds.x3, bounds.y3);
-      ctx.lineTo(bounds.x4, bounds.y4);
-      ctx.closePath();
+      ctx.rect(0, 0, canvas.width, canvas.height);
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, true); // Note the 'true' for counterclockwise
+      ctx.clip();
+
+      // Step 4: Draw the dark overlay only in the clipped region (outside the circle)
+      ctx.fillStyle = "rgba(0, 0, 0, 0.5)";
+      ctx.fillRect(0, 0, canvas.width, canvas.height);
+
+      // Step 5: Restore the canvas state
+      ctx.restore();
+
+      // Step 6: Draw the circle border
+      ctx.strokeStyle = "rgba(255, 255, 255, 0.8)";
+      ctx.lineWidth = 2;
+      ctx.beginPath();
+      ctx.arc(centerX, centerY, radius, 0, Math.PI * 2, false);
       ctx.stroke();
     }
   }
@@ -213,9 +354,9 @@ export function AvatarChanger(parent: HTMLElement, userState) {
 
   const fileWrapper = document.createElement("div");
   fileWrapper.className =
-    "relative h-32 w-full flex items-center justify-center";
+    "relative h-32 w-full flex flex-col items-center justify-center border border-dashed border-neutral-900 rounded mb-2";
   fileWrapper.innerHTML =
-    "<img src='./icons/upload_24dp.png' class='h-8 w-8' />";
+    "<img src='./icons/cloud_upload_24dp.svg' class='h-8 w-8' /><div class='text-neutral-700 text-s'>Drag & Drop or</div><div class='text-s'>Browse<div/>";
 
   const fileInput = document.createElement("input");
   fileInput.className = "absolute inset-0 h-full w-full opacity-0";
@@ -225,7 +366,18 @@ export function AvatarChanger(parent: HTMLElement, userState) {
 
   modal.appendChild(fileWrapper);
 
+  const modalContinue = document.createElement("div");
+  modalContinue.className =
+    "w-full px-2 py-1 flex items-center justify-center bg-neutral-900 hover:bg-neutral-800 transition-colors text-neutral-700 rounded cursor-pointer";
+  modalContinue.textContent = "Continue";
+
+  modal.appendChild(modalContinue);
+
   fileInput.addEventListener("change", () => {
+    modalContinue.classList.replace("text-neutral-700", "text-white");
+  });
+
+  modalContinue.addEventListener("click", () => {
     if (fileInput.files[0] == null) return;
     ImageCropper(fileInput.files[0]);
   });
