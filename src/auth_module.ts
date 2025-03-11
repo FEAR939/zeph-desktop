@@ -59,28 +59,38 @@ function auth_constructor(loginSignal: SubscribeFunction<object | null>) {
 
     const login_node = document.createElement("div");
     login_node.className =
-      "h-full w-full flex flex-col items-center justify-center space-y-2";
+      "absolute inset-0 m-auto h-fit max-w-full w-96 p-2 flex flex-col items-center justify-center space-y-2";
 
     content.appendChild(login_node);
 
+    login_node.insertAdjacentHTML(
+      "beforeend",
+      "<div class='w-full'>Username</div>",
+    );
+
     const username_field = document.createElement("input");
     username_field.className =
-      "w-96 px-4 py-2 rounded-full bg-neutral-900 rounded-lg placeholder:text-neutral-700 placeholder:font-medium text-white font-medium";
-    username_field.placeholder = "Username";
+      "w-full px-4 py-2 rounded-full border border-neutral-900 outline-0 rounded-lg placeholder:text-neutral-700 placeholder:font-medium text-white font-medium";
+    username_field.placeholder = "Your username";
 
     login_node.appendChild(username_field);
 
+    login_node.insertAdjacentHTML(
+      "beforeend",
+      "<div class='w-full'>Password</div>",
+    );
+
     const password_field = document.createElement("input");
     password_field.className =
-      "w-96 px-4 py-2 rounded-full bg-neutral-900 rounded-lg placeholder:text-neutral-700 placeholder:font-medium text-white font-medium";
-    password_field.placeholder = "Password";
+      "w-full px-4 py-2 rounded-full border border-neutral-900 outline-0 rounded-lg placeholder:text-neutral-700 placeholder:font-medium text-white font-medium";
+    password_field.placeholder = "Your password";
     password_field.type = "password";
 
     login_node.appendChild(password_field);
 
     const submit_node = document.createElement("button");
     submit_node.className =
-      "w-96 px-4 py-2 mt-4 rounded-full bg-neutral-900 rounded-lg text-white font-medium cursor-pointer";
+      "w-full px-4 py-2 mt-4 rounded-full bg-neutral-900 rounded-lg text-white font-medium cursor-pointer";
 
     subscribeRegister((newRegister) => {
       if (newRegister) {
@@ -158,7 +168,7 @@ function auth_constructor(loginSignal: SubscribeFunction<object | null>) {
     });
 
     const changeRegister = document.createElement("div");
-    changeRegister.className = "h-8 w-96 text-sm text-neutral-600";
+    changeRegister.className = "h-8 w-full text-sm text-neutral-600";
 
     login_node.appendChild(changeRegister);
 
@@ -182,7 +192,7 @@ function auth_constructor(loginSignal: SubscribeFunction<object | null>) {
 
       const userModal = document.createElement("div");
       userModal.className =
-        "h-fit w-96 p-4 flex flex-col space-y-1 overflow-hidden border border-white/5 rounded-lg";
+        "h-fit w-full p-4 flex flex-col space-y-1 overflow-hidden border border-white/5 rounded-lg";
 
       const modalMessage = document.createElement("div");
       modalMessage.className = "w-full";
@@ -200,7 +210,8 @@ function auth_constructor(loginSignal: SubscribeFunction<object | null>) {
       userModal.appendChild(user);
 
       const takeBack = document.createElement("button");
-      takeBack.className = "w-full p-2 bg-blue-800 rounded-full cursor-pointer";
+      takeBack.className =
+        "w-full p-2 bg-white text-black rounded cursor-pointer";
       takeBack.textContent = "Continue";
 
       userModal.appendChild(takeBack);
