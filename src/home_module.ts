@@ -1,4 +1,5 @@
 import { fetch } from "@tauri-apps/plugin-http";
+import { getCurrentWindow } from "@tauri-apps/api/window";
 
 import { categorie, anime_data, anime } from "./types";
 import createState from "./createstate";
@@ -111,6 +112,16 @@ async function get_item_batch(page: number) {
     }),
   );
 
+  items_list.sort((a, b) => {
+    if (a.title < b.title) {
+      return -1;
+    }
+    if (a.title > b.title) {
+      return 1;
+    }
+    return 0;
+  });
+
   return items_list;
 }
 
@@ -202,20 +213,20 @@ function home_constructor() {
     content.appendChild(selectedWrapper);
 
     const itemGrid = document.createElement("div");
-    itemGrid.className = "px-4 pb-4 h-fit w-full grid gap-x-4 gap-y-8";
+    itemGrid.className = "px-4 pb-4 h-fit w-full grid gap-x-2 gap-y-4";
 
     function handleGridSize(size) {
       itemGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
     }
 
     if (!isMobileDevice) {
-      window.addEventListener("resize", () => {
-        handleGridSize(Math.floor(window.outerWidth / 250));
+      getCurrentWindow().listen("tauri://resize", () => {
+        handleGridSize(Math.floor(window.outerWidth / 200));
       });
 
-      handleGridSize(Math.floor(window.outerWidth / 250));
+      handleGridSize(Math.floor(window.outerWidth / 200));
     } else {
-      handleGridSize(2);
+      handleGridSize(3);
     }
 
     content.appendChild(itemGrid);
@@ -242,12 +253,7 @@ function home_constructor() {
         pagination[newList].page == 0 &&
         categories[newList].label == "My List"
       ) {
-        while (
-          content?.clientHeight >
-          content?.scrollHeight - selectedWrapper.clientHeight
-        ) {
-          await handleItems();
-        }
+        await handleItems();
       } else {
         categories[newList].items.map((item) => {
           card(item, itemGrid, watch_callback);
@@ -259,6 +265,8 @@ function home_constructor() {
 
     content.addEventListener("scroll", async () => {
       const { scrollHeight, scrollTop, clientHeight } = event.target;
+
+      console.log("scrolled");
 
       if (Math.abs(scrollHeight - clientHeight - scrollTop) > 1) return;
 
