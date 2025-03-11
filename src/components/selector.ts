@@ -76,6 +76,7 @@ export function Selector(
   options_list.className =
     "h-fit max-h-96 w-full mt-2 pt-2 border-t border-neutral-600 overflow-y-scroll";
   subscribeOptions((newOptions) => {
+    options_list.innerHTML = "";
     newOptions.map((option) => {
       const option_node = document.createElement("div");
       option_node.className =
