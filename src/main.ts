@@ -74,6 +74,11 @@ const top_bar = top_constructor(
   auth_page.build,
   watch_page.build,
   subscribeUser,
+  {
+    get: getUser,
+    set: (value) => setUser(value),
+    subscribe: subscribeUser,
+  },
   settings_page,
   nav,
 );
