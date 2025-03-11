@@ -21,7 +21,7 @@ export function card(
   carousel.appendChild(item_node);
 
   const item_image = document.createElement("div");
-  item_image.className = "w-full aspect-[72/97] overflow-hidden rounded-lg";
+  item_image.className = "w-full aspect-[2/3] overflow-hidden rounded-lg";
 
   item_node.appendChild(item_image);
 
