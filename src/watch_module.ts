@@ -222,55 +222,38 @@ function watch_constructor() {
 
     detail_top.appendChild(detail_overlay);
 
-    const detail_stats = document.createElement("div");
-    detail_stats.className = "absolute bottom-0 left-0 right-0 p-8";
+    const detail_main = document.createElement("div");
+    detail_main.className = "h-fit w-full px-4";
 
-    detail_top.appendChild(detail_stats);
+    detail_node.appendChild(detail_main);
 
-    const detail_stats_inner = document.createElement("div");
-    detail_stats_inner.className = "max-w-7xl mx-auto";
+    detail_main.insertAdjacentHTML(
+      "beforeend",
+      `<div class='text-xl font-semibold w-full truncate'>${details.title}</div>`,
+    );
 
-    detail_stats.appendChild(detail_stats_inner);
+    const detail_bar = document.createElement("div");
+    detail_bar.className = "w-full flex space-x-2 mt-2";
 
-    const detail_title = document.createElement("h1");
-    detail_title.className = "text-4xl font-bold mb-4";
-    detail_title.textContent = details.title;
-
-    detail_stats_inner.appendChild(detail_title);
-
-    const detail_stats_list = document.createElement("div");
-    detail_stats_list.className = "flex items-center space-x-4 mb-4";
-
-    detail_stats_inner.appendChild(detail_stats_list);
-
-    const detail_stats_seasoncount = document.createElement("span");
-    detail_stats_seasoncount.className = "text-sm font-medium";
-    detail_stats_seasoncount.textContent = `${details.seasons.length} Seasons`;
-
-    detail_stats_list.appendChild(detail_stats_seasoncount);
-
-    const detail_stats_outer = document.createElement("div");
-    detail_stats_outer.className = "flex items-center space-x-4";
-
-    detail_stats_inner.appendChild(detail_stats_outer);
+    detail_main.appendChild(detail_bar);
 
     if (localStorage.getItem("token")) {
       const [getList, setList, subscribeList] = createState(0);
       const on_list = document.createElement("div");
       on_list.className =
-        "flex items-center space-x-2 bg-neutral-900 hover:bg-neutral-800 p-2 rounded-md cursor-pointer transition-colors";
+        "flex items-center space-x-1 bg-neutral-900 hover:bg-neutral-800 py-2 px-4 rounded-full cursor-pointer transition-colors";
       on_list.textContent = "...";
 
-      detail_stats_outer.appendChild(on_list);
+      detail_bar.appendChild(on_list);
 
       subscribeList((newList) => {
         console.log(newList);
         if (newList == 1) {
           on_list.innerHTML =
-            "<img src='./icons/bookmark_24dp_FILL.svg' class='h-6 w-6' />";
+            "<img src='./icons/bookmark_24dp_FILL.svg' class='h-4 w-4' /><span class='text-xs pr-1 font-semibold'>Subscribed</span>";
         } else {
           on_list.innerHTML =
-            "<img src='./icons/bookmark_24dp.svg' class='h-6 w-6' />";
+            "<img src='./icons/bookmark_24dp.svg' class='h-4 w-4' /><span class='text-xs pr-1 font-semibold'>Subscribe</span>";
         }
       });
 
@@ -307,13 +290,6 @@ function watch_constructor() {
       });
     }
 
-    const detail_main = document.createElement("div");
-    detail_main.className = "h-fit w-full px-4";
-
-    detail_node.appendChild(detail_main);
-
-    Devider(detail_main, "description");
-
     const detail_description_wrapper = document.createElement("div");
     detail_description_wrapper.className = "p-4 rounded-xl bg-neutral-900 my-4";
 
@@ -321,7 +297,7 @@ function watch_constructor() {
 
     const desc = document.createElement("div");
     desc.className = "text-sm line-clamp-3";
-    desc.textContent = details.desc;
+    desc.innerHTML = `<div class="font-semibold">${details.seasons.length} Seasons</div></div>${details.desc}</div>`;
 
     detail_description_wrapper.appendChild(desc);
 
@@ -352,7 +328,10 @@ function watch_constructor() {
 
     let previous = cache.get("selectedSeason")?.label || undefined;
 
-    Devider(detail_main, "Episodes");
+    detail_main.insertAdjacentHTML(
+      "beforeend",
+      "<div class='text-l font-semibold mb-2'>Episodes</div>",
+    );
 
     const selector = Selector(detail_main, details.seasons, previous);
 
