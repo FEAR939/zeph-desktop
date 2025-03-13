@@ -66,13 +66,40 @@ export default async function profile_panel(userState) {
 
   profile_node.appendChild(ctx);
 
+  const months = [
+    "Jan",
+    "Feb",
+    "Mar",
+    "Apr",
+    "May",
+    "Jun",
+    "Jul",
+    "Aug",
+    "Sep",
+    "Oct",
+    "Nov",
+    "Dec",
+  ];
   const dataset = [];
 
   activity.map((act, i) => {
     dataset.push({
-      x: `${act.date}`,
+      x: `${months[act.month - 1]} ${act.date}`,
       y: (act.time / 60).toFixed(1),
     });
+
+    if (i == activity.length - 1 || act.date > activity[i + 1].date) return;
+
+    const gap = Math.abs(act.date + 1 - activity[i + 1].date);
+
+    if (gap == 0) return;
+
+    for (let j = 1; j < gap; j++) {
+      dataset.push({
+        x: `${months[act.month - 1]} ${act.date + j}`,
+        y: 0,
+      });
+    }
   });
 
   new Chart(ctx, {
@@ -82,7 +109,7 @@ export default async function profile_panel(userState) {
         {
           label: "Activity",
           cubicInterpolationMode: "default",
-          tension: 0.4,
+          tension: 0.2,
           fill: true,
           backgroundColor: function (context) {
             const chart = context.chart;
