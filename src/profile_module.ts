@@ -58,7 +58,7 @@ export default async function profile_panel(userState) {
 
   profile_node.insertAdjacentHTML(
     "beforeend",
-    "<div class='w-full font-semibold'> Playtime</div>",
+    "<div class='w-full font-semibold mt-2'> Playtime</div>",
   );
 
   const ctx = document.createElement("canvas");
@@ -101,6 +101,25 @@ export default async function profile_panel(userState) {
       });
     }
   });
+
+  const yScaleText = {
+    id: "yScaleText",
+    beforeDatasetsDraw(chart, args, plugins) {
+      const {
+        ctx,
+        scales: { y },
+      } = chart;
+
+      const yCenter = y.left;
+
+      ctx.save();
+      ctx.font = "12px sans-serif";
+      ctx.fillStyle = "#fff";
+      ctx.textAlign = "center";
+      ctx.textBaseline = "bottom";
+      ctx.fillText("Hours", yCenter, y.top - 10);
+    },
+  };
 
   new Chart(ctx, {
     type: "line",
@@ -150,11 +169,7 @@ export default async function profile_panel(userState) {
         intersect: false,
         mode: "index",
       },
-      plugins: {
-        legend: {
-          display: false,
-        },
-      },
     },
+    plugins: [yScaleText],
   });
 }
