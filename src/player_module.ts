@@ -123,17 +123,26 @@ async function player_constructor(episodes: episode[], index: number) {
   document.body.appendChild(player_wrapper);
 
   const player_exit = document.createElement("div");
-  player_exit.className = "absolute z-50 top-4 left-4 h-8 w-8 cursor-pointer";
+  if (!isMobileDevice) {
+    player_exit.className = "absolute z-50 top-4 left-4 h-8 w-8 cursor-pointer";
+  } else {
+    player_exit.className = "absolute z-50 top-4 left-4 h-6 w-6 cursor-pointer";
+  }
   player_exit.innerHTML =
-    "<img src='./icons/keyboard_backspace_24dp.png' class='h-8 w-8' />";
+    "<img src='./icons/keyboard_backspace_24dp.png' class='h-full w-full' />";
 
   player_wrapper.appendChild(player_exit);
 
   const player_toggleMini = document.createElement("div");
-  player_toggleMini.className =
-    "absolute z-50 top-4 left-16 h-8 w-8 cursor-pointer";
+  if (!isMobileDevice) {
+    player_toggleMini.className =
+      "absolute z-50 top-4 left-16 h-8 w-8 cursor-pointer";
+  } else {
+    player_toggleMini.className =
+      "absolute z-50 top-4 left-16 h-6 w-6 cursor-pointer";
+  }
   player_toggleMini.innerHTML =
-    "<img src='./icons/close_fullscreen_24dp.png' class='h-8 w-8' />";
+    "<img src='./icons/close_fullscreen_24dp.png' class='h-full w-full' />";
 
   player_wrapper.appendChild(player_toggleMini);
 
@@ -142,8 +151,13 @@ async function player_constructor(episodes: episode[], index: number) {
   });
 
   const episode_title = document.createElement("div");
-  episode_title.className =
-    "absolute top-4 left-28 h-8 flex items-center text-xl max-w-[50%] truncate";
+  if (!isMobileDevice) {
+    episode_title.className =
+      "absolute top-4 left-28 h-8 flex items-center text-xl max-w-[50%] truncate";
+  } else {
+    episode_title.className =
+      "absolute top-4 left-28 h-6 flex items-center text-lg max-w-[50%] truncate";
+  }
 
   player_wrapper.appendChild(episode_title);
 
@@ -155,16 +169,56 @@ async function player_constructor(episodes: episode[], index: number) {
   player_wrapper.appendChild(video_player);
 
   const video_layer = document.createElement("div");
-  video_layer.className = "absolute inset-0 h-full w-full";
+  video_layer.className =
+    "absolute inset-0 h-full w-full flex items-center justify-center space-x-4";
 
   player_wrapper.appendChild(video_layer);
+
+  const big_reverse_button = document.createElement("img");
+  if (!isMobileDevice) {
+    big_reverse_button.className = "h-12 w-12 cursor-pointer";
+  } else {
+    big_reverse_button.className = "h-8 w-8 cursor-pointer";
+  }
+  big_reverse_button.src = "./icons/replay_10_24dp.svg";
+
+  video_layer.appendChild(big_reverse_button);
+
+  const big_play_button = document.createElement("img");
+  if (!isMobileDevice) {
+    big_play_button.className = "h-24 w-24 cursor-pointer";
+  } else {
+    big_play_button.className = "h-16 w-16 cursor-pointer";
+  }
+  big_play_button.src = "./icons/play_arrow_24dp.png";
+
+  video_layer.appendChild(big_play_button);
+
+  const big_forward_button = document.createElement("img");
+  if (!isMobileDevice) {
+    big_forward_button.className = "h-12 w-12 cursor-pointer";
+  } else {
+    big_forward_button.className = "h-8 w-8 cursor-pointer";
+  }
+
+  big_forward_button.src = "./icons/forward_10_24dp.svg";
+
+  video_layer.appendChild(big_forward_button);
+
+  big_reverse_button.addEventListener("click", (e) => {
+    e.stopPropagation();
+    video_player.currentTime -= 10;
+  });
+
+  big_forward_button.addEventListener("click", (e) => {
+    e.stopPropagation();
+    video_player.currentTime += 10;
+  });
 
   let touched = false;
 
   video_layer.addEventListener("click", () => {
-    if (!isMobileDevice) return;
-
-    if (!touched) {
+    if (!touched && isMobileDevice) {
       touched = true;
       return;
     }
@@ -193,6 +247,7 @@ async function player_constructor(episodes: episode[], index: number) {
     player_toggleMini.style.display = "flex";
     episode_title.style.display = "flex";
     player_wrapper.style.cursor = "default";
+    video_layer.style.display = "flex";
     timeout = setTimeout(() => {
       if (video_player.paused) return;
       video_controls.style.display = "none";
@@ -200,6 +255,7 @@ async function player_constructor(episodes: episode[], index: number) {
       player_toggleMini.style.display = "none";
       episode_title.style.display = "none";
       player_wrapper.style.cursor = "none";
+      video_layer.style.display = "none";
       touched = false;
     }, 3000);
   });
@@ -300,21 +356,28 @@ async function player_constructor(episodes: episode[], index: number) {
   const play_pause = document.createElement("img");
   play_pause.className = "h-8 w-8 object-cover cursor-pointer";
   play_pause.src = "./icons/play_arrow_24dp.png";
+
   startWrapper.appendChild(play_pause);
 
   subscribePlayState((newState) => {
-    console.log(newState);
     if (newState == true) {
       play_pause.src = "./icons/pause_24dp.png";
+      big_play_button.src = "./icons/pause_24dp.png";
       video_player.play();
     } else if (newState == false) {
       play_pause.src = "./icons/play_arrow_24dp.png";
+      big_play_button.src = "./icons/play_arrow_24dp.png";
       video_player.pause();
     }
   });
 
   play_pause.addEventListener("click", () => setPlayState(!getPlayState()));
   video_player.addEventListener("click", () => setPlayState(!getPlayState()));
+
+  video_player.addEventListener("play", () => setPlayState(true));
+  video_player.addEventListener("pause", () => setPlayState(false));
+
+  window.addEventListener("keyup", handleKeyup);
 
   if (video_player.autoplay) setPlayState(true);
 
@@ -689,6 +752,20 @@ async function player_constructor(episodes: episode[], index: number) {
     selector.set(selectorOptions[0]);
   });
 
+  function handleKeyup(event) {
+    switch (event.keyCode) {
+      case 32:
+        setPlayState(!getPlayState());
+        break;
+      case 37:
+        video_player.currentTime -= 10;
+        break;
+      case 39:
+        video_player.currentTime += 10;
+        break;
+    }
+  }
+
   player_exit.addEventListener("click", async () => {
     const playtime = Math.floor(video_player.currentTime / 60);
     const duration = Math.floor(video_player.duration / 60);
@@ -698,6 +775,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
     player_wrapper.remove();
     player_wrapper = null;
+    window.removeEventListener("keyup", handleKeyup);
     await getCurrentWindow().setFullscreen(false);
   });
 
