@@ -168,6 +168,12 @@ async function player_constructor(episodes: episode[], index: number) {
 
   player_wrapper.appendChild(video_player);
 
+  video_player.addEventListener("loadedmetadata", () => {
+    console.log(episodes, getIndex());
+    console.log(episodes[getIndex()].playtime);
+    video_player.currentTime = episodes[getIndex()].playtime * 60;
+  });
+
   const video_layer = document.createElement("div");
   video_layer.className =
     "absolute inset-0 h-full w-full flex items-center justify-center space-x-4";
@@ -389,8 +395,11 @@ async function player_constructor(episodes: episode[], index: number) {
 
   nextEpisode.addEventListener("click", () => {
     if (getIndex() == episodes.length - 1) return;
+    video_player.pause();
     const playtime = Math.floor(video_player.currentTime / 60);
     const duration = Math.floor(video_player.duration / 60);
+
+    console.log(getIndex());
 
     if (episodes[getIndex()].watched !== null) {
       episodes[getIndex()]?.watched?.(duration, playtime);
@@ -468,7 +477,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
   const episodeWrapper = document.createElement("div");
   episodeWrapper.className =
-    "absolute bottom-20 right-4 h-[36rem] w-96 p-2 bg-neutral-900 rounded-lg overflow-hidden overflow-y-scroll hidden";
+    "absolute bottom-20 right-4 h-[36rem] w-96 p-2 bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden overflow-y-scroll hidden space-y-2";
 
   if (isMobileDevice) {
     episodeWrapper.classList.replace("h-[36rem]", "h-[16rem]");
@@ -478,62 +487,146 @@ async function player_constructor(episodes: episode[], index: number) {
 
   episodes.map((episode, i) => {
     if (episodeWrapper == null) return;
+
     const episode_node = document.createElement("div");
     episode_node.className =
-      "group relative flex items-center h-16 cursor-pointer rounded-lg overflow-hidden hover:bg-neutral-800 transition-colors";
+      "group relative flex items-center h-fit cursor-pointer";
 
     episodeWrapper.appendChild(episode_node);
 
-    if (getIndex() == i) {
-      episode_node.classList.add("bg-neutral-800");
-    }
-
-    subscribeIndex((newIndex) => {
-      if (newIndex == i) {
-        episode_node.classList.add("bg-neutral-800");
-      } else {
-        episode_node.classList.remove("bg-neutral-800");
-      }
-    });
-
-    episode_node.addEventListener("click", () => setIndex(i));
-
-    const episode_number = document.createElement("div");
-    episode_number.className =
-      "flex-shrink-0 w-10 flex items-center justify-center text-1xl font-bold text-neutral-500 group-hover:text-white transition-colors";
-    episode_number.textContent = (i + 1).toString();
-
-    episode_node.appendChild(episode_number);
-
     const episode_image = document.createElement("div");
     episode_image.className =
-      "relative w-20 flex-shrink-0 aspect-video overflow-hidden rounded-lg bg-neutral-700";
+      "relative flex-shrink-0 aspect-video overflow-hidden rounded-lg bg-neutral-900";
+
+    episode_image.classList.add("h-22");
 
     episode_node.appendChild(episode_image);
 
+    if (episode.duration !== 0) {
+      const episode_duration = document.createElement("div");
+      episode_duration.className =
+        "absolute right-2 bottom-4 px-2 py-1 bg-neutral-900/90 rounded-lg text-sm";
+      episode_duration.textContent = `${episode.duration} Min`;
+
+      episode_image.appendChild(episode_duration);
+    }
+
+    const [getProgress, setProgress, subscribeProgress] = createState({
+      duration: 0,
+      playtime: 0,
+    });
+
+    if (localStorage.getItem("token")) {
+      const episode_progress = document.createElement("div");
+      episode_progress.className =
+        "absolute bottom-2 left-2 right-2 h-0.75 rounded-xl overflow-hidden";
+
+      episode_image.appendChild(episode_progress);
+
+      const episode_progress_inner = document.createElement("div");
+      episode_progress_inner.className =
+        "h-full bg-white transition-all duration-300";
+
+      subscribeProgress((newProgress) => {
+        if (newProgress.duration !== 0) {
+          episode_progress.classList.add("bg-neutral-900");
+          episode_progress_inner.style.width =
+            (newProgress.playtime / newProgress.duration) * 100 + "%";
+        } else {
+          episode_progress_inner.style.width = "0%";
+        }
+      });
+
+      episode_progress.appendChild(episode_progress_inner);
+      setProgress({
+        duration: episode.duration,
+        playtime: episode.playtime,
+      });
+    }
+
     const episode_info = document.createElement("div");
     episode_info.className =
-      "flex-1 flex flex-col justify-center p-4 overflow-hidden";
+      "flex-1 flex flex-col justify-center space-y-1 px-4 overflow-hidden";
 
     episode_node.appendChild(episode_info);
 
-    const episode_info_inner = document.createElement("div");
-    episode_info_inner.className = "flex items-center";
-
-    episode_info.appendChild(episode_info_inner);
-
     const episode_title = document.createElement("h3");
     episode_title.className = "font-medium group-hover:text-white";
-    episode_title.textContent = `Episode ${i + 1}`;
+    episode_title.textContent = episode.title;
 
-    episode_info_inner.appendChild(episode_title);
+    episode_title.classList.add("truncate");
+
+    episode_info.appendChild(episode_title);
 
     const episode_description = document.createElement("p");
-    episode_description.className =
-      "w-full mt-1 text-sm text-neutral-400 truncate";
-    episode_description.textContent = episode.title;
+    episode_description.className = "text-sm text-neutral-400 line-clamp-2";
+    episode_description.textContent = `Episode ${i + 1}`;
 
     episode_info.appendChild(episode_description);
+
+    const episode_buttons = document.createElement("div");
+    episode_buttons.className = "h-8 w-full flex space-x-2 mt-2";
+
+    const episode_watch = document.createElement("div");
+    episode_watch.className =
+      "h-8 w-fit pl-2 pr-3 bg-neutral-900 hover:bg-neutral-800 transition-colors rounded-md space-x-1 flex items-center";
+    episode_watch.innerHTML =
+      "<img src='./icons/play_arrow_24dp.png' class='h-4 w-fit object-cover' /><span class='text-sm'>Watch now</span>";
+
+    episode_buttons.appendChild(episode_watch);
+
+    episode_watch.addEventListener("click", () => {
+      setIndex(i);
+    });
+
+    const [getExpand, setExpand, subscribeExpand] = createState(false);
+
+    const language = document.createElement("div");
+    language.className = "relative h-8";
+
+    const language_header = document.createElement("div");
+    language_header.className =
+      "h-full p-2 bg-neutral-900 hover:bg-neutral-800 transition-colors rounded-md flex items-center justify-center";
+    language_header.innerHTML =
+      "<img src='./icons/language_24dp.svg' class='h-4 w-4' />";
+
+    language.appendChild(language_header);
+
+    const language_list = document.createElement("div");
+    language_list.className =
+      "absolute bottom-10 right-0 h-8 px-4 bg-neutral-800 rounded-lg flex items-center space-x-2 overflow-hidden";
+    language_list.style.width = `calc(${episode.langs.length} * 2rem)`;
+
+    episode.langs.map((lang) => {
+      if (lang.length !== 0) {
+        const langNode = document.createElement("img");
+        langNode.className = "h-4 w-4 object-contain";
+        langNode.src = `https://aniworld.to${lang}`;
+
+        language_list.appendChild(langNode);
+      }
+    });
+
+    subscribeExpand((newExpand) => {
+      if (newExpand) {
+        language_list.style.display = "flex";
+      } else {
+        language_list.style.display = "none";
+      }
+    });
+
+    language.appendChild(language_list);
+
+    episode_buttons.appendChild(language);
+
+    language_header.addEventListener("click", (e: Event) => {
+      e.stopPropagation();
+      setExpand(!getExpand());
+    });
+
+    setExpand(false);
+
+    episode_info.appendChild(episode_buttons);
 
     const asyncImage = new Image();
     asyncImage.src = episode.image;
@@ -543,55 +636,14 @@ async function player_constructor(episodes: episode[], index: number) {
       episode_image.appendChild(asyncImage);
     });
 
-    const [, setProgress, subscribeProgress] = createState({
-      duration: 0,
-      playtime: 0,
-    });
+    video_player.addEventListener("timeupdate", () => {
+      if (i !== getIndex()) return;
 
-    if (localStorage.getItem("token")) {
-      const episode_progress = document.createElement("div");
-      episode_progress.className = "absolute bottom-0 left-0 right-0 h-1";
-
-      episode_image.appendChild(episode_progress);
-
-      const episode_progress_inner = document.createElement("div");
-      episode_progress_inner.className =
-        "h-full bg-red-600 transition-all duration-300";
-
-      subscribeProgress((newProgress) => {
-        console.log("newState");
-        episode.duration = newProgress.duration;
-        episode.playtime = newProgress.playtime;
-
-        episode_progress_inner.style.width =
-          episode.duration == 0
-            ? "0%"
-            : (newProgress.playtime / newProgress.duration) * 100 + "%";
-      });
-
-      episode_progress.appendChild(episode_progress_inner);
       setProgress({
-        duration: episode.duration,
-        playtime: episode.playtime,
+        duration: Math.floor(video_player.duration / 60),
+        playtime: Math.floor(video_player.currentTime / 60),
       });
-
-      video_player.addEventListener("timeupdate", () => {
-        if (i !== getIndex()) return;
-
-        const playtime = Math.floor(video_player.currentTime / 60);
-        const duration = Math.floor(video_player.duration / 60);
-
-        if (episodes[i].playtime > playtime) return;
-
-        episodes[i].duration = duration;
-        episodes[i].playtime = playtime;
-
-        setProgress({
-          duration: episode.duration,
-          playtime: episode.playtime,
-        });
-      });
-    }
+    });
   });
 
   episodeToggle.addEventListener("click", () => {
@@ -672,7 +724,6 @@ async function player_constructor(episodes: episode[], index: number) {
     } else if (newHoster.label.includes("Doodstream") && final_url !== null) {
       video_player.src = final_url;
     }
-    video_player.currentTime = episodes[getIndex()].playtime * 60;
     episode_title.textContent = episodes[getIndex()].title;
   });
 
@@ -752,7 +803,7 @@ async function player_constructor(episodes: episode[], index: number) {
     selector.set(selectorOptions[0]);
   });
 
-  function handleKeyup(event) {
+  function handleKeyup(event: KeyboardEvent) {
     switch (event.keyCode) {
       case 32:
         setPlayState(!getPlayState());
