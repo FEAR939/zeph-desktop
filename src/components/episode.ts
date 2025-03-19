@@ -1,7 +1,6 @@
 import createState from "../createstate";
 import { fetch } from "@tauri-apps/plugin-http";
 import { episode } from "../types";
-import circle_progress from "./circle_progress";
 
 export function Episode(
   ep: episode,
@@ -163,7 +162,11 @@ export function Episode(
   episode_info.appendChild(episode_buttons);
 
   const watched = async (duration: number, playtime: number) => {
-    if (!localStorage.getItem("token") || !(getProgress().playtime < playtime))
+    if (
+      !localStorage.getItem("token") ||
+      (!(getProgress().playtime < playtime) &&
+        !(getProgress().duration < duration))
+    )
       return;
 
     const res = await fetch(`${localStorage.getItem("api_url")}/handle-seen`, {
