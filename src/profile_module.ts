@@ -1,6 +1,5 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import Chart from "chart.js/auto";
-import Devider from "./components/devider";
 
 async function get_activity_month() {
   const res = await fetch(
