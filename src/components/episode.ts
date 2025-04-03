@@ -10,6 +10,7 @@ export function Episode(
   player_episodes: episode[],
   episodes: episode[],
   call_player: (i: number) => void,
+  anime_url: string,
 ) {
   const isMobileDevice = /Mobi/i.test(window.navigator.userAgent);
 
@@ -106,7 +107,7 @@ export function Episode(
 
   const episode_watch = document.createElement("div");
   episode_watch.className =
-    "h-8 w-fit pl-2 pr-3 bg-neutral-900 hover:bg-neutral-800 transition-colors rounded-md space-x-1 flex items-center";
+    "h-8 w-fit pl-2 pr-3 bg-neutral-800 hover:bg-neutral-700 transition-colors rounded-md space-x-1 flex items-center";
   episode_watch.innerHTML =
     "<img src='./icons/play_arrow_24dp.png' class='h-4 w-fit object-cover' /><span class='text-sm'>Watch now</span>";
 
@@ -119,7 +120,7 @@ export function Episode(
 
   const language_header = document.createElement("div");
   language_header.className =
-    "h-full p-2 bg-neutral-900 hover:bg-neutral-800 transition-colors rounded-md flex items-center justify-center";
+    "h-full p-2 bg-neutral-800 hover:bg-neutral-700 transition-colors rounded-md flex items-center justify-center";
   language_header.innerHTML =
     "<img src='./icons/language_24dp.svg' class='h-4 w-4' />";
 
@@ -162,6 +163,25 @@ export function Episode(
   episode_info.appendChild(episode_buttons);
 
   const watched = async (duration: number, playtime: number) => {
+    const historyres = await fetch(
+      `${localStorage.getItem("api_url")}/user/setHistory`,
+      {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          Authorization: localStorage.getItem("token") || "",
+        },
+        body: JSON.stringify({
+          id: ep.id,
+          anime: anime_url,
+        }),
+      },
+    );
+
+    if (historyres.status !== 200) {
+      console.error("Could not update user history");
+    }
+
     if (
       !localStorage.getItem("token") ||
       (!(getProgress().playtime < playtime) &&

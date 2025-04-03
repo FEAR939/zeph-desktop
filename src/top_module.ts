@@ -1,10 +1,7 @@
-import { fetch } from "@tauri-apps/plugin-http";
 import createState from "./createstate";
-import { Search } from "./components/search";
 import { SubscribeFunction } from "./types";
-import { Settings } from "./settings";
-import Devider from "./components/devider";
 import profile_panel from "./profile_module";
+import searchModule from "./search_module";
 
 function top_constructor(
   top: HTMLElement,
@@ -13,7 +10,6 @@ function top_constructor(
   userSignal: SubscribeFunction<object | null>,
   userState,
   settings: () => void,
-  nav_show,
 ) {
   const history_Array = [];
 
@@ -21,24 +17,25 @@ function top_constructor(
     const isMobileDevice = /Mobi/i.test(window.navigator.userAgent);
     const top_node = document.createElement("div");
     top_node.className =
-      "relative h-full w-full flex items-center justify-center px-4 space-x-2";
+      "relative h-full w-full flex items-center justify-center px-2 space-x-2";
+    top_node.innerHTML =
+      "<div class='absolute left-4 text-[#d8d5d0] text-xl'>Anime Hub</div>";
 
     top.appendChild(top_node);
 
-    const show = document.createElement("div");
-    show.className =
-      "absolute left-6 h-10 w-10 cursor-pointer hover:bg-neutral-800 flex items-center justify-center rounded-md transition-colors";
-    show.innerHTML = "<img src='./icons/menu_24dp.svg' class='h-6 w-6' />";
+    const search_node = document.createElement("div");
+    search_node.className =
+      "absolute right-12 h-8 w-8 flex items-center justify-center cursor-pointer";
+    search_node.innerHTML =
+      "<img src='./icons/search_24dp.svg' class='h-6 w-6' />";
 
-    top_node.appendChild(show);
+    top_node.appendChild(search_node);
 
-    show.addEventListener("click", () => nav_show.setShow(!nav_show.getShow()));
-
-    Search(top_node, watch_callback);
+    searchModule(document.body, search_node, watch_callback);
 
     const account_node = document.createElement("div");
     account_node.className =
-      "absolute right-8 w-8 h-8 rounded-full bg-neutral-600 flex items-center";
+      "absolute right-4 w-8 h-8 rounded-full bg-neutral-600 flex items-center";
 
     top_node.appendChild(account_node);
 
@@ -64,7 +61,7 @@ function top_constructor(
 
       const account_menu = document.createElement("div");
       account_menu.className =
-        "absolute z-40 top-10 right-0 h-fit w-64 p-2 bg-neutral-950 border border-neutral-800 rounded-md overflow-hidden transition-all ease-in-out duration-100";
+        "absolute z-40 top-10 right-0 h-fit w-72 p-4 space-y-1 bg-[#1f1f1f] border border-[#333333] shadow-[4px_8px_16px_rgba(0,0,0,0.8)] rounded-xl overflow-hidden transition-all ease-in-out duration-100";
       account_menu.style.opacity = "0";
       account_menu.style.display = "none";
       account_menu.style.transform = "scale(0.75)";
@@ -105,7 +102,7 @@ function top_constructor(
 
       const user_region = document.createElement("div");
       user_region.className =
-        "w-full h-32 flex flex-col space-y-2 items-center justify-center border-b border-neutral-600 mb-2";
+        "w-full h-32 flex flex-col space-y-2 items-center justify-center";
 
       account_menu.appendChild(user_region);
 
@@ -125,9 +122,9 @@ function top_constructor(
 
       const user_nickname = document.createElement("div");
       user_nickname.className =
-        "w-full text-center font-bold truncate space-x-1";
+        "w-full text-center font-semibold truncate space-x-1";
       if (user) {
-        user_nickname.innerHTML = `<span class="text-neutral-600">Welcome,</span><div class="bg-gradient-to-r from-purple-200 via-purple-300 to-purple-600 inline-block text-transparent bg-clip-text">${user.username}</div>`;
+        user_nickname.innerHTML = `<div class="text-white">${user.username}</div>`;
       } else {
         user_nickname.innerHTML = "<span class='text-neutral-600'>Welcome";
       }
@@ -136,9 +133,9 @@ function top_constructor(
 
       const profile_node = document.createElement("div");
       profile_node.className =
-        "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-white/10 transition-colors cursor-pointer rounded";
+        "w-auto px-4 py-2 flex items-center space-x-2 bg-[rgb(30,54,72)] text-[rgb(0,120,212)] cursor-pointer rounded-md";
       profile_node.innerHTML =
-        "<img src='./icons/person_24dp.png' class='h-4 w-4' /><span>Profile</span>";
+        "<img src='./icons/dashboard_24dp.svg' fill='black' class='h-4 w-4 rounded-full object-cover'><span>Dashboard</span>";
 
       if (!user) {
         profile_node.classList.add("text-neutral-700");
@@ -153,18 +150,23 @@ function top_constructor(
 
       const settings_node = document.createElement("div");
       settings_node.className =
-        "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-white/10 transition-colors cursor-pointer rounded";
+        "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-[#2a2d2e] transition-colors cursor-pointer rounded-md";
       settings_node.innerHTML =
-        "<img src='./icons/settings_24dp.svg' class='h-4 w-4' /><span>Settings</span>";
+        "<img src='./icons/settings_24dp.svg' fill='black' class='h-4 w-4 rounded-full object-cover'><span>Settings</span>";
 
       account_menu.appendChild(settings_node);
 
       settings_node.addEventListener("click", () => settings());
 
+      account_menu.insertAdjacentHTML(
+        "beforeend",
+        "<div class='my-2 h-0.25 w-full bg-[#333333]'></div>",
+      );
+
       const sign = document.createElement("div");
       sign.className =
-        "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-white/10 transition-colors cursor-pointer rounded";
-      sign.innerHTML = `<img src='./icons/logout_24dp.png' class='h-4 w-4' /><span>${!user ? "Sign in" : "Sign out"}</span>`;
+        "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-[#2a2d2e] transition-colors cursor-pointer rounded-md";
+      sign.innerHTML = `<img src='./icons/${!user ? "log_24dp.png" : "logout_24dp.png"}' fill='black' class='h-4 w-4 rounded-full object-cover'><span>${!user ? "Sign in" : "Sign out"}</span>`;
 
       account_menu.appendChild(sign);
 

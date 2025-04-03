@@ -1,7 +1,7 @@
 export function AvatarChanger(parent: HTMLElement, userState) {
   const modal = document.createElement("div");
   modal.className =
-    "absolute inset-0 h-fit w-64 p-4 m-auto bg-neutral-950 border border-neutral-800 rounded-xl";
+    "absolute inset-0 h-fit w-64 p-4 m-auto bg-neutral-800 shadow-xl rounded-xl";
 
   function ImageCropper(file) {
     modal.innerHTML = "";
@@ -22,7 +22,7 @@ export function AvatarChanger(parent: HTMLElement, userState) {
 
     const submit = document.createElement("div");
     submit.className =
-      "px-4 py-2 flex items-center justify-center rounded bg-neutral-900 hover:bg-neutral-800 mt-2 transition-colors cursor-pointer";
+      "px-4 py-2 flex items-center justify-center rounded bg-neutral-700 hover:bg-neutral-600 mt-2 transition-colors cursor-pointer";
     submit.textContent = "Submit";
 
     modal.appendChild(submit);
@@ -354,7 +354,7 @@ export function AvatarChanger(parent: HTMLElement, userState) {
 
   const fileWrapper = document.createElement("div");
   fileWrapper.className =
-    "relative h-32 w-full flex flex-col items-center justify-center border border-dashed border-neutral-900 rounded mb-2";
+    "relative h-32 w-full flex flex-col items-center justify-center border border-dashed border-neutral-700 rounded mb-2";
   fileWrapper.innerHTML =
     "<img src='./icons/cloud_upload_24dp.svg' class='h-8 w-8' /><div class='text-neutral-700 text-s'>Drag & Drop or</div><div class='text-s'>Browse<div/>";
 
@@ -368,7 +368,7 @@ export function AvatarChanger(parent: HTMLElement, userState) {
 
   const modalContinue = document.createElement("div");
   modalContinue.className =
-    "w-full px-2 py-1 flex items-center justify-center bg-neutral-900 hover:bg-neutral-800 transition-colors text-neutral-700 rounded cursor-pointer";
+    "w-full px-2 py-1 flex items-center justify-center bg-neutral-700 hover:bg-neutral-600 transition-colors text-neutral-400 rounded cursor-pointer";
   modalContinue.textContent = "Continue";
 
   modal.appendChild(modalContinue);

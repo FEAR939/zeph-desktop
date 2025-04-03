@@ -185,7 +185,7 @@ function watch_constructor() {
 
     const detail_node = document.createElement("div");
     detail_node.className =
-      "min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-neutral-950 mt-4 overflow-hidden rounded-t-lg border-box";
+      "min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-neutral-900 mt-4 overflow-hidden rounded-t-lg border-box";
 
     detail_wrapper.appendChild(detail_node);
 
@@ -218,7 +218,7 @@ function watch_constructor() {
 
     const detail_overlay = document.createElement("div");
     detail_overlay.className =
-      "absolute inset-0 bg-gradient-to-t from-neutral-950 via-neutral-950/60 to-transparent";
+      "absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/60 to-transparent";
 
     detail_top.appendChild(detail_overlay);
 
@@ -241,7 +241,7 @@ function watch_constructor() {
       const [getList, setList, subscribeList] = createState(0);
       const on_list = document.createElement("div");
       on_list.className =
-        "flex items-center space-x-1 bg-neutral-900 hover:bg-neutral-800 py-2 px-4 rounded-full cursor-pointer transition-colors";
+        "flex items-center space-x-1 bg-neutral-800 hover:bg-neutral-800 py-2 px-4 rounded-xl cursor-pointer transition-colors";
       on_list.textContent = "...";
 
       detail_bar.appendChild(on_list);
@@ -291,7 +291,7 @@ function watch_constructor() {
     }
 
     const detail_description_wrapper = document.createElement("div");
-    detail_description_wrapper.className = "p-4 rounded-xl bg-neutral-900 my-4";
+    detail_description_wrapper.className = "p-4 rounded-xl bg-neutral-800 my-4";
 
     detail_main.appendChild(detail_description_wrapper);
 
@@ -351,7 +351,7 @@ function watch_constructor() {
       const episode_node = document.createElement("div");
       episode_node.className = "h-32 rounded-lg overflow-hidden animate-pulse";
       episode_node.innerHTML =
-        "<div class='h-full w-full bg-neutral-900'></div>";
+        "<div class='h-full w-full bg-neutral-800'></div>";
 
       episode_wrapper.appendChild(episode_node);
 
@@ -391,6 +391,7 @@ function watch_constructor() {
           player_episodes,
           episodes,
           call_player,
+          current_url,
         );
       });
     }

@@ -11,7 +11,7 @@ export function card(
 ) {
   const item_node = document.createElement("div");
   item_node.className =
-    "relative h-full w-full group/item flex flex-col space-y-2 items-center rounded-lg cursor-pointer";
+    "relative h-full w-full group/item flex flex-col space-y-2 items-center cursor-pointer";
 
   item_node.addEventListener("click", () => {
     if (watch_callback == null) return;
@@ -26,7 +26,7 @@ export function card(
   item_node.appendChild(item_image);
 
   const item_title = document.createElement("h5");
-  item_title.className = "w-full font-semibold text-sm line-clamp-2";
+  item_title.className = "w-full text-sm truncate pb-4";
   item_title.textContent = item.title;
 
   item_node.appendChild(item_title);

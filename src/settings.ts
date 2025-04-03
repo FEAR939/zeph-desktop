@@ -17,7 +17,7 @@ export function Settings(userState, auth_page) {
 
     const settingsPanel = document.createElement("div");
     settingsPanel.className =
-      "min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-neutral-950 mt-4 overflow-hidden rounded-t-lg border-box";
+      "min-h-[calc(100%-1rem)] h-full w-[64rem] max-w-full bg-neutral-900 mt-4 overflow-hidden rounded-t-lg border-box";
 
     const closePanel = document.createElement("img");
     closePanel.className = "m-4 h-8 w-8 cursor-pointer";
@@ -35,7 +35,7 @@ export function Settings(userState, auth_page) {
     settingsPanel.appendChild(settings_main);
 
     const main_nav = document.createElement("div");
-    main_nav.className = "h-full w-64 p-2";
+    main_nav.className = "h-full w-64 p-2 border-r border-neutral-700";
 
     settings_main.appendChild(main_nav);
 
@@ -44,8 +44,7 @@ export function Settings(userState, auth_page) {
 
     settings.map((setting) => {
       const navSetting = document.createElement("div");
-      navSetting.className =
-        "px-2 py-1 rounded-lg hover:bg-neutral-800 cursor-pointer transition-colors text-sm";
+      navSetting.className = "px-2 py-1 cursor-pointer text-sm";
       navSetting.textContent = setting.label;
 
       main_nav.appendChild(navSetting);

@@ -178,44 +178,64 @@ function home_constructor() {
     }
 
     const [getSelectedList, setSelectedList, subscribeSelectedList] =
-      createState(null);
+      createState<null | number>(null);
 
-    const pagination = [];
+    type Page = {
+      page: number;
+    };
+
+    const pagination: Page[] = [];
 
     const selectedWrapper = document.createElement("div");
-    selectedWrapper.className = "m-4 p-1 w-fit flex bg-neutral-800 rounded-md";
+    selectedWrapper.className = "m-4 flex-1 flex flex-wrap gap-x-2 gap-y-2";
 
-    categories.map((categorie, i) => {
+    type Category = {
+      label: string;
+    };
+
+    categories.map((categorie: Category, i: number) => {
       pagination.push({
         page: 0,
       });
 
       const selectedCategorie = document.createElement("div");
       selectedCategorie.className =
-        "px-3 py-1.5 rounded cursor-pointer transition duration-300 text-sm text-neutral-400 font-medium";
-      selectedCategorie.textContent = categorie.label;
+        "w-full p-3 flex items-center bg-[#1f1f1f] hover:bg-[#333333] border border-[#333333] rounded-md cursor-pointer transition duration-300 text-sm font-medium space-x-4 md:w-fit";
+      switch (categorie.label) {
+        case "Trending Now":
+          selectedCategorie.innerHTML = `<img src="./icons/favorite_24dp.svg" alt="Favorite Icon" class="bg-[rgb(38,52,63)] p-1 h-6 w-6 object-cover rounded"><div>${categorie.label}</div>`;
+          break;
+        case "My List":
+          selectedCategorie.innerHTML = `<img src="./icons/bookmark_24dp_blue.svg" alt="My List Icon" class="bg-[rgb(38,52,63)] p-1 h-6 w-6 object-cover rounded"><div>${categorie.label}</div>`;
+          break;
+      }
 
       selectedWrapper.appendChild(selectedCategorie);
 
-      subscribeSelectedList((newList) => {
-        if (newList == i) {
-          selectedCategorie.classList.remove("text-neutral-400");
-          selectedCategorie.classList.add("bg-neutral-950", "text-white");
-        } else {
-          selectedCategorie.classList.add("text-neutral-400");
-          selectedCategorie.classList.remove("bg-neutral-950", "text-white");
-        }
-      });
+      // subscribeSelectedList((newList) => {
+      //   if (newList == i) {
+      //     selectedCategorie.classList.remove("text-neutral-400");
+      //     selectedCategorie.classList.add("bg-neutral-950", "text-white");
+      //   } else {
+      //     selectedCategorie.classList.add("text-neutral-400");
+      //     selectedCategorie.classList.remove("bg-neutral-950", "text-white");
+      //   }
+      // });
 
       selectedCategorie.addEventListener("click", () => setSelectedList(i));
     });
 
     content.appendChild(selectedWrapper);
 
+    const selectedHeader = document.createElement("div");
+    selectedHeader.className = "ml-4 mb-4 text-lg font-bold text-white";
+
+    content.appendChild(selectedHeader);
+
     const itemGrid = document.createElement("div");
     itemGrid.className = "px-4 pb-4 h-fit w-full grid gap-x-2 gap-y-4";
 
-    function handleGridSize(size) {
+    function handleGridSize(size: number) {
       itemGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
     }
 
@@ -226,53 +246,57 @@ function home_constructor() {
 
       handleGridSize(Math.floor(window.outerWidth / 200));
     } else {
-      handleGridSize(3);
+      handleGridSize(2);
     }
 
     content.appendChild(itemGrid);
 
     async function handleItems() {
-      const items = await get_item_batch(pagination[getSelectedList()].page);
+      const selected = getSelectedList();
+      if (selected == null) return;
+      const items = await get_item_batch(pagination[selected].page);
       if (items == null) return;
 
-      categories[getSelectedList()].items = [
-        ...categories[getSelectedList()].items,
-        ...items,
-      ];
+      categories[selected].items = [...categories[selected].items, ...items];
 
       items.map((item) => {
-        card(item, itemGrid, watch_callback);
+        card(item, itemGrid, watch_callback || (() => {}));
       });
 
-      pagination[getSelectedList()].page += 1;
+      pagination[selected].page += 1;
     }
 
     subscribeSelectedList(async (newList) => {
+      if (newList == null) return;
       itemGrid.innerHTML = "";
+      selectedHeader.textContent = categories[newList].label;
       if (
         pagination[newList].page == 0 &&
         categories[newList].label == "My List"
       ) {
         await handleItems();
       } else {
-        categories[newList].items.map((item) => {
-          card(item, itemGrid, watch_callback);
+        categories[newList].items.map((item: anime_data) => {
+          card(item, itemGrid, watch_callback || (() => {}));
         });
       }
     });
 
     let loading = false;
 
-    content.addEventListener("scroll", async () => {
-      const { scrollHeight, scrollTop, clientHeight } = event.target;
+    content.addEventListener("scroll", async (event: Event) => {
+      const target = event.target as HTMLElement;
+      if (!target) return;
+      const { scrollHeight, scrollTop, clientHeight } = target;
 
       console.log("scrolled");
 
       if (Math.abs(scrollHeight - clientHeight - scrollTop) > 1) return;
 
+      const selected = getSelectedList();
       if (
-        getSelectedList() == null ||
-        categories[getSelectedList()].label !== "My List" ||
+        selected == null ||
+        categories[selected].label !== "My List" ||
         loading
       )
         return;

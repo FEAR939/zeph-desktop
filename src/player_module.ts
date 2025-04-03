@@ -477,7 +477,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
   const episodeWrapper = document.createElement("div");
   episodeWrapper.className =
-    "absolute bottom-20 right-4 h-[36rem] w-96 p-2 bg-neutral-950 border border-neutral-800 rounded-xl overflow-hidden overflow-y-scroll hidden space-y-2";
+    "absolute bottom-20 right-4 h-[36rem] w-96 p-2 bg-neutral-900 rounded-xl overflow-hidden overflow-y-scroll hidden space-y-2";
 
   if (isMobileDevice) {
     episodeWrapper.classList.replace("h-[36rem]", "h-[16rem]");
@@ -569,7 +569,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
     const episode_watch = document.createElement("div");
     episode_watch.className =
-      "h-8 w-fit pl-2 pr-3 bg-neutral-900 hover:bg-neutral-800 transition-colors rounded-md space-x-1 flex items-center";
+      "h-8 w-fit pl-2 pr-3 bg-neutral-800 hover:bg-neutral-700 transition-colors rounded-md space-x-1 flex items-center";
     episode_watch.innerHTML =
       "<img src='./icons/play_arrow_24dp.png' class='h-4 w-fit object-cover' /><span class='text-sm'>Watch now</span>";
 
@@ -586,7 +586,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
     const language_header = document.createElement("div");
     language_header.className =
-      "h-full p-2 bg-neutral-900 hover:bg-neutral-800 transition-colors rounded-md flex items-center justify-center";
+      "h-full p-2 bg-neutral-800 hover:bg-neutral-700 transition-colors rounded-md flex items-center justify-center";
     language_header.innerHTML =
       "<img src='./icons/language_24dp.svg' class='h-4 w-4' />";
 

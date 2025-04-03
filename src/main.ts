@@ -4,8 +4,6 @@ import auth_constructor from "./auth_module.js";
 import top_constructor from "./top_module.js";
 import watch_constructor from "./watch_module.js";
 import { Settings } from "./settings.js";
-import { Navbar } from "./components/navbar.js";
-import { Calendar } from "./components/calendar.js";
 import { fetch } from "@tauri-apps/plugin-http";
 
 localStorage.setItem("api_url", "https://animenetwork.org:5000");
@@ -31,34 +29,18 @@ async function login(token?: string) {
 }
 
 const top_area = document.createElement("div");
-top_area.className = "absolute z-30 top-0 left-0 right-0 h-14 bg-neutral-950";
+top_area.className =
+  "absolute z-30 top-0 left-0 right-0 h-14 bg-[rgb(23,25,26)]";
 document.body.appendChild(top_area);
 
 const content_area = document.createElement("div");
 content_area.className =
-  "absolute inset-0 pt-12 overflow-y-auto overflow-hidden";
+  "absolute inset-0 pt-14 overflow-y-auto overflow-hidden";
 document.body.appendChild(content_area);
 
 const home_page = home_constructor();
 const watch_page = watch_constructor();
 const auth_page = auth_constructor(subscribeUser);
-
-const navs = [
-  {
-    label: "Home",
-    icon: "./icons/home_24dp.png",
-    fn: home_page.build,
-  },
-  {
-    label: "Calendar",
-    icon: "./icons/calendar_month_24dp.svg",
-    fn: () => {
-      content_area.innerHTML = "";
-      Calendar(content_area);
-    },
-  },
-];
-const nav = Navbar(content_area, navs);
 
 const settings_page = Settings(
   {
@@ -80,7 +62,6 @@ const top_bar = top_constructor(
     subscribe: subscribeUser,
   },
   settings_page,
-  nav,
 );
 
 home_page.setParams(content_area, watch_page.build);

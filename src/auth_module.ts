@@ -70,7 +70,7 @@ function auth_constructor(loginSignal: SubscribeFunction<object | null>) {
 
     const username_field = document.createElement("input");
     username_field.className =
-      "w-full px-4 py-2 rounded-full border border-neutral-900 outline-0 rounded-lg placeholder:text-neutral-700 placeholder:font-medium text-white font-medium";
+      "w-full px-4 py-2 rounded-full border border-neutral-800 outline-0 rounded-lg placeholder:text-neutral-700 placeholder:font-medium text-white font-medium";
     username_field.placeholder = "Your username";
 
     login_node.appendChild(username_field);
@@ -82,7 +82,7 @@ function auth_constructor(loginSignal: SubscribeFunction<object | null>) {
 
     const password_field = document.createElement("input");
     password_field.className =
-      "w-full px-4 py-2 rounded-full border border-neutral-900 outline-0 rounded-lg placeholder:text-neutral-700 placeholder:font-medium text-white font-medium";
+      "w-full px-4 py-2 rounded-full border border-neutral-800 outline-0 rounded-lg placeholder:text-neutral-700 placeholder:font-medium text-white font-medium";
     password_field.placeholder = "Your password";
     password_field.type = "password";
 
@@ -90,7 +90,7 @@ function auth_constructor(loginSignal: SubscribeFunction<object | null>) {
 
     const submit_node = document.createElement("button");
     submit_node.className =
-      "w-full px-4 py-2 mt-4 rounded-full bg-neutral-900 rounded-lg text-white font-medium cursor-pointer";
+      "w-full px-4 py-2 mt-4 rounded-full bg-neutral-800 rounded-lg text-white font-medium cursor-pointer";
 
     subscribeRegister((newRegister) => {
       if (newRegister) {
