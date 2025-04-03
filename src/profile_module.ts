@@ -1,9 +1,9 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import Chart from "chart.js/auto";
 
-async function get_activity_month() {
+async function get_activity_year() {
   const res = await fetch(
-    `${localStorage.getItem("api_url")}/user/activity/last-month`,
+    `${localStorage.getItem("api_url")}/user/activity/current-year`,
     {
       method: "GET",
       headers: {
@@ -43,7 +43,7 @@ export default async function profile_panel(userState) {
 
   document.body.appendChild(profile_wrapper);
 
-  const activity = await get_activity_month();
+  const activity = await get_activity_year();
 
   const close = document.createElement("img");
   close.className = "absolute top-4 left-4 h-8 w-8 cursor-pointer";
@@ -62,11 +62,10 @@ export default async function profile_panel(userState) {
 
   graph_wrapper.insertAdjacentHTML(
     "beforeend",
-    "<div class='font-semibold pt-4 pl-4'> Playtime (Hours)</div>",
+    "<div class='font-semibold pt-4 pl-2'> Playtime (Hours)</div>",
   );
 
   const ctx = document.createElement("canvas");
-  ctx.className = "p-4";
 
   graph_wrapper.appendChild(ctx);
 
@@ -84,27 +83,46 @@ export default async function profile_panel(userState) {
     "Nov",
     "Dec",
   ];
+  // First, create an empty dataset with every day of the current year
   const dataset = [];
-  const currentDate = new Date().getDate();
+  const currentYear = new Date().getFullYear();
+  const isLeapYear = (year) =>
+    (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
+  const daysInYear = isLeapYear(currentYear) ? 366 : 365;
 
-  activity.map((act, i) => {
+  // Create a date for each day of the year and add it to the dataset with zero value
+  for (let dayOfYear = 0; dayOfYear < daysInYear; dayOfYear++) {
+    const date = new Date(currentYear, 0, dayOfYear + 1); // January is 0, first day is 1
     dataset.push({
-      x: `${months[act.month - 1]} ${act.date}`,
-      y: (act.time / 60).toFixed(1),
+      x: `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`,
+      y: "0.0", // Start with zero values
+      rawDate: date, // Store the raw date for easy comparison (remove this later)
     });
+  }
 
-    if (act.date >= currentDate || act.date > activity[i + 1]?.date) return;
+  // Now fill in actual values from activity data
+  activity.forEach((act) => {
+    const actDate = new Date(act.year, act.month - 1, act.date);
 
-    const gap = Math.abs(act.date + 1 - (activity[i + 1]?.date || act.date));
+    // Only process records from the current year
+    if (act.year === currentYear) {
+      // Find the matching entry in our dataset
+      const index = dataset.findIndex(
+        (item) =>
+          item.rawDate.getMonth() === actDate.getMonth() &&
+          item.rawDate.getDate() === actDate.getDate(),
+      );
 
-    if (gap == 0) return;
-
-    for (let j = 0; j < gap; j++) {
-      dataset.push({
-        x: `${months[act.month - 1]} ${act.date + j + 1}`,
-        y: 0,
-      });
+      if (index !== -1) {
+        // Update with actual data
+        dataset[index].y = (act.time / 60).toFixed(1);
+      }
     }
+  });
+
+  // Remove the helper rawDate property before using the dataset
+  dataset.forEach((item) => {
+    delete item.rawDate;
   });
 
   const yScaleText = {
@@ -160,8 +178,8 @@ export default async function profile_panel(userState) {
       datasets: [
         {
           label: "Activity",
-          cubicInterpolationMode: "default",
-          tension: 0.2,
+          // cubicInterpolationMode: "default",
+          // tension: 0.2,
           fill: true,
           backgroundColor: function (context) {
             const chart = context.chart;
@@ -188,7 +206,7 @@ export default async function profile_panel(userState) {
       ],
     },
     options: {
-      aspectRatio: 3 / 1,
+      aspectRatio: 2 / 1,
       scales: {
         y: {
           grid: {
@@ -267,7 +285,7 @@ export default async function profile_panel(userState) {
 
   profile_node.insertAdjacentHTML(
     "beforeend",
-    "<div class='font-semibold mt-4 mb-2 ml-4'>History</div>",
+    "<div class='font-semibold mt-4 mb-2 ml-2'>History</div>",
   );
 
   let page = 0;
@@ -283,7 +301,7 @@ export default async function profile_panel(userState) {
   ).json();
 
   const cardWrapper = document.createElement("div");
-  cardWrapper.className = "w-full h-fit space-y-2 p-4";
+  cardWrapper.className = "w-full h-fit space-y-2 p-2";
 
   profile_node.appendChild(cardWrapper);
 
