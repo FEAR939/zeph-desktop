@@ -185,7 +185,7 @@ function watch_constructor() {
 
     const detail_node = document.createElement("div");
     detail_node.className =
-      "min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-neutral-900 mt-4 overflow-hidden rounded-t-lg border-box";
+      "min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-[rgb(6,6,6)] outline outline-[hsla(0,0%,100%,0.15)] mt-4 overflow-hidden rounded-t-lg border-box";
 
     detail_wrapper.appendChild(detail_node);
 
@@ -218,12 +218,12 @@ function watch_constructor() {
 
     const detail_overlay = document.createElement("div");
     detail_overlay.className =
-      "absolute inset-0 bg-gradient-to-t from-neutral-900 via-neutral-900/60 to-transparent";
+      "absolute inset-0 bg-gradient-to-t from-[rgb(6,6,6)] via-[rgba(6,6,6,.5)] to-transparent";
 
     detail_top.appendChild(detail_overlay);
 
     const detail_main = document.createElement("div");
-    detail_main.className = "h-fit w-full px-4";
+    detail_main.className = "h-fit w-full px-4 pt-2";
 
     detail_node.appendChild(detail_main);
 
@@ -241,7 +241,7 @@ function watch_constructor() {
       const [getList, setList, subscribeList] = createState(0);
       const on_list = document.createElement("div");
       on_list.className =
-        "flex items-center space-x-1 bg-neutral-800 hover:bg-neutral-800 py-2 px-4 rounded-xl cursor-pointer transition-colors";
+        "flex items-center space-x-1 bg-[rgb(18,18,18)] py-2 px-4 rounded-full cursor-pointer transition-colors";
       on_list.textContent = "...";
 
       detail_bar.appendChild(on_list);
@@ -249,11 +249,33 @@ function watch_constructor() {
       subscribeList((newList) => {
         console.log(newList);
         if (newList == 1) {
+          on_list.classList.add(
+            "bg-gradient-to-r",
+            "from-[rgb(54,95,215)]",
+            "to-[rgb(143,155,215)]",
+          );
+          on_list.classList.remove(
+            "outline",
+            "outline-[hsla(0,0%,100%,.15)]",
+            "hover:outline-2",
+            "hover:outline-[rgb(49,139,255)]",
+          );
           on_list.innerHTML =
-            "<img src='./icons/bookmark_24dp_FILL.svg' class='h-4 w-4' /><span class='text-xs pr-1 font-semibold'>Subscribed</span>";
+            "<span class='text-xs pr-1 font-semibold'>Subscribed</span>";
         } else {
+          on_list.classList.add(
+            "outline",
+            "outline-[hsla(0,0%,100%,.15)]",
+            "hover:outline-2",
+            "hover:outline-[rgb(49,139,255)]",
+          );
+          on_list.classList.remove(
+            "bg-gradient-to-r",
+            "from-[rgb(54,95,215)]",
+            "to-[rgb(143,155,215)]",
+          );
           on_list.innerHTML =
-            "<img src='./icons/bookmark_24dp.svg' class='h-4 w-4' /><span class='text-xs pr-1 font-semibold'>Subscribe</span>";
+            "<span class='text-xs pr-1 font-semibold'>Subscribe</span>";
         }
       });
 
@@ -291,7 +313,8 @@ function watch_constructor() {
     }
 
     const detail_description_wrapper = document.createElement("div");
-    detail_description_wrapper.className = "p-4 rounded-xl bg-neutral-800 my-4";
+    detail_description_wrapper.className =
+      "p-4 rounded-xl bg-[rgb(18,18,18)] my-4";
 
     detail_main.appendChild(detail_description_wrapper);
 

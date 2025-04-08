@@ -55,10 +55,9 @@ export function Episode(
 
     const episode_progress_inner = document.createElement("div");
     episode_progress_inner.className =
-      "h-full bg-white transition-all duration-300";
+      "h-full bg-gradient-to-r from-[rgb(54,95,215)] to-[rgb(143,155,215)] transition-all duration-300";
 
     subscribeProgress((newProgress) => {
-      console.log("newState");
       ep.duration = newProgress.duration;
       ep.playtime = newProgress.playtime;
 
@@ -82,12 +81,12 @@ export function Episode(
 
   const episode_info = document.createElement("div");
   episode_info.className =
-    "flex-1 flex flex-col justify-center space-y-1 px-4 overflow-hidden";
+    "flex-1 shrink-0 py-0.5 flex flex-col justify-center space-y-1 px-4 overflow-hidden";
 
   episode_node.appendChild(episode_info);
 
   const episode_title = document.createElement("h3");
-  episode_title.className = "font-medium group-hover:text-white";
+  episode_title.className = "group-hover:text-white";
   episode_title.textContent = ep.title;
 
   if (isMobileDevice) {
@@ -107,7 +106,7 @@ export function Episode(
 
   const episode_watch = document.createElement("div");
   episode_watch.className =
-    "h-8 w-fit pl-2 pr-3 bg-neutral-800 hover:bg-neutral-700 transition-colors rounded-md space-x-1 flex items-center";
+    "h-8 w-fit pl-2 pr-3 bg-[rgb(18,18,18)] outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] rounded-md space-x-1 flex items-center";
   episode_watch.innerHTML =
     "<img src='./icons/play_arrow_24dp.png' class='h-4 w-fit object-cover' /><span class='text-sm'>Watch now</span>";
 
@@ -120,7 +119,7 @@ export function Episode(
 
   const language_header = document.createElement("div");
   language_header.className =
-    "h-full p-2 bg-neutral-800 hover:bg-neutral-700 transition-colors rounded-md flex items-center justify-center";
+    "h-full p-2 bg-[rgb(18,18,18)] outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] rounded-md flex items-center justify-center";
   language_header.innerHTML =
     "<img src='./icons/language_24dp.svg' class='h-4 w-4' />";
 

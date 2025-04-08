@@ -19,7 +19,7 @@ function top_constructor(
     top_node.className =
       "relative h-full w-full flex items-center justify-center px-2 space-x-2";
     top_node.innerHTML =
-      "<div class='absolute left-4 text-[#d8d5d0] text-xl'>Anime Hub</div>";
+      "<div class='absolute left-4 text-[#d8d5d0] text-xl'>Anime Studio</div>";
 
     top.appendChild(top_node);
 
@@ -61,7 +61,7 @@ function top_constructor(
 
       const account_menu = document.createElement("div");
       account_menu.className =
-        "absolute z-40 top-10 right-0 h-fit w-72 p-4 space-y-1 bg-[#1f1f1f] border border-[#333333] shadow-[4px_8px_16px_rgba(0,0,0,0.8)] rounded-xl overflow-hidden transition-all ease-in-out duration-100";
+        "absolute z-40 top-10 right-0 h-fit w-72 p-4 space-y-2 bg-[rgb(6,6,6)] border border-[hsla(0,0%,100%,.15)] shadow-[4px_8px_16px_rgba(0,0,0,0.8)] rounded-xl overflow-hidden transition-all ease-in-out duration-100";
       account_menu.style.opacity = "0";
       account_menu.style.display = "none";
       account_menu.style.transform = "scale(0.75)";
@@ -124,18 +124,18 @@ function top_constructor(
       user_nickname.className =
         "w-full text-center font-semibold truncate space-x-1";
       if (user) {
-        user_nickname.innerHTML = `<div class="text-white">${user.username}</div>`;
+        user_nickname.innerHTML = `<div class="bg-gradient-to-r from-[rgb(80,130,238)] via-[rgb(192,106,148)] to-[rgb(211,102,121)] inline-block text-transparent bg-clip-text">Hello ${user.username}</div>`;
       } else {
-        user_nickname.innerHTML = "<span class='text-neutral-600'>Welcome";
+        user_nickname.innerHTML = "<span class='text-white'>Welcome";
       }
 
       user_region.appendChild(user_nickname);
 
       const profile_node = document.createElement("div");
       profile_node.className =
-        "w-auto px-4 py-2 flex items-center space-x-2 bg-[rgb(30,54,72)] text-[rgb(0,120,212)] cursor-pointer rounded-md";
+        "w-auto px-2 py-2 flex items-center space-x-2 bg-[rgb(18,18,18)] text-white cursor-pointer rounded-md outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] duration-150";
       profile_node.innerHTML =
-        "<img src='./icons/dashboard_24dp.svg' fill='black' class='h-4 w-4 rounded-full object-cover'><span>Dashboard</span>";
+        "<img src='./icons/dashboard_24dp.svg' fill='black' class='h-4 w-4 rounded-full object-cover'><span class='text-sm'>Dashboard</span>";
 
       if (!user) {
         profile_node.classList.add("text-neutral-700");
@@ -150,9 +150,9 @@ function top_constructor(
 
       const settings_node = document.createElement("div");
       settings_node.className =
-        "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-[#2a2d2e] transition-colors cursor-pointer rounded-md";
+        "w-auto px-2 py-2 flex items-center space-x-2 bg-[rgb(18,18,18)] text-white cursor-pointer rounded-md outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] duration-150";
       settings_node.innerHTML =
-        "<img src='./icons/settings_24dp.svg' fill='black' class='h-4 w-4 rounded-full object-cover'><span>Settings</span>";
+        "<img src='./icons/settings_24dp.svg' fill='black' class='h-4 w-4 rounded-full object-cover'><span class='text-sm'>Settings</span>";
 
       account_menu.appendChild(settings_node);
 
@@ -165,8 +165,8 @@ function top_constructor(
 
       const sign = document.createElement("div");
       sign.className =
-        "w-auto px-4 py-2 flex items-center space-x-2 hover:bg-[#2a2d2e] transition-colors cursor-pointer rounded-md";
-      sign.innerHTML = `<img src='./icons/${!user ? "log_24dp.png" : "logout_24dp.png"}' fill='black' class='h-4 w-4 rounded-full object-cover'><span>${!user ? "Sign in" : "Sign out"}</span>`;
+        "w-auto px-2 py-2 flex items-center space-x-2 bg-[rgb(18,18,18)] text-white cursor-pointer rounded-md outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] duration-150";
+      sign.innerHTML = `<img src='./icons/${!user ? "log_24dp.png" : "logout_24dp.png"}' fill='black' class='h-4 w-4 rounded-full object-cover'><span class='text-sm'>${!user ? "Sign in" : "Sign out"}</span>`;
 
       account_menu.appendChild(sign);
 

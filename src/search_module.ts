@@ -8,7 +8,7 @@ export default function searchModule(
 ) {
   const searchWrapper = document.createElement("div");
   searchWrapper.className =
-    "absolute z-90 inset-0 m-auto max-h-96 h-fit max-w-[calc(100%-4rem)] w-[600px] bg-[#1f1f1f] rounded-xl shadow-xl hidden";
+    "absolute z-90 inset-0 m-auto max-h-96 h-fit max-w-[calc(100%-4rem)] w-[600px] bg-[rgb(6,6,6)] rounded-xl shadow-xl hidden outline outline-[hsla(0,0%,0%,0.15)]";
 
   const searchHeader = document.createElement("div");
   searchHeader.className = "h-12 w-full px-4 py-2 flex items-center space-x-2";

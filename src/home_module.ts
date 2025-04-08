@@ -200,27 +200,33 @@ function home_constructor() {
 
       const selectedCategorie = document.createElement("div");
       selectedCategorie.className =
-        "w-full p-3 flex items-center bg-[#1f1f1f] hover:bg-[#333333] border border-[#333333] rounded-md cursor-pointer transition duration-300 text-sm font-medium space-x-4 md:w-fit";
+        "w-full px-3 py-2 flex items-center hover:brightness-80 rounded-full cursor-pointer transition duration-300 text-sm font-medium space-x-4 md:w-fit";
       switch (categorie.label) {
         case "Trending Now":
-          selectedCategorie.innerHTML = `<img src="./icons/favorite_24dp.svg" alt="Favorite Icon" class="bg-[rgb(38,52,63)] p-1 h-6 w-6 object-cover rounded"><div>${categorie.label}</div>`;
+          selectedCategorie.innerHTML = `<div>${categorie.label}</div>`;
           break;
         case "My List":
-          selectedCategorie.innerHTML = `<img src="./icons/bookmark_24dp_blue.svg" alt="My List Icon" class="bg-[rgb(38,52,63)] p-1 h-6 w-6 object-cover rounded"><div>${categorie.label}</div>`;
+          selectedCategorie.innerHTML = `<div>${categorie.label}</div>`;
           break;
       }
 
       selectedWrapper.appendChild(selectedCategorie);
 
-      // subscribeSelectedList((newList) => {
-      //   if (newList == i) {
-      //     selectedCategorie.classList.remove("text-neutral-400");
-      //     selectedCategorie.classList.add("bg-neutral-950", "text-white");
-      //   } else {
-      //     selectedCategorie.classList.add("text-neutral-400");
-      //     selectedCategorie.classList.remove("bg-neutral-950", "text-white");
-      //   }
-      // });
+      subscribeSelectedList((newList) => {
+        if (newList == i) {
+          selectedCategorie.classList.add(
+            "bg-gradient-to-r",
+            "from-[rgb(54,95,215)]",
+            "to-[rgb(143,155,215)]",
+          );
+        } else {
+          selectedCategorie.classList.remove(
+            "bg-gradient-to-r",
+            "from-[rgb(54,95,215)]",
+            "to-[rgb(143,155,215)]",
+          );
+        }
+      });
 
       selectedCategorie.addEventListener("click", () => setSelectedList(i));
     });
@@ -228,7 +234,7 @@ function home_constructor() {
     content.appendChild(selectedWrapper);
 
     const selectedHeader = document.createElement("div");
-    selectedHeader.className = "ml-4 mb-4 text-lg font-bold text-white";
+    selectedHeader.className = "ml-4 mb-4 text-xl text-white";
 
     content.appendChild(selectedHeader);
 

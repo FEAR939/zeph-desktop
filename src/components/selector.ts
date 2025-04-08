@@ -15,7 +15,7 @@ export function Selector(
 
   const selector_node = document.createElement("div");
   selector_node.className =
-    "relative h-8 w-48 flex items-center bg-neutral-800 rounded-lg";
+    "relative h-8 w-48 flex items-center bg-[rgb(18,18,18)] rounded-lg outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline]";
 
   const selector_header = document.createElement("div");
   selector_header.className = "h-full w-full flex items-center cursor-pointer";
@@ -44,7 +44,7 @@ export function Selector(
 
   const options_node = document.createElement("div");
   options_node.className =
-    "absolute h-fit w-full p-2 bottom-10 bg-neutral-800 rounded-lg";
+    "absolute h-fit w-full p-2 bottom-10 bg-[rgb(18,18,18)] rounded-lg";
 
   subscribeExpand((newExpand) => {
     if (newExpand) {

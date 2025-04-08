@@ -11,7 +11,7 @@ export function card(
 ) {
   const item_node = document.createElement("div");
   item_node.className =
-    "relative h-full w-full group/item flex flex-col space-y-2 items-center cursor-pointer";
+    "relative h-full w-full group/item flex flex-col space-y-2 items-center cursor-pointer bg-[rgb(18,18,18)] outline outline-[hsla(0,0%,100%,0.15)] rounded-lg hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] duration-150";
 
   item_node.addEventListener("click", () => {
     if (watch_callback == null) return;
@@ -21,12 +21,12 @@ export function card(
   carousel.appendChild(item_node);
 
   const item_image = document.createElement("div");
-  item_image.className = "w-full aspect-[2/3] overflow-hidden rounded-lg";
+  item_image.className = "w-full aspect-[2/3] overflow-hidden rounded-t-lg";
 
   item_node.appendChild(item_image);
 
   const item_title = document.createElement("h5");
-  item_title.className = "w-full text-sm truncate pb-4";
+  item_title.className = "w-full text-sm truncate pb-4 pt-2 px-2";
   item_title.textContent = item.title;
 
   item_node.appendChild(item_title);

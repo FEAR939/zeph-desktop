@@ -12,7 +12,7 @@
   "app": {
     "windows": [
       {
-        "title": "Anime Hub",
+        "title": "Anime Studio",
         "width": 1280,
         "height": 720,
         "resizable": true,
