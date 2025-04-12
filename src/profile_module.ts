@@ -22,6 +22,7 @@ async function get_activity_year() {
 }
 
 export default async function profile_panel(userState) {
+  const isMobileDevice = /Mobi/i.test(window.navigator.userAgent);
   const profile_wrapper = document.createElement("div");
   profile_wrapper.className =
     "absolute inset-0 z-40 flex justify-center backdrop-brightness-50 overflow-y-auto";
@@ -30,7 +31,7 @@ export default async function profile_panel(userState) {
 
   const profile_node = document.createElement("div");
   profile_node.className =
-    "relative min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-neutral-900 mt-4 p-4 pt-12 overflow-hidden rounded-t-lg border-box";
+    "relative min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-[rgb(6,6,6)] outline outline-[hsla(0,0%,100%,0.15)] mt-4 overflow-hidden rounded-t-lg border-box pt-8";
 
   profile_wrapper.appendChild(profile_node);
 
@@ -56,13 +57,13 @@ export default async function profile_panel(userState) {
   profile_node.appendChild(close);
 
   const graph_wrapper = document.createElement("div");
-  graph_wrapper.className = "w-full h-fit mt-2";
+  graph_wrapper.className = "w-full h-fit mt-2 px-2";
 
   profile_node.appendChild(graph_wrapper);
 
   graph_wrapper.insertAdjacentHTML(
     "beforeend",
-    "<div class='font-semibold pt-4 pl-2'> Playtime (Hours)</div>",
+    "<div class='font-semibold mb-2 pt-4 pl-2'> Playtime (Hours)</div>",
   );
 
   const ctx = document.createElement("canvas");
@@ -206,7 +207,7 @@ export default async function profile_panel(userState) {
       ],
     },
     options: {
-      aspectRatio: 2 / 1,
+      aspectRatio: isMobileDevice ? 2 / 1 : 3 / 1,
       scales: {
         y: {
           grid: {
@@ -285,7 +286,7 @@ export default async function profile_panel(userState) {
 
   profile_node.insertAdjacentHTML(
     "beforeend",
-    "<div class='font-semibold mt-4 mb-2 ml-2'>History</div>",
+    "<div class='font-semibold mt-4 mb-2 ml-2 px-2'>History</div>",
   );
 
   let page = 0;
@@ -301,7 +302,7 @@ export default async function profile_panel(userState) {
   ).json();
 
   const cardWrapper = document.createElement("div");
-  cardWrapper.className = "w-full h-fit space-y-2 p-2";
+  cardWrapper.className = "w-full h-fit space-y-2 py-2 px-4";
 
   profile_node.appendChild(cardWrapper);
 
@@ -327,7 +328,8 @@ export default async function profile_panel(userState) {
     const title = data.title;
 
     const card = document.createElement("div");
-    card.className = "w-full h-24 p-2 rounded-md flex bg-neutral-800";
+    card.className =
+      "w-full h-18 p-2 flex border-b border-[hsla(0,0%,100%,0.15)] last:border-none";
 
     const cardImage = document.createElement("img");
     cardImage.src = `https://aniworld.to${image}`;
@@ -339,8 +341,8 @@ export default async function profile_panel(userState) {
     date.setHours(date.getHours() - 1);
 
     const cardContent = document.createElement("div");
-    cardContent.className = "w-full h-full px-2";
-    cardContent.innerHTML = `<div class="font-semibold">${title}</div><div class="text-neutral-500">${date.toLocaleString()}</div>`;
+    cardContent.className = "w-full h-full px-2 flex items-center";
+    cardContent.innerHTML = `<div class="font-semibold">${title}</div><div class="text-neutral-500 ml-auto">${date.toLocaleString()}</div>`;
 
     card.appendChild(cardContent);
 
