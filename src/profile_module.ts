@@ -1,5 +1,6 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import Chart from "chart.js/auto";
+import { anime_data } from "./types";
 
 async function get_activity_year() {
   const res = await fetch(
@@ -320,7 +321,8 @@ export default async function profile_panel(userState) {
     }),
   );
 
-  items.map(async (item, i) => {
+  for (let i = 0; i < items.length; i++) {
+    const item = items[i];
     const serverData = anime_data[i];
     const data = await serverData.json();
 
@@ -338,7 +340,8 @@ export default async function profile_panel(userState) {
     card.appendChild(cardImage);
 
     const date = new Date(item.created_at);
-    date.setHours(date.getHours() - 1);
+    const timezoneoffset = date.getTimezoneOffset();
+    date.setMilliseconds(date.getMilliseconds() + timezoneoffset * 60 * 1000);
 
     const cardContent = document.createElement("div");
     cardContent.className = "w-full h-full px-2 flex items-center";
@@ -347,5 +350,5 @@ export default async function profile_panel(userState) {
     card.appendChild(cardContent);
 
     cardWrapper.appendChild(card);
-  });
+  }
 }
