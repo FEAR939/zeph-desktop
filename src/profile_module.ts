@@ -1,6 +1,5 @@
 import { fetch } from "@tauri-apps/plugin-http";
 import Chart from "chart.js/auto";
-import { anime_data } from "./types";
 
 async function get_activity_year() {
   const res = await fetch(
@@ -331,7 +330,7 @@ export default async function profile_panel(userState) {
 
     const card = document.createElement("div");
     card.className =
-      "w-full h-18 p-2 flex border-b border-[hsla(0,0%,100%,0.15)] last:border-none";
+      "w-full h-18 p-2 flex items-center border-b border-[hsla(0,0%,100%,0.15)] last:border-none";
 
     const cardImage = document.createElement("img");
     cardImage.src = `https://aniworld.to${image}`;
@@ -343,11 +342,17 @@ export default async function profile_panel(userState) {
     const timezoneoffset = date.getTimezoneOffset();
     date.setMilliseconds(date.getMilliseconds() + timezoneoffset * 60 * 1000);
 
-    const cardContent = document.createElement("div");
-    cardContent.className = "w-full h-full px-2 flex items-center";
-    cardContent.innerHTML = `<div class="font-semibold">${title}</div><div class="text-neutral-500 ml-auto">${date.toLocaleString()}</div>`;
+    const cardTitle = document.createElement("div");
+    cardTitle.className = "truncate max-w-[calc(100%-12rem)] px-2";
+    cardTitle.textContent = `${title}`;
 
-    card.appendChild(cardContent);
+    card.appendChild(cardTitle);
+
+    const cardDate = document.createElement("div");
+    cardDate.className = "ml-auto text-neutral-500";
+    cardDate.textContent = date.toLocaleString();
+
+    card.appendChild(cardDate);
 
     cardWrapper.appendChild(card);
   }
