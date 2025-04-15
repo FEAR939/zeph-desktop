@@ -3,7 +3,7 @@ import Chart from "chart.js/auto";
 
 async function get_activity_year() {
   const res = await fetch(
-    `${localStorage.getItem("api_url")}/user/activity/current-year`,
+    `${localStorage.getItem("api_url")}/user/activity/last-month`,
     {
       method: "GET",
       headers: {
@@ -84,38 +84,68 @@ export default async function profile_panel(userState) {
     "Nov",
     "Dec",
   ];
-  // First, create an empty dataset with every day of the current year
-  const dataset = [];
-  const currentYear = new Date().getFullYear();
-  const isLeapYear = (year) =>
-    (year % 4 === 0 && year % 100 !== 0) || year % 400 === 0;
-  const daysInYear = isLeapYear(currentYear) ? 366 : 365;
 
-  // Create a date for each day of the year and add it to the dataset with zero value
-  for (let dayOfYear = 0; dayOfYear < daysInYear; dayOfYear++) {
-    const date = new Date(currentYear, 0, dayOfYear + 1); // January is 0, first day is 1
+  // --- Start of Modifications for Option B ---
+
+  // 1. Define the number of days for the rolling window
+  const numberOfDays = 30; // How many days back from today (inclusive)
+
+  // 2. Determine the end date (today) and start date
+  const endDate = new Date(); // Today
+  const startDate = new Date(); // Start date will be calculated from today
+
+  // Set end date to midnight to standardize comparisons
+  endDate.setHours(0, 0, 0, 0);
+
+  // Calculate the start date by subtracting days
+  // Subtract (numberOfDays - 1) because the range includes the end date (today)
+  startDate.setDate(startDate.getDate() - (numberOfDays - 1));
+  // Also set start date to midnight
+  startDate.setHours(0, 0, 0, 0);
+
+  // 3. Create an empty dataset ONLY for the days in the calculated range
+  const dataset = [];
+
+  // Loop from the start date up to the end date, incrementing by one day
+  // Use a temporary date variable 'd' for iteration
+  for (let d = new Date(startDate); d <= endDate; d.setDate(d.getDate() + 1)) {
+    // Create a *new* Date object for the current day in the loop
+    // This avoids issues where all dataset entries might reference the final loop date
+    const currentDate = new Date(d);
+
     dataset.push({
-      x: `${months[date.getMonth()]} ${date.getDate()}, ${date.getFullYear()}`,
+      x: `${months[currentDate.getMonth()]} ${currentDate.getDate()}, ${currentDate.getFullYear()}`,
       y: "0.0", // Start with zero values
-      rawDate: date, // Store the raw date for easy comparison (remove this later)
+      // Store a clean Date object (set to midnight) for reliable matching later
+      rawDate: new Date(
+        currentDate.getFullYear(),
+        currentDate.getMonth(),
+        currentDate.getDate(),
+      ),
     });
   }
 
+  // --- End of Modifications ---
+
   // Now fill in actual values from activity data
   activity.forEach((act) => {
+    // Create a Date object for the activity, also set to midnight for comparison
+    // Assuming act.month is 1-based (Jan=1), JS Date month is 0-based (Jan=0)
     const actDate = new Date(act.year, act.month - 1, act.date);
+    actDate.setHours(0, 0, 0, 0);
 
-    // Only process records from the current year
-    if (act.year === currentYear) {
-      // Find the matching entry in our dataset
+    // Check if the activity date falls within our calculated start/end range
+    if (actDate >= startDate && actDate <= endDate) {
+      // Find the matching entry in our dataset by comparing year, month, and day
       const index = dataset.findIndex(
         (item) =>
+          item.rawDate.getFullYear() === actDate.getFullYear() &&
           item.rawDate.getMonth() === actDate.getMonth() &&
           item.rawDate.getDate() === actDate.getDate(),
       );
 
       if (index !== -1) {
-        // Update with actual data
+        // Update with actual data (time in minutes, rounded to one decimal)
         dataset[index].y = (act.time / 60).toFixed(1);
       }
     }
@@ -179,8 +209,7 @@ export default async function profile_panel(userState) {
       datasets: [
         {
           label: "Activity",
-          // cubicInterpolationMode: "default",
-          // tension: 0.2,
+          tension: 0.2,
           fill: true,
           backgroundColor: function (context) {
             const chart = context.chart;
