@@ -18,10 +18,20 @@ function top_constructor(
     const top_node = document.createElement("div");
     top_node.className =
       "relative h-full w-full flex items-center justify-center px-2 space-x-2";
-    top_node.innerHTML =
-      "<div class='absolute left-4 text-[#d8d5d0] text-xl'>Anime Studio</div>";
 
     top.appendChild(top_node);
+
+    const app_icon = document.createElement("img");
+    app_icon.src = "./icons/astro-icon-light-gradient.svg";
+    app_icon.className = "absolute left-4 h-8 w-8";
+
+    top_node.appendChild(app_icon);
+
+    const app_title = document.createElement("div");
+    app_title.className = "absolute left-16 text-[#d8d5d0] text-xl";
+    app_title.textContent = "Anime Studio";
+
+    top_node.appendChild(app_title);
 
     const search_node = document.createElement("div");
     search_node.className =
