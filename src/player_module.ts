@@ -47,6 +47,74 @@ async function extract_doodstream_url(video_redirect: string) {
 }
 
 async function extract_voe_url(video_redirect: string) {
+  function rot13(str) {
+    return str.replace(/[a-zA-Z]/g, function (char) {
+      const charCode = char.charCodeAt(0);
+      // Check if it's an uppercase letter
+      if (charCode >= 65 && charCode <= 90) {
+        return String.fromCharCode(((charCode - 65 + 13) % 26) + 65);
+      }
+      // Check if it's a lowercase letter
+      else if (charCode >= 97 && charCode <= 122) {
+        return String.fromCharCode(((charCode - 97 + 13) % 26) + 97);
+      }
+      // Return unchanged if not a letter
+      return char;
+    });
+  }
+
+  function base64ToUtf8(base64Str) {
+    try {
+      // Decode Base64 to a binary string
+      const binaryString = atob(base64Str);
+      // Convert the binary string to a Uint8Array
+      const bytes = new Uint8Array(binaryString.length);
+      for (let i = 0; i < binaryString.length; i++) {
+        bytes[i] = binaryString.charCodeAt(i);
+      }
+      // Use TextDecoder to decode the bytes as UTF-8
+      const decoder = new TextDecoder("utf-8");
+      return decoder.decode(bytes);
+    } catch (e) {
+      // Catch potential errors from atob (e.g., invalid characters)
+      console.error("Base64 decoding error:", e);
+      throw new Error(
+        `Invalid Base64 string starting with: ${base64Str.substring(0, 10)}...`,
+      );
+    }
+  }
+
+  function sanitizeInput(text, htmlPageText) {
+    // Pattern to find the blacklist string structure like ['a','b','c','d','e','f','g']
+    const blacklistPattern = /\[\s*'([^']+)'(?:\s*,\s*'([^']+)'){6}\s*\]/s; // 's' flag for DOTALL
+    const matchB = htmlPageText.match(blacklistPattern);
+
+    // Get the entire matched string (e.g., "['a','b','c','d','e','f','g']") or an empty string if no match.
+    const blacklistString = matchB ? matchB[0] : "";
+
+    let result = text;
+
+    // Iterate over each character in the matched blacklist string
+    for (let i = 0; i < blacklistString.length; i++) {
+      const symbol = blacklistString[i];
+      // Escape the symbol to safely use it in a RegExp
+      const escapedSymbol = symbol.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+      // Create a RegExp to find all occurrences globally
+      const pattern = new RegExp(escapedSymbol, "g");
+      // Replace occurrences with underscore
+      result = result.replace(pattern, "_");
+    }
+    return result;
+  }
+
+  function shiftBack(str, shift) {
+    let result = "";
+    for (let i = 0; i < str.length; i++) {
+      result += String.fromCharCode(str.charCodeAt(i) - shift);
+    }
+    return result;
+  }
+
   let html = new DOMParser().parseFromString(
     await (await fetch(`https://aniworld.to${video_redirect}`)).text(),
     "text/html",
@@ -65,35 +133,87 @@ async function extract_voe_url(video_redirect: string) {
 
   if (!redirectSource) throw new Error();
 
-  html = new DOMParser().parseFromString(
-    await (await fetch(redirectSource)).text(),
-    "text/html",
-  );
+  html = await (await fetch(redirectSource)).text();
 
-  const scriptTag = Array.from(html.querySelectorAll("script")).find((script) =>
-    script?.textContent?.includes("var sources"),
-  );
-  let source = scriptTag?.textContent;
+  let sourceJson = null;
 
-  const startIndex = source?.indexOf("var sources");
-  const endIndex = source?.indexOf(";", startIndex);
+  const MKGMaPattern = /MKGMa="(.*?)"/s;
+  const match = html.match(MKGMaPattern);
 
-  if (!startIndex || !endIndex) throw new Error();
+  if (match && match[1]) {
+    // Check if match and capturing group exist
+    const rawMKGMa = match[1];
 
-  source = source?.substring(startIndex, endIndex);
-  source = source?.replace("var sources = ", "");
-  source = source?.replace(/'/g, '"').replace(/\\n/g, "").replace(/\\/g, "");
+    try {
+      const encryptedData = rot13(rawMKGMa);
+      // Use the specific sanitizeInput implementation
+      const cleanedInput = sanitizeInput(encryptedData, html);
+      // Replace any remaining underscores globally ('g' flag)
+      const underscoreRemoved = cleanedInput.replace(/_/g, "");
 
-  source = source?.substring(1);
-  source = source?.slice(0, -1);
-  source = source?.trim();
-  source = source?.slice(0, -1);
-  source = "{" + source + "}";
-  const parsed = JSON.parse(source);
+      // First Base64 decode (assuming result might be UTF-8)
+      const decodedFromBase64 = base64ToUtf8(underscoreRemoved);
 
-  const hls_source = atob(parsed.hls);
-  if (hls_source == null) throw new Error();
-  return hls_source;
+      const shiftedBack = shiftBack(decodedFromBase64, 3);
+      const reversedString = shiftedBack.split("").reverse().join("");
+
+      // Second Base64 decode (final result likely UTF-8 JSON or text)
+      const decoded = base64ToUtf8(reversedString);
+
+      try {
+        const parsedJson = JSON.parse(decoded);
+
+        if ("direct_access_url" in parsedJson) {
+          sourceJson = { mp4: parsedJson["direct_access_url"] };
+          console.log("[+] Found direct .mp4 URL in JSON.");
+        } else if ("source" in parsedJson) {
+          sourceJson = { hls: parsedJson["source"] };
+          console.log("[+] Found fallback .m3u8 URL in JSON.");
+        } else {
+          console.log(
+            "[-] JSON found, but required keys ('direct_access_url' or 'source') are missing.",
+          );
+        }
+      } catch (jsonError) {
+        // Catch JSON parsing errors (SyntaxError)
+        console.log(
+          "[-] Decoded string is not valid JSON. Attempting fallback regex search...",
+        );
+        // console.log("Decoded string:", decoded); // Optional: Log for debugging
+
+        // Regex searches on the decoded string
+        const mp4Regex = /https?:\/\/[^\s"]+\.mp4[^\s"]*/;
+        const m3u8Regex = /https?:\/\/[^\s"]+\.m3u8[^\s"]*/;
+
+        const mp4Match = decoded.match(mp4Regex);
+        const m3u8Match = decoded.match(m3u8Regex);
+
+        if (mp4Match) {
+          sourceJson = { mp4: mp4Match[0] }; // match[0] is the full matched URL
+          console.log("[+] Found base64 encoded MP4 URL via regex.");
+        } else if (m3u8Match) {
+          sourceJson = { hls: m3u8Match[0] }; // match[0] is the full matched URL
+          console.log("[+] Found base64 encoded HLS (m3u8) URL via regex.");
+        } else {
+          console.log(
+            "[-] Fallback regex search failed to find .mp4 or .m3u8 URLs.",
+          );
+        }
+      }
+    } catch (e) {
+      console.error(`[-] Error while decoding MKGMa string: ${e.message || e}`);
+      // Optionally: console.error(e); // Log the full error stack
+    }
+  } else {
+    console.log("[-] MKGMa pattern not found in the HTML page.");
+  }
+
+  if (!sourceJson) {
+    console.log("[-] Could not extract any source URL.");
+  }
+
+  console.log(sourceJson);
+  return sourceJson;
 }
 
 async function player_constructor(episodes: episode[], index: number) {
@@ -693,13 +813,23 @@ async function player_constructor(episodes: episode[], index: number) {
 
   subscribeHoster(async (newHoster) => {
     let final_url: string | null = null;
+    let final_type: string | null = null;
 
     if (newHoster.redirect !== null) {
       try {
         if (newHoster.label.includes("Doodstream")) {
           final_url = await extract_doodstream_url(newHoster.redirect);
+          final_type = "mp4";
         } else if (newHoster.label.includes("VOE")) {
-          final_url = await extract_voe_url(newHoster.redirect);
+          const sourceMap = await extract_voe_url(newHoster.redirect);
+
+          if (sourceMap?.mp4) {
+            final_url = sourceMap.mp4;
+            final_type = "mp4";
+          } else if (sourceMap?.hls) {
+            final_url = sourceMap.hls;
+            final_type = "hls";
+          }
         }
       } catch (e) {
         console.error(e);
@@ -709,11 +839,7 @@ async function player_constructor(episodes: episode[], index: number) {
     console.log(final_url);
     video_player.src = "";
 
-    if (
-      Hls.isSupported() &&
-      newHoster.label.includes("VOE") &&
-      final_url !== null
-    ) {
+    if (Hls.isSupported() && final_type === "hls" && final_url !== null) {
       const hls = new Hls({
         enableWorker: true,
         debug: false,
@@ -721,7 +847,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
       hls.loadSource(final_url);
       hls.attachMedia(video_player as HTMLVideoElement);
-    } else if (newHoster.label.includes("Doodstream") && final_url !== null) {
+    } else if (final_type === "mp4" && final_url !== null) {
       video_player.src = final_url;
     }
     episode_title.textContent = episodes[getIndex()].title;
