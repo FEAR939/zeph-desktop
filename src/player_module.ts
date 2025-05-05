@@ -84,29 +84,6 @@ async function extract_voe_url(video_redirect: string) {
     }
   }
 
-  function sanitizeInput(text, htmlPageText) {
-    // Pattern to find the blacklist string structure like ['a','b','c','d','e','f','g']
-    const blacklistPattern = /\[\s*'([^']+)'(?:\s*,\s*'([^']+)'){6}\s*\]/s; // 's' flag for DOTALL
-    const matchB = htmlPageText.match(blacklistPattern);
-
-    // Get the entire matched string (e.g., "['a','b','c','d','e','f','g']") or an empty string if no match.
-    const blacklistString = matchB ? matchB[0] : "";
-
-    let result = text;
-
-    // Iterate over each character in the matched blacklist string
-    for (let i = 0; i < blacklistString.length; i++) {
-      const symbol = blacklistString[i];
-      // Escape the symbol to safely use it in a RegExp
-      const escapedSymbol = symbol.replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
-      // Create a RegExp to find all occurrences globally
-      const pattern = new RegExp(escapedSymbol, "g");
-      // Replace occurrences with underscore
-      result = result.replace(pattern, "_");
-    }
-    return result;
-  }
-
   function shiftBack(str, shift) {
     let result = "";
     for (let i = 0; i < str.length; i++) {
@@ -133,79 +110,86 @@ async function extract_voe_url(video_redirect: string) {
 
   if (!redirectSource) throw new Error();
 
-  html = await (await fetch(redirectSource)).text();
+  const redirecthtml = new DOMParser().parseFromString(
+    await (await fetch(redirectSource)).text(),
+    "text/html",
+  );
+
+  const htmlString = redirecthtml.querySelector(
+    "script[type='application/json']",
+  )?.innerHTML;
+
+  if (!htmlString) throw new Error();
+
+  const jsonString = JSON.parse(htmlString)[0];
 
   let sourceJson = null;
 
-  const MKGMaPattern = /MKGMa="(.*?)"/s;
-  const match = html.match(MKGMaPattern);
+  try {
+    const encryptedData = rot13(jsonString);
 
-  if (match && match[1]) {
-    // Check if match and capturing group exist
-    const rawMKGMa = match[1];
+    // Use the specific sanitizeInput implementation
+    const cleanedInput = encryptedData
+      .replaceAll("@$", "")
+      .replaceAll("^^", "")
+      .replaceAll("~@", "")
+      .replaceAll("%?", "")
+      .replaceAll("*~", "")
+      .replaceAll("!!", "")
+      .replaceAll("#&", "");
+
+    // First Base64 decode (assuming result might be UTF-8)
+    const decodedFromBase64 = base64ToUtf8(cleanedInput);
+
+    const shiftedBack = shiftBack(decodedFromBase64, 3);
+    const reversedString = shiftedBack.split("").reverse().join("");
+
+    // Second Base64 decode (final result likely UTF-8 JSON or text)
+    const decoded = base64ToUtf8(reversedString);
 
     try {
-      const encryptedData = rot13(rawMKGMa);
-      // Use the specific sanitizeInput implementation
-      const cleanedInput = sanitizeInput(encryptedData, html);
-      // Replace any remaining underscores globally ('g' flag)
-      const underscoreRemoved = cleanedInput.replace(/_/g, "");
+      const parsedJson = JSON.parse(decoded);
 
-      // First Base64 decode (assuming result might be UTF-8)
-      const decodedFromBase64 = base64ToUtf8(underscoreRemoved);
-
-      const shiftedBack = shiftBack(decodedFromBase64, 3);
-      const reversedString = shiftedBack.split("").reverse().join("");
-
-      // Second Base64 decode (final result likely UTF-8 JSON or text)
-      const decoded = base64ToUtf8(reversedString);
-
-      try {
-        const parsedJson = JSON.parse(decoded);
-
-        if ("direct_access_url" in parsedJson) {
-          sourceJson = { mp4: parsedJson["direct_access_url"] };
-          console.log("[+] Found direct .mp4 URL in JSON.");
-        } else if ("source" in parsedJson) {
-          sourceJson = { hls: parsedJson["source"] };
-          console.log("[+] Found fallback .m3u8 URL in JSON.");
-        } else {
-          console.log(
-            "[-] JSON found, but required keys ('direct_access_url' or 'source') are missing.",
-          );
-        }
-      } catch (jsonError) {
-        // Catch JSON parsing errors (SyntaxError)
+      if ("direct_access_url" in parsedJson) {
+        sourceJson = { mp4: parsedJson["direct_access_url"] };
+        console.log("[+] Found direct .mp4 URL in JSON.");
+      } else if ("source" in parsedJson) {
+        sourceJson = { hls: parsedJson["source"] };
+        console.log("[+] Found fallback .m3u8 URL in JSON.");
+      } else {
         console.log(
-          "[-] Decoded string is not valid JSON. Attempting fallback regex search...",
+          "[-] JSON found, but required keys ('direct_access_url' or 'source') are missing.",
         );
-        // console.log("Decoded string:", decoded); // Optional: Log for debugging
-
-        // Regex searches on the decoded string
-        const mp4Regex = /https?:\/\/[^\s"]+\.mp4[^\s"]*/;
-        const m3u8Regex = /https?:\/\/[^\s"]+\.m3u8[^\s"]*/;
-
-        const mp4Match = decoded.match(mp4Regex);
-        const m3u8Match = decoded.match(m3u8Regex);
-
-        if (mp4Match) {
-          sourceJson = { mp4: mp4Match[0] }; // match[0] is the full matched URL
-          console.log("[+] Found base64 encoded MP4 URL via regex.");
-        } else if (m3u8Match) {
-          sourceJson = { hls: m3u8Match[0] }; // match[0] is the full matched URL
-          console.log("[+] Found base64 encoded HLS (m3u8) URL via regex.");
-        } else {
-          console.log(
-            "[-] Fallback regex search failed to find .mp4 or .m3u8 URLs.",
-          );
-        }
       }
-    } catch (e) {
-      console.error(`[-] Error while decoding MKGMa string: ${e.message || e}`);
-      // Optionally: console.error(e); // Log the full error stack
+    } catch (jsonError) {
+      // Catch JSON parsing errors (SyntaxError)
+      console.log(
+        "[-] Decoded string is not valid JSON. Attempting fallback regex search...",
+      );
+      // console.log("Decoded string:", decoded); // Optional: Log for debugging
+
+      // Regex searches on the decoded string
+      const mp4Regex = /https?:\/\/[^\s"]+\.mp4[^\s"]*/;
+      const m3u8Regex = /https?:\/\/[^\s"]+\.m3u8[^\s"]*/;
+
+      const mp4Match = decoded.match(mp4Regex);
+      const m3u8Match = decoded.match(m3u8Regex);
+
+      if (mp4Match) {
+        sourceJson = { mp4: mp4Match[0] }; // match[0] is the full matched URL
+        console.log("[+] Found base64 encoded MP4 URL via regex.");
+      } else if (m3u8Match) {
+        sourceJson = { hls: m3u8Match[0] }; // match[0] is the full matched URL
+        console.log("[+] Found base64 encoded HLS (m3u8) URL via regex.");
+      } else {
+        console.log(
+          "[-] Fallback regex search failed to find .mp4 or .m3u8 URLs.",
+        );
+      }
     }
-  } else {
-    console.log("[-] MKGMa pattern not found in the HTML page.");
+  } catch (e) {
+    console.error(`[-] Error while decoding MKGMa string: ${e.message || e}`);
+    // Optionally: console.error(e); // Log the full error stack
   }
 
   if (!sourceJson) {
