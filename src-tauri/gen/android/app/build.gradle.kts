@@ -8,19 +8,19 @@ plugins {
 }
 
 val tauriProperties =
-  Properties().apply {
-    val propFile = file("tauri.properties")
-    if (propFile.exists()) {
-      propFile.inputStream().use { load(it) }
-    }
-  }
+        Properties().apply {
+          val propFile = file("tauri.properties")
+          if (propFile.exists()) {
+            propFile.inputStream().use { load(it) }
+          }
+        }
 
 android {
   compileSdk = 34
-  namespace = "com.hazl.dev"
+  namespace = "com.animestudio.dev"
   defaultConfig {
     manifestPlaceholders["usesCleartextTraffic"] = "false"
-    applicationId = "com.hazl.dev"
+    applicationId = "com.animestudio.dev"
     minSdk = 24
     targetSdk = 34
     versionCode = tauriProperties.getProperty("tauri.android.versionCode", "1").toInt()
@@ -41,6 +41,18 @@ android {
     }
   }
   buildTypes {
+    getByName("debug") {
+      manifestPlaceholders["usesCleartextTraffic"] = "true"
+      isDebuggable = true
+      isJniDebuggable = true
+      isMinifyEnabled = false
+      packaging {
+        jniLibs.keepDebugSymbols.add("*/arm64-v8a/*.so")
+        jniLibs.keepDebugSymbols.add("*/armeabi-v7a/*.so")
+        jniLibs.keepDebugSymbols.add("*/x86/*.so")
+        jniLibs.keepDebugSymbols.add("*/x86_64/*.so")
+      }
+    }
     getByName("release") {
       signingConfig = signingConfigs.getByName("release")
     }
@@ -58,6 +70,17 @@ dependencies {
   testImplementation("junit:junit:4.13.2")
   androidTestImplementation("androidx.test.ext:junit:1.1.4")
   androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
+}
+
+apply(from = "tauri.build.gradle.kts")
+
+dependencies {
+    implementation("androidx.webkit:webkit:1.6.1")
+    implementation("androidx.appcompat:appcompat:1.6.1")
+    implementation("com.google.android.material:material:1.8.0")
+    testImplementation("junit:junit:4.13.2")
+    androidTestImplementation("androidx.test.ext:junit:1.1.4")
+    androidTestImplementation("androidx.test.espresso:espresso-core:3.5.0")
 }
 
 apply(from = "tauri.build.gradle.kts")
