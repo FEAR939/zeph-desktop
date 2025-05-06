@@ -22,7 +22,7 @@ function top_constructor(
     top.appendChild(top_node);
 
     const app_icon = document.createElement("img");
-    app_icon.src = "./icons/astro-icon-light-gradient.svg";
+    app_icon.src = "./icons/app_icon.png";
     app_icon.className = "absolute left-4 h-8 w-8";
 
     top_node.appendChild(app_icon);
@@ -71,7 +71,7 @@ function top_constructor(
 
       const account_menu = document.createElement("div");
       account_menu.className =
-        "absolute z-40 top-10 right-0 h-fit w-72 p-4 space-y-2 bg-[rgb(6,6,6)] border border-[hsla(0,0%,100%,.15)] shadow-[4px_8px_16px_rgba(0,0,0,0.8)] rounded-xl overflow-hidden transition-all ease-in-out duration-100";
+        "absolute z-40 top-10 right-0 h-fit w-72 p-4 bg-[rgb(6,6,6)] border border-[hsla(0,0%,100%,.15)] shadow-[4px_8px_16px_rgba(0,0,0,0.8)] rounded-xl overflow-hidden transition-all ease-in-out duration-100";
       account_menu.style.opacity = "0";
       account_menu.style.display = "none";
       account_menu.style.transform = "scale(0.75)";
@@ -112,13 +112,20 @@ function top_constructor(
 
       const user_region = document.createElement("div");
       user_region.className =
-        "w-full h-32 flex flex-col space-y-2 items-center justify-center";
+        "w-full h-36 flex flex-col space-y-2 items-center justify-center";
 
       account_menu.appendChild(user_region);
+
+      const bannerImage = new Image();
+      bannerImage.className =
+        "absolute top-0 left-0 right-0 w-full aspect-[2.5/1] object-cover";
+
+      user_region.appendChild(bannerImage);
 
       const avatarImage = new Image();
 
       if (user) {
+        bannerImage.src = `${localStorage.getItem("api_url") + user.banner_url}`;
         avatarImage.src = `${localStorage.getItem("api_url") + user.avatar_url}`;
       } else {
         avatarImage.src = "./icons/person_24dp.png";
@@ -126,15 +133,16 @@ function top_constructor(
       }
 
       avatarImage.alt = "avatar";
-      avatarImage.className = "h-16 w-16 rounded-full object-cover";
+      avatarImage.className =
+        "absolute top-20 left-4 h-16 w-16 rounded-full object-cover outline outline-[hsla(0,0%,100%,0.15)]";
 
       user_region.appendChild(avatarImage);
 
       const user_nickname = document.createElement("div");
       user_nickname.className =
-        "w-full text-center font-semibold truncate space-x-1";
+        "absolute top-30 -left-6 w-full text-center truncate";
       if (user) {
-        user_nickname.innerHTML = `<div class="bg-gradient-to-r from-[rgb(80,130,238)] via-[rgb(192,106,148)] to-[rgb(211,102,121)] inline-block text-transparent bg-clip-text">Hello ${user.username}</div>`;
+        user_nickname.innerHTML = `<div class="text-neutral-300">${user.username}</div>`;
       } else {
         user_nickname.innerHTML = "<span class='text-white'>Welcome";
       }
@@ -143,7 +151,7 @@ function top_constructor(
 
       const profile_node = document.createElement("div");
       profile_node.className =
-        "w-auto px-2 py-2 flex items-center space-x-2 bg-[rgb(18,18,18)] text-white cursor-pointer rounded-md outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] duration-150";
+        "w-auto px-2 py-2 flex items-center space-x-2 hover:bg-[rgb(24,24,24)] text-white cursor-pointer rounded-md transition-[background] duration-150";
       profile_node.innerHTML =
         "<img src='./icons/dashboard_24dp.svg' fill='black' class='h-4 w-4 rounded-full object-cover'><span class='text-sm'>Dashboard</span>";
 
@@ -160,7 +168,7 @@ function top_constructor(
 
       const settings_node = document.createElement("div");
       settings_node.className =
-        "w-auto px-2 py-2 flex items-center space-x-2 bg-[rgb(18,18,18)] text-white cursor-pointer rounded-md outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] duration-150";
+        "w-auto px-2 py-2 flex items-center space-x-2 hover:bg-[rgb(24,24,24)] text-white cursor-pointer rounded-md transition-[background] duration-150";
       settings_node.innerHTML =
         "<img src='./icons/settings_24dp.svg' fill='black' class='h-4 w-4 rounded-full object-cover'><span class='text-sm'>Settings</span>";
 
@@ -175,7 +183,7 @@ function top_constructor(
 
       const sign = document.createElement("div");
       sign.className =
-        "w-auto px-2 py-2 flex items-center space-x-2 bg-[rgb(18,18,18)] text-white cursor-pointer rounded-md outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] duration-150";
+        "w-auto px-2 py-2 flex items-center space-x-2 hover:bg-[rgb(24,24,24)] text-white cursor-pointer rounded-md transition-[background] duration-150";
       sign.innerHTML = `<img src='./icons/${!user ? "log_24dp.png" : "logout_24dp.png"}' fill='black' class='h-4 w-4 rounded-full object-cover'><span class='text-sm'>${!user ? "Sign in" : "Sign out"}</span>`;
 
       account_menu.appendChild(sign);
