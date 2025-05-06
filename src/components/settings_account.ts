@@ -1,4 +1,4 @@
-import { AvatarChanger } from "./change_avatar";
+import { ImageChanger } from "./image_changer";
 
 export function AccountSettings(
   parent: HTMLElement,
@@ -46,8 +46,19 @@ export function AccountSettings(
   avatarWrapper.appendChild(avatarChange);
 
   avatarChange.addEventListener("click", () =>
-    AvatarChanger(parent, userState),
+    ImageChanger(parent, userState, "avatar"),
   );
 
   parent.appendChild(avatarWrapper);
+
+  const bannerWrapper = document.createElement("div");
+  bannerWrapper.className =
+    "px-4 py-2 w-fit border border-neutral-600 rounded-lg text-sm cursor-pointer";
+  bannerWrapper.textContent = "Change Banner";
+
+  bannerWrapper.addEventListener("click", () => {
+    ImageChanger(parent, userState, "banner");
+  });
+
+  parent.appendChild(bannerWrapper);
 }
