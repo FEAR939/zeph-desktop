@@ -362,7 +362,9 @@ export default async function profile_panel(userState) {
       "w-full h-18 p-2 flex items-center border-b border-[hsla(0,0%,100%,0.15)] last:border-none";
 
     const cardImage = document.createElement("img");
-    cardImage.src = `https://aniworld.to${image}`;
+    cardImage.src = image.includes("https://")
+      ? `${image}`
+      : `https://aniworld.to${image}`;
     cardImage.className = "h-full object-cover rounded aspect-[2/3]";
 
     card.appendChild(cardImage);
