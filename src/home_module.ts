@@ -7,8 +7,8 @@ import { card } from "./components/card";
 
 async function get_categories() {
   try {
-    const response = (await fetch("https://aniworld.to")).text();
-    const html = new DOMParser().parseFromString(await response, "text/html");
+    const response = await (await fetch("https://aniworld.to")).text();
+    const html = new DOMParser().parseFromString(response, "text/html");
     const container_nodes = html
       .querySelector(".carousel")
       ?.querySelectorAll(".coverListItem a");
@@ -20,20 +20,13 @@ async function get_categories() {
     const categories: categorie[] = [];
     const trending: Array<anime_data> = [];
 
-    container_nodes.forEach((node) => {
+    for (const node of container_nodes) {
       const redirect = node.getAttribute("href");
-      const image = node
-        .querySelector("img")
-        ?.getAttribute("data-src")
-        ?.replace("150x225", "220x330");
-      const title = node.querySelector("h3")?.textContent?.trim();
 
       trending.push({
         redirect: redirect || "",
-        image: image || "",
-        title: title || "",
       });
-    });
+    }
 
     categories.push({
       label: "Trending Now",
@@ -66,48 +59,9 @@ async function get_item_batch(page: number) {
   await Promise.all(
     items.map(async (anime: anime) => {
       const redirect = anime.series_id;
-      let image = "";
-      let title = "";
-      const serverData = await fetch(
-        `${localStorage.getItem("api_url")}/get-anime`,
-        {
-          method: "POST",
-          body: redirect,
-        },
-      );
-
-      if (serverData.status == 404) {
-        const html = new DOMParser().parseFromString(
-          await (await fetch(`https://aniworld.to${anime.series_id}`)).text(),
-          "text/html",
-        );
-
-        image =
-          html.querySelector(".seriesCoverBox img")?.getAttribute("data-src") ||
-          "";
-        title = html.querySelector(".series-title h1")?.textContent || "";
-
-        if (image.length !== 0 && title.length !== 0) {
-          await fetch(`${localStorage.getItem("api_url")}/set-anime`, {
-            method: "POST",
-            body: JSON.stringify({
-              redirect: redirect,
-              image: image,
-              title: title,
-            }),
-          });
-        }
-      } else {
-        const data = await serverData.json();
-
-        image = data.image;
-        title = data.title;
-      }
 
       items_list.push({
         redirect: redirect || "",
-        image: image || "",
-        title: title || "",
       });
     }),
   );
@@ -187,7 +141,8 @@ function home_constructor() {
     const pagination: Page[] = [];
 
     const selectedWrapper = document.createElement("div");
-    selectedWrapper.className = "m-4 flex-1 flex flex-wrap gap-x-2 gap-y-2";
+    selectedWrapper.className =
+      "m-4 flex-1 flex gap-x-2 gap-y-2 overflow-y-scroll";
 
     type Category = {
       label: string;
@@ -200,7 +155,7 @@ function home_constructor() {
 
       const selectedCategorie = document.createElement("div");
       selectedCategorie.className =
-        "w-full px-3 py-2 flex items-center hover:brightness-80 rounded-full cursor-pointer transition duration-300 text-sm font-medium space-x-4 md:w-fit";
+        "w-fit px-3 py-2 flex items-center cursor-pointer text-sm font-medium space-x-4";
       switch (categorie.label) {
         case "Trending Now":
           selectedCategorie.innerHTML = `<div>${categorie.label}</div>`;
@@ -215,15 +170,16 @@ function home_constructor() {
       subscribeSelectedList((newList) => {
         if (newList == i) {
           selectedCategorie.classList.add(
-            "bg-gradient-to-r",
-            "from-[rgb(54,95,215)]",
-            "to-[rgb(143,155,215)]",
+            "border-b",
+            "border-neutral-700",
+            "text-white",
           );
         } else {
+          selectedCategorie.classList.add("text-neutral-700");
           selectedCategorie.classList.remove(
-            "bg-gradient-to-r",
-            "from-[rgb(54,95,215)]",
-            "to-[rgb(143,155,215)]",
+            "border-b",
+            "border-neutral-700",
+            "text-white",
           );
         }
       });
@@ -252,7 +208,7 @@ function home_constructor() {
 
       handleGridSize(Math.floor(window.outerWidth / 200));
     } else {
-      handleGridSize(2);
+      handleGridSize(3);
     }
 
     content.appendChild(itemGrid);
