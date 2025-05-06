@@ -16,30 +16,20 @@ export function Episode(
 
   const episode_node = document.createElement("div");
   episode_node.className =
-    "group relative flex items-center h-fit cursor-pointer";
+    "group relative flex items-center aspect-[500/281] overflow-hidden rounded-lg bg-neutral-900 cursor-pointer shrink-0";
+
+  if (isMobileDevice) {
+    episode_node.classList.add("h-32");
+  } else {
+    episode_node.classList.add("h-38");
+  }
 
   episode_wrapper.appendChild(episode_node);
 
   const episode_image = document.createElement("div");
-  episode_image.className =
-    "relative flex-shrink-0 aspect-video overflow-hidden rounded-lg bg-neutral-900";
-
-  if (isMobileDevice) {
-    episode_image.classList.add("h-22");
-  } else {
-    episode_image.classList.add("h-28");
-  }
+  episode_image.className = "relative h-full w-full";
 
   episode_node.appendChild(episode_image);
-
-  if (ep.duration !== 0) {
-    const episode_duration = document.createElement("div");
-    episode_duration.className =
-      "absolute right-2 bottom-4 px-2 py-1 bg-neutral-900/90 rounded-lg text-sm";
-    episode_duration.textContent = `${ep.duration} Min`;
-
-    episode_image.appendChild(episode_duration);
-  }
 
   const [getProgress, setProgress, subscribeProgress] = createState({
     duration: 0,
@@ -49,7 +39,7 @@ export function Episode(
   if (localStorage.getItem("token")) {
     const episode_progress = document.createElement("div");
     episode_progress.className =
-      "absolute bottom-2 left-2 right-2 h-0.75 rounded-xl overflow-hidden";
+      "absolute z-10 bottom-0 left-0 right-0 h-0.75 rounded-xl overflow-hidden";
 
     episode_image.appendChild(episode_progress);
 
@@ -79,87 +69,18 @@ export function Episode(
     });
   }
 
-  const episode_info = document.createElement("div");
-  episode_info.className =
-    "flex-1 shrink-0 py-0.5 flex flex-col justify-center space-y-1 px-4 overflow-hidden";
-
-  episode_node.appendChild(episode_info);
-
   const episode_title = document.createElement("h3");
-  episode_title.className = "group-hover:text-white";
+  episode_title.className = "absolute bottom-2 w-full px-2 truncate text-sm";
   episode_title.textContent = ep.title;
 
-  if (isMobileDevice) {
-    episode_title.classList.add("truncate");
-  }
-
-  episode_info.appendChild(episode_title);
+  episode_node.appendChild(episode_title);
 
   const episode_description = document.createElement("p");
-  episode_description.className = "text-sm text-neutral-400 line-clamp-2";
+  episode_description.className =
+    "absolute text-[12px] text-neutral-300 truncate w-full px-2 bottom-7";
   episode_description.textContent = `Episode ${i + 1}`;
 
-  episode_info.appendChild(episode_description);
-
-  const episode_buttons = document.createElement("div");
-  episode_buttons.className = "h-8 w-full flex space-x-2 mt-2";
-
-  const episode_watch = document.createElement("div");
-  episode_watch.className =
-    "h-8 w-fit pl-2 pr-3 bg-[rgb(18,18,18)] outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] rounded-md space-x-1 flex items-center";
-  episode_watch.innerHTML =
-    "<img src='./icons/play_arrow_24dp.png' class='h-4 w-fit object-cover' /><span class='text-sm'>Watch now</span>";
-
-  episode_buttons.appendChild(episode_watch);
-
-  const [getExpand, setExpand, subscribeExpand] = createState(false);
-
-  const language = document.createElement("div");
-  language.className = "relative h-8";
-
-  const language_header = document.createElement("div");
-  language_header.className =
-    "h-full p-2 bg-[rgb(18,18,18)] outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline] rounded-md flex items-center justify-center";
-  language_header.innerHTML =
-    "<img src='./icons/language_24dp.svg' class='h-4 w-4' />";
-
-  language.appendChild(language_header);
-
-  const language_list = document.createElement("div");
-  language_list.className =
-    "absolute bottom-10 right-0 h-8 px-4 bg-neutral-800 rounded-lg flex items-center space-x-2 overflow-hidden";
-  language_list.style.width = `calc(${ep.langs.length} * 2rem)`;
-
-  ep.langs.map((lang) => {
-    if (lang.length !== 0) {
-      const langNode = document.createElement("img");
-      langNode.className = "h-4 w-4 object-contain";
-      langNode.src = `https://aniworld.to${lang}`;
-
-      language_list.appendChild(langNode);
-    }
-  });
-
-  subscribeExpand((newExpand) => {
-    if (newExpand) {
-      language_list.style.display = "flex";
-    } else {
-      language_list.style.display = "none";
-    }
-  });
-
-  language.appendChild(language_list);
-
-  episode_buttons.appendChild(language);
-
-  language_header.addEventListener("click", (e: Event) => {
-    e.stopPropagation();
-    setExpand(!getExpand());
-  });
-
-  setExpand(false);
-
-  episode_info.appendChild(episode_buttons);
+  episode_node.appendChild(episode_description);
 
   const watched = async (duration: number, playtime: number) => {
     const historyres = await fetch(
@@ -241,7 +162,7 @@ export function Episode(
 
   const asyncImage = new Image();
   asyncImage.src = ep.image;
-  asyncImage.className = "w-full object-cover";
+  asyncImage.className = "h-full w-full object-cover brightness-50";
 
   asyncImage.addEventListener("load", () => {
     episode_image.appendChild(asyncImage);
