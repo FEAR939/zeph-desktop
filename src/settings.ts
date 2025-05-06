@@ -40,7 +40,7 @@ export function Settings(userState, auth_page) {
     settings_main.appendChild(main_nav);
 
     const main_container = document.createElement("div");
-    main_container.className = "h-full w-full p-2";
+    main_container.className = "h-full w-full p-2 space-y-4";
 
     settings.map((setting) => {
       const navSetting = document.createElement("div");
