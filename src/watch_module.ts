@@ -380,7 +380,7 @@ function watch_constructor() {
     console.log(cache);
 
     const episode_wrapper = document.createElement("div");
-    episode_wrapper.className = "my-4 space-y-4";
+    episode_wrapper.className = "flex space-x-4 my-4 overflow-y-scroll";
 
     detail_main.appendChild(episode_wrapper);
 
