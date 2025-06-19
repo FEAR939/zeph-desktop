@@ -16,7 +16,7 @@ export function Episode(
 
   const episode_node = document.createElement("div");
   episode_node.className =
-    "group relative flex items-center aspect-[500/281] overflow-hidden rounded-lg bg-neutral-900 cursor-pointer shrink-0";
+    "group relative flex items-center aspect-[500/281] overflow-hidden rounded-2xl bg-neutral-900 cursor-pointer shrink-0";
 
   if (isMobileDevice) {
     episode_node.classList.add("h-32");
@@ -39,7 +39,7 @@ export function Episode(
   if (localStorage.getItem("token")) {
     const episode_progress = document.createElement("div");
     episode_progress.className =
-      "absolute z-10 bottom-0 left-0 right-0 h-0.75 rounded-xl overflow-hidden";
+      "absolute z-10 bottom-3 left-3 right-3 h-0.75 rounded-xl overflow-hidden";
 
     episode_image.appendChild(episode_progress);
 
@@ -70,19 +70,47 @@ export function Episode(
   }
 
   const episode_title = document.createElement("h3");
-  episode_title.className = "absolute bottom-2 w-full px-2 truncate text-sm";
+  episode_title.className = "absolute bottom-4 w-full px-3 truncate text-sm";
   episode_title.textContent = ep.title;
 
   episode_node.appendChild(episode_title);
 
   const episode_description = document.createElement("p");
   episode_description.className =
-    "absolute text-[12px] text-neutral-300 truncate w-full px-2 bottom-7";
+    "absolute text-[12px] text-neutral-300 truncate w-full px-3 bottom-8";
   episode_description.textContent = `Episode ${i + 1}`;
 
   episode_node.appendChild(episode_description);
 
-  const watched = async (duration: number, playtime: number) => {
+  const watched = async (
+    duration: number,
+    playtime: number,
+    timertime: number,
+    reset: boolean = false,
+  ) => {
+    if (reset) {
+      const res = await fetch(
+        `${localStorage.getItem("api_url")}/handle-seen`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token") || "",
+          },
+          body: JSON.stringify({
+            playtime: 0,
+            duration: duration,
+            id: ep.id,
+          }),
+        },
+      );
+
+      if (res.status == 200) {
+        setProgress({ duration: duration, playtime: playtime });
+      }
+      return;
+    }
+
     const historyres = await fetch(
       `${localStorage.getItem("api_url")}/user/setHistory`,
       {
@@ -103,29 +131,35 @@ export function Episode(
     }
 
     if (
-      !localStorage.getItem("token") ||
-      (!(getProgress().playtime < playtime) &&
-        !(getProgress().duration < duration))
-    )
-      return;
+      localStorage.getItem("token") &&
+      getProgress().playtime < playtime &&
+      getProgress().duration < duration
+    ) {
+      const res = await fetch(
+        `${localStorage.getItem("api_url")}/handle-seen`,
+        {
+          method: "POST",
+          headers: {
+            "Content-Type": "application/json",
+            Authorization: localStorage.getItem("token") || "",
+          },
+          body: JSON.stringify({
+            playtime: playtime,
+            duration: duration,
+            id: ep.id,
+          }),
+        },
+      );
 
-    const res = await fetch(`${localStorage.getItem("api_url")}/handle-seen`, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        Authorization: localStorage.getItem("token") || "",
-      },
-      body: JSON.stringify({
-        playtime: playtime,
-        duration: duration,
-        id: ep.id,
-      }),
-    });
+      if (res.status == 200) {
+        setProgress({ duration: duration, playtime: playtime });
+      }
+    }
 
     const nowDate = new Date();
 
     const activityObj = {
-      time: playtime,
+      time: timertime,
       day: nowDate.getDate(),
       month: nowDate.getMonth() + 1,
       year: nowDate.getFullYear(),
@@ -144,10 +178,6 @@ export function Episode(
         body: JSON.stringify(activityObj),
       },
     );
-
-    if (res.status == 200) {
-      setProgress({ duration: duration, playtime: playtime });
-    }
 
     if (activityres.status !== 200) {
       console.error("Could not update user activity");
