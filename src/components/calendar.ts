@@ -67,7 +67,7 @@ async function get_calendar() {
 export async function Calendar(content: HTMLElement) {
   const calendar_wrapper = document.createElement("div");
   calendar_wrapper.className =
-    "relative flex flex-col m-4 pb-4 h-96 bg-neutral-800 rounded-xl overflow-hidden";
+    "relative flex flex-col pb-4 h-[48rem] bg-neutral-800 rounded-xl overflow-hidden";
 
   content.appendChild(calendar_wrapper);
 
