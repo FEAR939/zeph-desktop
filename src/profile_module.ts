@@ -25,13 +25,27 @@ export default async function profile_panel(userState) {
   const isMobileDevice = /Mobi/i.test(window.navigator.userAgent);
   const profile_wrapper = document.createElement("div");
   profile_wrapper.className =
-    "absolute inset-0 z-40 flex justify-center backdrop-brightness-50 overflow-y-auto";
+    "absolute inset-0 z-40 flex justify-center bg-neutral-950/60 backdrop-blur-xl overflow-y-auto";
 
   document.body.appendChild(profile_wrapper);
 
   const profile_node = document.createElement("div");
   profile_node.className =
-    "relative min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-[rgb(6,6,6)] outline outline-[hsla(0,0%,100%,0.15)] mt-4 overflow-hidden rounded-t-lg border-box pt-8";
+    "relative min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full px-4 mt-4 overflow-hidden border-box pt-8 flex flex-col justify-center";
+  profile_node.innerHTML = `
+    <div class="grid min-h-[140px] w-full place-items-center overflow-x-scroll rounded-lg p-6 lg:overflow-visible">
+      <svg class="text-gray-300 animate-spin" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"
+        width="24" height="24">
+        <path
+          d="M32 3C35.8083 3 39.5794 3.75011 43.0978 5.20749C46.6163 6.66488 49.8132 8.80101 52.5061 11.4939C55.199 14.1868 57.3351 17.3837 58.7925 20.9022C60.2499 24.4206 61 28.1917 61 32C61 35.8083 60.2499 39.5794 58.7925 43.0978C57.3351 46.6163 55.199 49.8132 52.5061 52.5061C49.8132 55.199 46.6163 57.3351 43.0978 58.7925C39.5794 60.2499 35.8083 61 32 61C28.1917 61 24.4206 60.2499 20.9022 58.7925C17.3837 57.3351 14.1868 55.199 11.4939 52.5061C8.801 49.8132 6.66487 46.6163 5.20749 43.0978C3.7501 39.5794 3 35.8083 3 32C3 28.1917 3.75011 24.4206 5.2075 20.9022C6.66489 17.3837 8.80101 14.1868 11.4939 11.4939C14.1868 8.80099 17.3838 6.66487 20.9022 5.20749C24.4206 3.7501 28.1917 3 32 3L32 3Z"
+          stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
+        <path
+          d="M32 3C36.5778 3 41.0906 4.08374 45.1692 6.16256C49.2477 8.24138 52.7762 11.2562 55.466 14.9605C58.1558 18.6647 59.9304 22.9531 60.6448 27.4748C61.3591 31.9965 60.9928 36.6232 59.5759 40.9762"
+          stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-900">
+        </path>
+      </svg>
+    </div>
+  `;
 
   profile_wrapper.appendChild(profile_node);
 
@@ -45,6 +59,7 @@ export default async function profile_panel(userState) {
   document.body.appendChild(profile_wrapper);
 
   const activity = await get_activity_year();
+  profile_node.innerHTML = "";
 
   const close = document.createElement("img");
   close.className = "absolute top-4 left-4 h-8 w-8 cursor-pointer";
@@ -57,7 +72,8 @@ export default async function profile_panel(userState) {
   profile_node.appendChild(close);
 
   const graph_wrapper = document.createElement("div");
-  graph_wrapper.className = "w-full h-fit mt-2 px-2";
+  graph_wrapper.className =
+    "w-full h-fit mt-8 px-2 pb-2 bg-neutral-950/80 backdrop-blur-xl rounded-2xl";
 
   profile_node.appendChild(graph_wrapper);
 
@@ -225,12 +241,12 @@ export default async function profile_panel(userState) {
               0,
               chartArea.top,
             );
-            gradient.addColorStop(0, "rgba(52, 204, 255, 0)");
-            gradient.addColorStop(1, "rgba(52, 204, 255, 0.7)");
+            gradient.addColorStop(0, "rgba(253, 61, 181, 0)");
+            gradient.addColorStop(1, "rgba(253, 61, 181, 0.7)");
             return gradient;
           },
-          borderColor: "rgb(52, 204, 255)",
-          borderWidth: 1,
+          borderColor: "rgb(253, 61, 181)",
+          borderWidth: 2,
           data: dataset,
         },
       ],
@@ -331,7 +347,8 @@ export default async function profile_panel(userState) {
   ).json();
 
   const cardWrapper = document.createElement("div");
-  cardWrapper.className = "w-full h-fit space-y-2 py-2 px-4";
+  cardWrapper.className =
+    "w-full h-fit space-y-2 py-2 px-4 bg-neutral-950/80 backdrop-blur-xl rounded-2xl mb-2";
 
   profile_node.appendChild(cardWrapper);
 
@@ -359,7 +376,7 @@ export default async function profile_panel(userState) {
 
     const card = document.createElement("div");
     card.className =
-      "w-full h-18 p-2 flex items-center border-b border-[hsla(0,0%,100%,0.15)] last:border-none";
+      "relative w-full h-18 p-2 flex items-center border-b border-neutral-800 last:border-none";
 
     const cardImage = document.createElement("img");
     cardImage.src = image.includes("https://")
@@ -374,13 +391,13 @@ export default async function profile_panel(userState) {
     date.setMilliseconds(date.getMilliseconds() + timezoneoffset * 60 * 1000);
 
     const cardTitle = document.createElement("div");
-    cardTitle.className = "truncate max-w-[calc(100%-12rem)] px-2";
+    cardTitle.className = "w-full truncate px-2";
     cardTitle.textContent = `${title}`;
 
     card.appendChild(cardTitle);
 
     const cardDate = document.createElement("div");
-    cardDate.className = "ml-auto text-neutral-500";
+    cardDate.className = "absolute right-2 top-1.5 text-sm text-neutral-500";
     cardDate.textContent = date.toLocaleString();
 
     card.appendChild(cardDate);
