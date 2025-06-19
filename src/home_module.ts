@@ -4,11 +4,14 @@ import { getCurrentWindow } from "@tauri-apps/api/window";
 import { categorie, anime_data, anime } from "./types";
 import createState from "./createstate";
 import { card } from "./components/card";
+import { Calendar } from "./components/calendar";
 
 async function get_categories() {
   try {
     const response = await (await fetch("https://aniworld.to")).text();
     const html = new DOMParser().parseFromString(response, "text/html");
+
+    console.log(html);
     const container_nodes = html
       .querySelector(".carousel")
       ?.querySelectorAll(".coverListItem a");
@@ -131,6 +134,8 @@ function home_constructor() {
       categories = [...categories, mylist];
     }
 
+    categories = [...categories, { label: "Calendar", items: [] }];
+
     const [getSelectedList, setSelectedList, subscribeSelectedList] =
       createState<null | number>(null);
 
@@ -155,12 +160,15 @@ function home_constructor() {
 
       const selectedCategorie = document.createElement("div");
       selectedCategorie.className =
-        "w-fit px-3 py-2 flex items-center cursor-pointer text-sm font-medium space-x-4";
+        "w-fit px-3 py-2 flex items-center cursor-pointer text-sm font-medium space-x-4 rounded-lg";
       switch (categorie.label) {
         case "Trending Now":
           selectedCategorie.innerHTML = `<div>${categorie.label}</div>`;
           break;
         case "My List":
+          selectedCategorie.innerHTML = `<div>${categorie.label}</div>`;
+          break;
+        case "Calendar":
           selectedCategorie.innerHTML = `<div>${categorie.label}</div>`;
           break;
       }
@@ -170,16 +178,18 @@ function home_constructor() {
       subscribeSelectedList((newList) => {
         if (newList == i) {
           selectedCategorie.classList.add(
-            "border-b",
-            "border-neutral-700",
+            "bg-neutral-900",
             "text-white",
+            "border",
+            "border-neutral-800",
           );
         } else {
           selectedCategorie.classList.add("text-neutral-700");
           selectedCategorie.classList.remove(
-            "border-b",
-            "border-neutral-700",
+            "bg-neutral-900",
             "text-white",
+            "border",
+            "border-neutral-800",
           );
         }
       });
@@ -197,10 +207,6 @@ function home_constructor() {
     const itemGrid = document.createElement("div");
     itemGrid.className = "px-4 pb-4 h-fit w-full grid gap-x-2 gap-y-4";
 
-    function handleGridSize(size: number) {
-      itemGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
-    }
-
     if (!isMobileDevice) {
       getCurrentWindow().listen("tauri://resize", () => {
         handleGridSize(Math.floor(window.outerWidth / 200));
@@ -211,7 +217,17 @@ function home_constructor() {
       handleGridSize(3);
     }
 
+    function handleGridSize(size: number) {
+      itemGrid.style.gridTemplateColumns = `repeat(${size}, minmax(0, 1fr))`;
+    }
+
     content.appendChild(itemGrid);
+
+    function render_Calendar() {
+      itemGrid.style.display = "block";
+      itemGrid.innerHTML = "";
+      Calendar(itemGrid);
+    }
 
     const pageSelector = document.createElement("div");
     pageSelector.className = "h-8 w-full flex justify-center items-center mb-2";
@@ -221,7 +237,7 @@ function home_constructor() {
 
     const pagePrev = document.createElement("img");
     pagePrev.src = "/icons/chevron_left_24dp.png";
-    pagePrev.className = "w-6 h-6 mr-2 cursor-pointer";
+    pagePrev.className = "h-7 w-7 mr-2 p-0.5 text-base cursor-pointer";
     pagePrev.addEventListener("click", () => {
       const selected = getSelectedList();
       if (selected == null) return;
@@ -235,7 +251,7 @@ function home_constructor() {
 
     const pageCurrent = document.createElement("span");
     pageCurrent.className =
-      "text-base px-2 py-0.5 mr-2 bg-[rgb(18,18,18)] outline outline-[hsla(0,0%,100%,0.15)] rounded-lg";
+      "text-base px-2.5 py-0.5 mr-2 bg-neutral-900 border border-neutral-800 rounded-lg";
     const selected = getSelectedList() || 0;
     pageCurrent.textContent = `${pagination[selected].page}`;
 
@@ -243,7 +259,7 @@ function home_constructor() {
 
     const pageNext = document.createElement("img");
     pageNext.src = "/icons/chevron_right_24dp.png";
-    pageNext.className = "w-6 h-6 cursor-pointer";
+    pageNext.className = "h-7 w-7 p-0.5 text-base cursor-pointer rounded-lg";
     pageNext.addEventListener("click", () => {
       const selected = getSelectedList();
       if (selected == null) return;
@@ -274,6 +290,7 @@ function home_constructor() {
 
     subscribeSelectedList(async (newList) => {
       if (newList == null) return;
+      itemGrid.style.display = "grid";
       itemGrid.innerHTML = "";
       selectedHeader.textContent = categories[newList].label;
       if (
@@ -287,6 +304,7 @@ function home_constructor() {
         await handleItems();
       } else {
         pageSelector.style.display = "none";
+        if (categories[newList].label == "Calendar") return render_Calendar();
         categories[newList].items.map((item: anime_data) => {
           card(item, itemGrid, watch_callback || (() => {}));
         });
