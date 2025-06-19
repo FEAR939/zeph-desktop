@@ -24,8 +24,40 @@ export function AccountSettings(
     return;
   }
 
+  const profileWrapper = document.createElement("div");
+  profileWrapper.className = "w-full max-w-md h-fit";
+
+  parent.appendChild(profileWrapper);
+
+  const bannerWrapper = document.createElement("div");
+  bannerWrapper.className = "relative w-full h-fit";
+
+  const bannerImage = document.createElement("img");
+  bannerImage.className = "w-full aspect-[2.5/1] object-cover rounded";
+  bannerImage.src = `${localStorage.getItem("api_url") + userState.get().banner_url}`;
+
+  userState.subscribe((newUser) => {
+    bannerImage.src = `${localStorage.getItem("api_url") + newUser.banner_url}`;
+  });
+
+  bannerWrapper.appendChild(bannerImage);
+
+  const bannerChange = document.createElement("div");
+  bannerChange.className =
+    "absolute right-2 bottom-2 h-6 w-6 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center transition-colors";
+  bannerChange.innerHTML =
+    "<img src='./icons/edit_24dp.svg' class='h4 w-4 object-cover cursor-pointer' />";
+
+  bannerChange.addEventListener("click", () => {
+    ImageChanger(parent, userState, "banner");
+  });
+
+  bannerWrapper.appendChild(bannerChange);
+
+  profileWrapper.appendChild(bannerWrapper);
+
   const avatarWrapper = document.createElement("div");
-  avatarWrapper.className = "relative h-16 w-16";
+  avatarWrapper.className = "relative left-4 bottom-10 h-16 w-16";
 
   const avatarImage = document.createElement("img");
   avatarImage.className = "h-full w-full rounded-full";
@@ -39,7 +71,7 @@ export function AccountSettings(
 
   const avatarChange = document.createElement("div");
   avatarChange.className =
-    "absolute -right-1 -bottom-1 h-6 w-6 bg-neutral-800 hover:bg-neutral-700 rounded-lg flex items-center justify-center transition-colors";
+    "absolute -right-1 -bottom-1 h-6 w-6 bg-zinc-800 hover:bg-zinc-700 rounded-full flex items-center justify-center transition-colors";
   avatarChange.innerHTML =
     "<img src='./icons/edit_24dp.svg' class='h4 w-4 object-cover cursor-pointer' />";
 
@@ -49,16 +81,5 @@ export function AccountSettings(
     ImageChanger(parent, userState, "avatar"),
   );
 
-  parent.appendChild(avatarWrapper);
-
-  const bannerWrapper = document.createElement("div");
-  bannerWrapper.className =
-    "px-4 py-2 w-fit border border-neutral-600 rounded-lg text-sm cursor-pointer";
-  bannerWrapper.textContent = "Change Banner";
-
-  bannerWrapper.addEventListener("click", () => {
-    ImageChanger(parent, userState, "banner");
-  });
-
-  parent.appendChild(bannerWrapper);
+  profileWrapper.appendChild(avatarWrapper);
 }
