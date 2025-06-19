@@ -1,10 +1,5 @@
 @import "tailwindcss";
 
-@font-face {
-    font-family: Inter;
-    src: url("../fonts/Inter-VariableFont_opsz,wght.ttf");
-}
-
 :root {
     --text-xs: 14px;
 }
