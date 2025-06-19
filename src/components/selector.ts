@@ -15,7 +15,7 @@ export function Selector(
 
   const selector_node = document.createElement("div");
   selector_node.className =
-    "relative h-8 w-48 flex items-center bg-[rgb(18,18,18)] rounded-lg outline outline-[hsla(0,0%,100%,0.15)] hover:outline-2 hover:outline-[rgb(49,139,255)] transition-[outline]";
+    "relative h-8 w-48 flex items-center bg-neutral-950/60 backdrop-blur-xl rounded-lg outline outline-neutral-800";
 
   const selector_header = document.createElement("div");
   selector_header.className = "h-full w-full flex items-center cursor-pointer";
@@ -40,11 +40,12 @@ export function Selector(
 
   subscribeValue((newValue) => {
     value_node.textContent = newValue.label;
+    if (newValue.title) value_node.textContent = newValue.title;
   });
 
   const options_node = document.createElement("div");
   options_node.className =
-    "absolute h-fit w-full p-2 bottom-10 bg-[rgb(18,18,18)] rounded-lg";
+    "absolute h-fit w-full p-2 bottom-10 bg-neutral-950 rounded-lg outline outline-neutral-800";
 
   subscribeExpand((newExpand) => {
     if (newExpand) {
@@ -60,12 +61,12 @@ export function Selector(
 
   const options_search_wrapper = document.createElement("div");
   options_search_wrapper.className =
-    "h-8 w-full px-2 flex space-x-2 items-center bg-neutral-800 rounded-lg";
+    "h-8 w-full px-2 flex space-x-2 items-center bg-neutral-900 rounded-lg";
   options_search_wrapper.innerHTML =
     "<img src='./icons/search_24dp.svg' class='h-4 w-4' />";
 
   const search_input = document.createElement("input");
-  search_input.className = "h-fit w-full text-sm";
+  search_input.className = "h-fit w-full text-sm outline-none";
   search_input.placeholder = "Search";
 
   options_search_wrapper.appendChild(search_input);
@@ -80,8 +81,9 @@ export function Selector(
     newOptions.map((option) => {
       const option_node = document.createElement("div");
       option_node.className =
-        "h-8 w-full px-2 flex items-center truncate rounded-lg hover:bg-neutral-800 cursor-pointer";
+        "h-8 w-full px-2 flex items-center truncate rounded-lg hover:bg-neutral-900 cursor-pointer";
       option_node.textContent = option.label;
+      if (option.title) option_node.textContent = option.title;
 
       options_list.appendChild(option_node);
 
