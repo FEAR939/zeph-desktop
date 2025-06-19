@@ -11,7 +11,9 @@ type episode = {
   duration: number;
   playtime: number;
   id: string;
-  watched: ((duration: number, playtime: number) => Promise<void>) | null;
+  watched:
+    | ((duration: number, playtime: number, timertime: number) => Promise<void>)
+    | null;
 };
 
 type hoster = {
@@ -214,13 +216,13 @@ async function player_constructor(episodes: episode[], index: number) {
   subscribeMini((newMini) => {
     if (newMini && !isMobileDevice) {
       player_wrapper.className =
-        "absolute bottom-4 right-4 h-64 aspect-video z-50 bg-black overflow-hidden rounded-lg";
+        "absolute bottom-4 right-4 h-64 w-[calc(16rem*(16/9))] z-50 bg-black overflow-hidden rounded-2xl transition-all duration-300";
     } else if (newMini && isMobileDevice) {
       player_wrapper.className = player_wrapper.className =
-        "absolute bottom-4 right-4 h-44 aspect-video z-50 bg-black overflow-hidden rounded-lg";
+        "absolute bottom-4 right-4 h-44 aspect-video z-50 bg-black overflow-hidden rounded-2xl";
     } else {
       player_wrapper.className =
-        "absolute inset-0 z-40 bg-black overflow-hidden";
+        "absolute right-0 bottom-0 h-full w-full z-50 bg-black overflow-hidden transition-all duration-300";
     }
   });
 
@@ -442,7 +444,7 @@ async function player_constructor(episodes: episode[], index: number) {
   // Add handle/knob
   const handle = document.createElement("div");
   handle.className =
-    "absolute h-3 w-3 bg-white rounded-full -right-1.5 top-1/2 -translate-y-1/2";
+    "absolute h-5 w-1 bg-white rounded -right-0.5 top-1/2 -translate-y-1/2";
   progressBar.appendChild(handle);
 
   // Optional: Add hover state to timeline
@@ -469,15 +471,32 @@ async function player_constructor(episodes: episode[], index: number) {
 
   startWrapper.appendChild(play_pause);
 
+  let timerStart = 0;
+  let timerEnd = 0;
+  let timerCurrent = 0;
+
   subscribePlayState((newState) => {
     if (newState == true) {
       play_pause.src = "./icons/pause_24dp.png";
       big_play_button.src = "./icons/pause_24dp.png";
       video_player.play();
+      timeout = setTimeout(() => {
+        if (video_player.paused) return;
+        video_controls.style.display = "none";
+        player_exit.style.display = "none";
+        player_toggleMini.style.display = "none";
+        episode_title.style.display = "none";
+        player_wrapper.style.cursor = "none";
+        video_layer.style.display = "none";
+        touched = false;
+      }, 3000);
+      timerStart = Date.now();
     } else if (newState == false) {
       play_pause.src = "./icons/play_arrow_24dp.png";
       big_play_button.src = "./icons/play_arrow_24dp.png";
       video_player.pause();
+      timerEnd = Date.now();
+      timerCurrent += timerEnd - timerStart;
     }
   });
 
@@ -506,7 +525,12 @@ async function player_constructor(episodes: episode[], index: number) {
     console.log(getIndex());
 
     if (episodes[getIndex()].watched !== null) {
-      episodes[getIndex()]?.watched?.(duration, playtime);
+      if (timerStart > timerEnd) timerEnd = Date.now();
+      timerCurrent = timerEnd - timerStart;
+      timerStart = 0;
+      timerEnd = 0;
+      const timertime = Math.round(timerCurrent / 1000 / 60);
+      episodes[getIndex()]?.watched?.(duration, playtime, timertime);
     }
     setIndex(getIndex() + 1);
   });
@@ -546,7 +570,7 @@ async function player_constructor(episodes: episode[], index: number) {
 
   const introSkip = document.createElement("div");
   introSkip.className =
-    "flex items-center rounded-md bg-neutral-900 hover:bg-neutral-800 px-2 py-1 space-x-2 cursor-pointer transition-colors";
+    "flex items-center rounded-xl bg-zinc-800 hover:bg-zinc-700 outline outline-[hsla(0,0%,100%,0.15)] px-2 py-1 space-x-2 cursor-pointer transition-colors";
   introSkip.innerHTML =
     "<img src='./icons/skip_next_24dp.png' class='h-4 w-4' /><span class='text-sm'>Intro</span>";
 
@@ -839,6 +863,9 @@ async function player_constructor(episodes: episode[], index: number) {
 
   subscribeIndex(async (newIndex) => {
     console.log(newIndex);
+    timerStart = 0;
+    timerEnd = 0;
+    timerCurrent = 0;
 
     const html = new DOMParser().parseFromString(
       await (
@@ -928,10 +955,16 @@ async function player_constructor(episodes: episode[], index: number) {
   }
 
   player_exit.addEventListener("click", async () => {
+    video_player.pause();
     const playtime = Math.floor(video_player.currentTime / 60);
     const duration = Math.floor(video_player.duration / 60);
     if (episodes[getIndex()].watched !== null) {
-      episodes[getIndex()]?.watched?.(duration, playtime);
+      if (timerStart > timerEnd) timerEnd = Date.now();
+      timerCurrent = timerEnd - timerStart;
+      timerStart = 0;
+      timerEnd = 0;
+      const timertime = Math.round(timerCurrent / 1000 / 60);
+      episodes[getIndex()]?.watched?.(duration, playtime, timertime);
     }
 
     player_wrapper.remove();
