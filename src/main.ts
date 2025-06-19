@@ -29,8 +29,7 @@ async function login(token?: string) {
 }
 
 const top_area = document.createElement("div");
-top_area.className =
-  "absolute z-30 top-0 left-0 right-0 h-14 bg-[rgb(6,6,6)] border-b-2 border-[rgb(18,18,18)]";
+top_area.className = "absolute z-30 top-0 left-0 right-0 h-14 bg-neutral-950";
 document.body.appendChild(top_area);
 
 const content_area = document.createElement("div");
