@@ -94,7 +94,7 @@ export async function card(
   asyncImage.src = item.image.includes("https://")
     ? `${item.image}`
     : `https://aniworld.to${item.image}`;
-  asyncImage.className = "w-full h-full object-fit";
+  asyncImage.className = "w-full h-full object-cover object-center";
 
   asyncImage.addEventListener("load", () => {
     item_load.remove();
