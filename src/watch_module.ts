@@ -31,9 +31,12 @@ async function get_details(url: string) {
 
   season_nodes.forEach((season_node) => {
     const season_label = season_node.textContent;
+    let season_title = season_label;
+    if (!isNaN(season_title)) season_title = `Staffel ${season_title}`;
     const season_redirect = season_node.getAttribute("href");
 
     seasons.push({
+      title: season_title || "",
       label: season_label || "",
       redirect: season_redirect || "",
     });
@@ -155,13 +158,13 @@ function watch_constructor() {
   const build = async (url: string) => {
     detail_wrapper = document.createElement("div");
     detail_wrapper.className =
-      "absolute inset-0 z-40 flex justify-center backdrop-brightness-50 overflow-y-auto";
+      "absolute inset-0 z-40 flex justify-center bg-neutral-950/60 backdrop-blur-xl overflow-y-auto";
 
     document.body.appendChild(detail_wrapper);
 
     detail_node = document.createElement("div");
     detail_node.className =
-      "relative min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full bg-[rgb(6,6,6)] outline outline-[hsla(0,0%,100%,0.15)] mt-4 overflow-hidden rounded-t-lg border-box";
+      "relative min-h-[calc(100%-1rem)] h-fit w-[64rem] max-w-full mt-4 overflow-hidden border-box flex flex-col justify-center";
 
     detail_wrapper.appendChild(detail_node);
 
@@ -173,11 +176,17 @@ function watch_constructor() {
     });
 
     detail_node.innerHTML = `
-      <div class="absolute inset-0 m-auto h-fit w-fit">
-          <svg aria-hidden="true" class="w-8 h-8 text-gray-200 animate-spin dark:text-gray-600 fill-blue-600" viewBox="0 0 100 101" fill="none" xmlns="http://www.w3.org/2000/svg">
-              <path d="M100 50.5908C100 78.2051 77.6142 100.591 50 100.591C22.3858 100.591 0 78.2051 0 50.5908C0 22.9766 22.3858 0.59082 50 0.59082C77.6142 0.59082 100 22.9766 100 50.5908ZM9.08144 50.5908C9.08144 73.1895 27.4013 91.5094 50 91.5094C72.5987 91.5094 90.9186 73.1895 90.9186 50.5908C90.9186 27.9921 72.5987 9.67226 50 9.67226C27.4013 9.67226 9.08144 27.9921 9.08144 50.5908Z" fill="currentColor"/>
-              <path d="M93.9676 39.0409C96.393 38.4038 97.8624 35.9116 97.0079 33.5539C95.2932 28.8227 92.871 24.3692 89.8167 20.348C85.8452 15.1192 80.8826 10.7238 75.2124 7.41289C69.5422 4.10194 63.2754 1.94025 56.7698 1.05124C51.7666 0.367541 46.6976 0.446843 41.7345 1.27873C39.2613 1.69328 37.813 4.19778 38.4501 6.62326C39.0873 9.04874 41.5694 10.4717 44.0505 10.1071C47.8511 9.54855 51.7191 9.52689 55.5402 10.0491C60.8642 10.7766 65.9928 12.5457 70.6331 15.2552C75.2735 17.9648 79.3347 21.5619 82.5849 25.841C84.9175 28.9121 86.7997 32.2913 88.1811 35.8758C89.083 38.2158 91.5421 39.6781 93.9676 39.0409Z" fill="currentFill"/>
-          </svg>
+      <div class="grid min-h-[140px] w-full place-items-center overflow-x-scroll rounded-lg p-6 lg:overflow-visible">
+        <svg class="text-gray-300 animate-spin" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"
+          width="24" height="24">
+          <path
+            d="M32 3C35.8083 3 39.5794 3.75011 43.0978 5.20749C46.6163 6.66488 49.8132 8.80101 52.5061 11.4939C55.199 14.1868 57.3351 17.3837 58.7925 20.9022C60.2499 24.4206 61 28.1917 61 32C61 35.8083 60.2499 39.5794 58.7925 43.0978C57.3351 46.6163 55.199 49.8132 52.5061 52.5061C49.8132 55.199 46.6163 57.3351 43.0978 58.7925C39.5794 60.2499 35.8083 61 32 61C28.1917 61 24.4206 60.2499 20.9022 58.7925C17.3837 57.3351 14.1868 55.199 11.4939 52.5061C8.801 49.8132 6.66487 46.6163 5.20749 43.0978C3.7501 39.5794 3 35.8083 3 32C3 28.1917 3.75011 24.4206 5.2075 20.9022C6.66489 17.3837 8.80101 14.1868 11.4939 11.4939C14.1868 8.80099 17.3838 6.66487 20.9022 5.20749C24.4206 3.7501 28.1917 3 32 3L32 3Z"
+            stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path
+            d="M32 3C36.5778 3 41.0906 4.08374 45.1692 6.16256C49.2477 8.24138 52.7762 11.2562 55.466 14.9605C58.1558 18.6647 59.9304 22.9531 60.6448 27.4748C61.3591 31.9965 60.9928 36.6232 59.5759 40.9762"
+            stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-900">
+          </path>
+        </svg>
       </div>
     `;
 
@@ -211,31 +220,40 @@ function watch_constructor() {
     if (current_callback == null) return;
     current_callback(current_url, details.image, details.title);
 
-    const detail_top = document.createElement("div");
-    detail_top.className = "relative w-full aspect-video";
-
-    detail_node.appendChild(detail_top);
-
     const detail_exit = document.createElement("div");
     detail_exit.className =
-      "absolute z-20 top-4 left-4 h-8 w-8 flex items-center justify-center cursor-pointer";
+      "h-8 w-8 ml-4 mt-4 mb-4 flex items-center justify-center cursor-pointer";
     detail_exit.innerHTML =
       "<img src='./icons/keyboard_backspace_24dp.png' class='h-full w-full' />";
 
-    detail_top.appendChild(detail_exit);
+    detail_node.appendChild(detail_exit);
 
     detail_exit.addEventListener("click", () => detail_wrapper.remove());
 
+    const detail_top = document.createElement("div");
+    detail_top.className =
+      "relative w-[calc(100%-2rem)] mx-4 aspect-video rounded-2xl overflow-hidden shadow-[4px_8px_16px_rgba(0,0,0,0.8)]";
+
+    detail_node.appendChild(detail_top);
+
     const detail_image = document.createElement("div");
-    detail_image.className = "w-full h-full";
+    detail_image.className = "w-full h-full flex items-center justify-center";
+    detail_image.innerHTML = `
+      <div class="grid min-h-[140px] w-full place-items-center overflow-x-scroll rounded-lg p-6 lg:overflow-visible">
+        <svg class="text-gray-300 animate-spin" viewBox="0 0 64 64" fill="none" xmlns="http://www.w3.org/2000/svg"
+          width="24" height="24">
+          <path
+            d="M32 3C35.8083 3 39.5794 3.75011 43.0978 5.20749C46.6163 6.66488 49.8132 8.80101 52.5061 11.4939C55.199 14.1868 57.3351 17.3837 58.7925 20.9022C60.2499 24.4206 61 28.1917 61 32C61 35.8083 60.2499 39.5794 58.7925 43.0978C57.3351 46.6163 55.199 49.8132 52.5061 52.5061C49.8132 55.199 46.6163 57.3351 43.0978 58.7925C39.5794 60.2499 35.8083 61 32 61C28.1917 61 24.4206 60.2499 20.9022 58.7925C17.3837 57.3351 14.1868 55.199 11.4939 52.5061C8.801 49.8132 6.66487 46.6163 5.20749 43.0978C3.7501 39.5794 3 35.8083 3 32C3 28.1917 3.75011 24.4206 5.2075 20.9022C6.66489 17.3837 8.80101 14.1868 11.4939 11.4939C14.1868 8.80099 17.3838 6.66487 20.9022 5.20749C24.4206 3.7501 28.1917 3 32 3L32 3Z"
+            stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round"></path>
+          <path
+            d="M32 3C36.5778 3 41.0906 4.08374 45.1692 6.16256C49.2477 8.24138 52.7762 11.2562 55.466 14.9605C58.1558 18.6647 59.9304 22.9531 60.6448 27.4748C61.3591 31.9965 60.9928 36.6232 59.5759 40.9762"
+            stroke="currentColor" stroke-width="5" stroke-linecap="round" stroke-linejoin="round" class="text-gray-900">
+          </path>
+        </svg>
+      </div>
+    `;
 
     detail_top.appendChild(detail_image);
-
-    const detail_overlay = document.createElement("div");
-    detail_overlay.className =
-      "absolute inset-0 bg-gradient-to-t from-[rgb(6,6,6)] via-[rgba(6,6,6,.5)] to-transparent";
-
-    detail_top.appendChild(detail_overlay);
 
     const detail_main = document.createElement("div");
     detail_main.className = "h-fit w-full px-4 pt-2";
@@ -256,7 +274,7 @@ function watch_constructor() {
       const [getList, setList, subscribeList] = createState(0);
       const on_list = document.createElement("div");
       on_list.className =
-        "flex items-center space-x-1 bg-[rgb(18,18,18)] py-2 px-4 rounded-full cursor-pointer transition-colors";
+        "flex items-center space-x-1 bg-neutral-950 py-2 px-4 rounded-lg cursor-pointer transition-colors";
       on_list.textContent = "...";
 
       detail_bar.appendChild(on_list);
@@ -269,21 +287,11 @@ function watch_constructor() {
             "from-[rgb(54,95,215)]",
             "to-[rgb(143,155,215)]",
           );
-          on_list.classList.remove(
-            "outline",
-            "outline-[hsla(0,0%,100%,.15)]",
-            "hover:outline-2",
-            "hover:outline-[rgb(49,139,255)]",
-          );
+          on_list.classList.remove("outline", "outline-neutral-800");
           on_list.innerHTML =
             "<span class='text-xs pr-1 font-semibold'>Subscribed</span>";
         } else {
-          on_list.classList.add(
-            "outline",
-            "outline-[hsla(0,0%,100%,.15)]",
-            "hover:outline-2",
-            "hover:outline-[rgb(49,139,255)]",
-          );
+          on_list.classList.add("outline", "outline-neutral-800");
           on_list.classList.remove(
             "bg-gradient-to-r",
             "from-[rgb(54,95,215)]",
@@ -329,7 +337,7 @@ function watch_constructor() {
 
     const detail_description_wrapper = document.createElement("div");
     detail_description_wrapper.className =
-      "p-4 rounded-xl bg-[rgb(18,18,18)] my-4";
+      "p-4 rounded-xl bg-neutral-950/60 backdrop-blur-xl my-4";
 
     detail_main.appendChild(detail_description_wrapper);
 
@@ -371,7 +379,12 @@ function watch_constructor() {
       "<div class='text-l font-semibold mb-2'>Episodes</div>",
     );
 
-    const selector = Selector(detail_main, details.seasons, previous);
+    const seasonRow = document.createElement("div");
+    seasonRow.className = "flex space-x-2 my-4";
+
+    detail_main.appendChild(seasonRow);
+
+    const selector = Selector(seasonRow, details.seasons, previous);
 
     selector.subscribe((newValue) => {
       setSeason(newValue);
@@ -379,19 +392,93 @@ function watch_constructor() {
 
     console.log(cache);
 
+    const season_reset = document.createElement("div");
+    season_reset.className =
+      "px-2 py-1 bg-neutral-950/60 backdrop-blur-xl rounded-lg cursor-pointer flex space-x-2 items-center";
+    season_reset.innerHTML =
+      "<img src='./icons/replay_24dp.svg' class='h-4 w-4 object-cover' /><span>Rewatch</span>";
+
+    seasonRow.appendChild(season_reset);
+
+    season_reset.addEventListener("click", () => {
+      if (localStorage.getItem("token") === undefined) return;
+      const season_reset_modal = document.createElement("div");
+      season_reset_modal.className =
+        "absolute z-50 inset-0 m-auto h-64 sm:h-fit w-96 max-w-3/4 p-4 bg-neutral-950/60 backdrop-blur-xl rounded-2xl flex flex-col items-center justify-center";
+
+      console.log(cache.get("selectedSeason"));
+      if (cache.get("selectedSeason") === undefined) {
+        season_reset_modal.textContent = "No season selected";
+        const close_button = document.createElement("button");
+        close_button.className =
+          "bg-neutral-950 border border-neutral-800 rounded-lg px-2 py-1 mt-4 cursor-pointer";
+        close_button.textContent = "Ok";
+        close_button.addEventListener("click", () => {
+          season_reset_modal.remove();
+        });
+        season_reset_modal.appendChild(close_button);
+      } else {
+        season_reset_modal.innerHTML = `
+          <span class='text-red-500'>Are you sure?</span><br><span>Resetting the season will delete all your progress.</span>
+        `;
+
+        const row = document.createElement("div");
+        row.className = "flex space-x-2 my-4";
+        season_reset_modal.appendChild(row);
+
+        const close_button = document.createElement("button");
+        close_button.className =
+          "bg-neutral-950 border border-neutral-800 rounded-lg px-2 py-1 mt-4 cursor-pointer";
+        close_button.textContent = "Cancel";
+        close_button.addEventListener("click", () => {
+          season_reset_modal.remove();
+        });
+        row.appendChild(close_button);
+
+        const confirm_button = document.createElement("button");
+        confirm_button.className =
+          "bg-neutral-950 border border-neutral-800 rounded-lg px-2 py-1 mt-4 cursor-pointer";
+        confirm_button.textContent = "Reset";
+        confirm_button.addEventListener("click", () => {
+          const seasonkey = cache.get("selectedSeason");
+          const episodes = cache.get(`episodes-${seasonkey}`);
+          console.log(episodes);
+          episodes.forEach((ep) => {
+            ep.watched(0, 0, 0, true);
+          });
+          season_reset_modal.remove();
+        });
+        row.appendChild(confirm_button);
+      }
+
+      document.body.appendChild(season_reset_modal);
+    });
+
     const episode_wrapper = document.createElement("div");
-    episode_wrapper.className = "flex space-x-4 my-4 overflow-y-scroll";
+    episode_wrapper.className =
+      "flex space-x-2 my-4 overflow-y-scroll rounded-2xl";
 
     detail_main.appendChild(episode_wrapper);
 
+    const isMobileDevice = /Mobi/i.test(window.navigator.userAgent);
+
     subscribeSeason(async (newSeason) => {
       episode_wrapper.innerHTML = "";
-      const episode_node = document.createElement("div");
-      episode_node.className = "h-32 rounded-lg overflow-hidden animate-pulse";
-      episode_node.innerHTML =
-        "<div class='h-full w-full bg-neutral-800'></div>";
+      for (let i = 0; i < 3; i++) {
+        const episode_node = document.createElement("div");
+        episode_node.className =
+          "aspect-[500/281] rounded-xl overflow-hidden animate-pulse";
+        episode_node.innerHTML =
+          "<div class='h-full w-full bg-zinc-800'></div>";
 
-      episode_wrapper.appendChild(episode_node);
+        if (isMobileDevice) {
+          episode_node.classList.add("h-32");
+        } else {
+          episode_node.classList.add("h-38");
+        }
+
+        episode_wrapper.appendChild(episode_node);
+      }
 
       let episodes;
 
@@ -464,6 +551,7 @@ function watch_constructor() {
     detail_trailer.loop = true;
     detail_trailer.muted = true;
 
+    detail_image.innerHTML = "";
     detail_image.appendChild(detail_trailer);
 
     if (cache.get("episodes")) {
